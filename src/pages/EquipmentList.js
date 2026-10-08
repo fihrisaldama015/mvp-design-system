@@ -74,12 +74,17 @@ export default function EquipmentList() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-semibold text-slate-800">Equipment</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm"
-        >
-          <Plus size={16} /> Add equipment
-        </button>
+        <div className="flex gap-3">
+          <Link to="/import" className="flex items-center gap-2 border border-indigo-300 text-indigo-700 px-4 py-2 rounded-lg text-sm hover:bg-indigo-50">
+            Import CSV
+          </Link>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm"
+          >
+            <Plus size={16} /> Add equipment
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-3 mb-4">

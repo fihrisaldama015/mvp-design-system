@@ -15,14 +15,19 @@ No login and no backend: the data is demo data in memory (a reload resets it).
 |---|---|
 | `/` | Dashboard: late-loans banner, stat cards, equipment by category, recent loans |
 | `/equipment` | Equipment list (60 items): search, filter, paging, add (modal), delete, tooltips |
-| `/equipment/:id` | Equipment detail: tabs, edit (drawer), delete (danger dialog) |
+| `/equipment/:id` | Equipment detail: tabs incl. photo viewer, edit (drawer), delete (danger dialog) |
 | `/loans` | Loan log: filters, CSV export, mark returned, empty state |
 | `/loans/:id` | Loan detail: timeline, extend, notes |
 | `/loans/new` | Lend equipment: 3-step flow |
 | `/people/:id` | Borrower profile: avatar card, open loans with an action menu, history |
 | `/reports` | Reports: line chart, donut, top borrowers, skeleton while loading |
+| `/maintenance` | Maintenance tickets: list, filter popover, row action menu, report-a-problem sheet |
+| `/maintenance/:id` | Ticket detail: comment thread (Ctrl + Enter), status, photos |
+| `/import` | Import equipment from CSV: upload or drop, preview with checks, progress |
 | `/settings` | Settings: loan rules, reminders, table density |
 | any other | 404 page |
+
+On every page: a header with search (Ctrl + K) and a notification bell.
 
 ## Stack
 

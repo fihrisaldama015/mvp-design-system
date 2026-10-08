@@ -10,6 +10,9 @@ import LoanDetail from "pages/LoanDetail";
 import PersonProfile from "pages/PersonProfile";
 import Reports from "pages/Reports";
 import NotFound from "pages/NotFound";
+import Maintenance from "pages/Maintenance";
+import TicketDetail from "pages/TicketDetail";
+import ImportCsv from "pages/ImportCsv";
 
 export default function App() {
   return (
@@ -22,6 +25,9 @@ export default function App() {
         <Route path="/loans/new" element={<NewLoan />} />
         <Route path="/loans/:id" element={<LoanDetail />} />
         <Route path="/people/:id" element={<PersonProfile />} />
+        <Route path="/maintenance" element={<Maintenance />} />
+        <Route path="/maintenance/:id" element={<TicketDetail />} />
+        <Route path="/import" element={<ImportCsv />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<NotFound />} />

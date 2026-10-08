@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import dayjs from "dayjs";
-import { EQUIPMENT, LOANS, TODAY } from "data/mock";
+import { EQUIPMENT, LOANS, TICKETS, TODAY } from "data/mock";
 
 // In-memory store: it lives as long as the tab. No backend, no login.
 const StoreContext = createContext(null);
@@ -8,14 +8,48 @@ const StoreContext = createContext(null);
 export function StoreProvider({ children }) {
   const [equipment, setEquipment] = useState(EQUIPMENT);
   const [loans, setLoans] = useState(LOANS);
+  const [tickets, setTickets] = useState(TICKETS);
 
   const patchLoan = (id, patch) =>
     setLoans((list) => list.map((l) => (l.id === id ? { ...l, ...(typeof patch === "function" ? patch(l) : patch) } : l)));
+
+  const setItemStatus = (equipmentId, from, to) =>
+    setEquipment((list) => list.map((e) => (e.id === equipmentId && e.status === from ? { ...e, status: to } : e)));
 
   const value = useMemo(
     () => ({
       equipment,
       loans,
+      tickets,
+      addTicket: ({ equipmentId, title, priority, reporter, description }) => {
+        const id = `T-${String(Date.now()).slice(-5)}`;
+        setTickets((list) => [
+          {
+            id,
+            equipmentId,
+            title,
+            priority,
+            status: "Open",
+            reporter,
+            createdAt: TODAY,
+            comments: description ? [{ author: reporter, at: `${TODAY} 09:00`, text: description }] : [],
+          },
+          ...list,
+        ]);
+        setItemStatus(equipmentId, "Available", "Maintenance");
+        return id;
+      },
+      setTicketStatus: (ticketId, status) => {
+        const target = tickets.find((t) => t.id === ticketId);
+        if (!target) return;
+        setTickets((list) => list.map((t) => (t.id === ticketId ? { ...t, status } : t)));
+        if (status === "Resolved") setItemStatus(target.equipmentId, "Maintenance", "Available");
+        else setItemStatus(target.equipmentId, "Available", "Maintenance");
+      },
+      addComment: (ticketId, author, text) =>
+        setTickets((list) =>
+          list.map((t) => (t.id === ticketId ? { ...t, comments: [...t.comments, { author, at: `${TODAY} 17:00`, text }] } : t)),
+        ),
       addEquipment: (item) =>
         setEquipment((list) => [
           { ...item, id: `EQ-${String(Date.now()).slice(-5)}`, status: "Available" },
@@ -63,7 +97,7 @@ export function StoreProvider({ children }) {
         }),
       setLoanNote: (loanId, note) => patchLoan(loanId, { note }),
     }),
-    [equipment, loans],
+    [equipment, loans, tickets],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

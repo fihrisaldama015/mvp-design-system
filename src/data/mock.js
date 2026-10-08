@@ -131,3 +131,72 @@ export function loanStatus(l) {
   if (l.returnedAt) return "Returned";
   return dayjs(l.dueAt).isBefore(dayjs(TODAY), "day") ? "Overdue" : "Active";
 }
+
+// ---------------------------------------------------------------------------
+// Maintenance tickets and photos
+// ---------------------------------------------------------------------------
+
+export const PRIORITIES = ["Low", "Medium", "High", "Urgent"];
+export const TICKET_STATUSES = ["Open", "In progress", "Resolved"];
+
+const ticket = (n, equipmentId, title, priority, status, reporter, createdAt, comments) => ({
+  id: `T-${String(n).padStart(3, "0")}`,
+  equipmentId,
+  title,
+  priority,
+  status,
+  reporter,
+  createdAt,
+  comments,
+});
+
+const c = (author, at, text) => ({ author, at, text });
+
+export const TICKETS = [
+  ticket(1, "EQ-009", "Lens cracked after a drop", "Urgent", "Open", "Daniel Tan", "2026-10-07", [
+    c("Daniel Tan", "2026-10-07 09:12", "It slipped off the vehicle roof during the move. The front lens has a crack across it."),
+    c("Aisyah Rahman", "2026-10-07 15:40", "Please do not lend it out. I will ask the vendor for a quote."),
+  ]),
+  ticket(2, "EQ-016", "Projector lamp flickers", "High", "In progress", "Marcus Lee", "2026-10-03", [
+    c("Marcus Lee", "2026-10-03 11:05", "Lamp flickers after ten minutes and then turns off."),
+    c("Ravi Kumar", "2026-10-05 10:20", "Replacement lamp ordered, arrives on Friday."),
+  ]),
+  ticket(3, "EQ-026", "Battery drains in two hours", "Medium", "Open", "Priya Nair", "2026-10-06", [
+    c("Priya Nair", "2026-10-06 16:30", "It used to last a full shift. Now it dies after about two hours."),
+  ]),
+  ticket(4, "EQ-037", "Missing screws in the tool tray", "Low", "In progress", "Siti Aminah", "2026-09-29", [
+    c("Siti Aminah", "2026-09-29 08:45", "Eight screws are missing from the tray."),
+    c("Chen Wei", "2026-10-02 13:10", "Spare screws collected from stores."),
+  ]),
+  ticket(5, "EQ-048", "Keypad buttons stick", "Medium", "Open", "Kenneth Ong", "2026-10-05", [
+    c("Kenneth Ong", "2026-10-05 14:00", "Buttons 4 and 7 need a hard press."),
+  ]),
+  ticket(6, "EQ-059", "Charging port is loose", "High", "In progress", "Hafiz Ismail", "2026-10-01", [
+    c("Hafiz Ismail", "2026-10-01 10:00", "The cable falls out unless the unit lies flat."),
+    c("Ravi Kumar", "2026-10-04 09:30", "Sent for a port replacement."),
+  ]),
+  ticket(7, "EQ-001", "Antenna cap missing", "Low", "Resolved", "Nur Aini", "2026-09-10", [
+    c("Nur Aini", "2026-09-10 09:00", "The rubber cap on the antenna is gone."),
+    c("Ravi Kumar", "2026-09-12 11:15", "Replaced from stock. Closing."),
+  ]),
+  ticket(8, "EQ-012", "Strap stitching torn", "Medium", "Resolved", "Jonathan Goh", "2026-09-14", [
+    c("Jonathan Goh", "2026-09-14 15:20", "One strap has torn stitching near the hook."),
+    c("Ravi Kumar", "2026-09-18 10:05", "Re-stitched and load tested."),
+  ]),
+  ticket(9, "EQ-005", "Screen has a dead pixel line", "High", "Resolved", "Farah Zain", "2026-09-01", [
+    c("Farah Zain", "2026-09-01 12:00", "A vertical line on the left side of the screen."),
+    c("Aisyah Rahman", "2026-09-08 09:40", "Panel replaced under warranty."),
+  ]),
+];
+
+// A coloured placeholder "photo", so the gallery needs no image files.
+export function photo(seed, label) {
+  const hue = [...String(seed)].reduce((s, ch) => s + ch.charCodeAt(0), 0) % 360;
+  const svg =
+    `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='420'>` +
+    `<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>` +
+    `<stop offset='0' stop-color='hsl(${hue},60%,70%)'/><stop offset='1' stop-color='hsl(${(hue + 50) % 360},60%,45%)'/>` +
+    `</linearGradient></defs><rect width='640' height='420' fill='url(#g)'/>` +
+    `<text x='320' y='225' font-size='34' text-anchor='middle' fill='white' font-family='sans-serif'>${label}</text></svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}

@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import dayjs from "dayjs";
 import { useStore } from "data/store";
-import { CATEGORIES, CONDITIONS, loanStatus } from "data/mock";
+import { useEffect } from "react";
+import { CATEGORIES, CONDITIONS, loanStatus, photo } from "data/mock";
 
 const statusColor = {
   Available: "bg-emerald-100 text-emerald-700",
@@ -16,6 +17,19 @@ export default function EquipmentDetail() {
   const { equipment, loans, updateEquipment, removeEquipment } = useStore();
   const navigate = useNavigate();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [viewer, setViewer] = useState(null);
+
+  // Keyboard control for the photo viewer: arrows move, Escape closes.
+  useEffect(() => {
+    if (viewer === null) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") setViewer(null);
+      if (e.key === "ArrowRight") setViewer((i) => (i + 1) % 4);
+      if (e.key === "ArrowLeft") setViewer((i) => (i + 3) % 4);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [viewer]);
   const item = equipment.find((e) => e.id === id);
 
   const [tab, setTab] = useState("details");
@@ -35,6 +49,7 @@ export default function EquipmentDetail() {
   }
 
   const history = loans.filter((l) => l.equipmentId === item.id);
+  const shots = ["Front", "Back", "Serial plate", "In the case"].map((label) => ({ label, src: photo(`${item.id}-${label}`, label) }));
 
   const openDrawer = () => {
     setForm({ name: item.name, category: item.category, serial: item.serial, condition: item.condition });
@@ -83,6 +98,9 @@ export default function EquipmentDetail() {
               Lend this item
             </Link>
           )}
+          <Link to={`/maintenance?item=${item.id}`} className="px-4 py-2 text-sm font-semibold text-zinc-700 border border-zinc-300 rounded">
+            Report a problem
+          </Link>
           <button onClick={() => setConfirmDelete(true)} className="px-4 py-2 text-sm font-semibold text-red-600 border border-red-300 rounded">
             Delete
           </button>
@@ -102,6 +120,7 @@ export default function EquipmentDetail() {
         {[
           ["details", "Details"],
           ["history", `Loan history (${history.length})`],
+          ["photos", "Photos (4)"],
         ].map(([key, label]) => (
           <button
             key={key}
@@ -124,6 +143,37 @@ export default function EquipmentDetail() {
             </div>
           ))}
         </dl>
+      )}
+
+      {tab === "photos" && (
+        <div className="grid max-w-3xl grid-cols-4 gap-4">
+          {shots.map((s, i) => (
+            <button key={s.label} onClick={() => setViewer(i)} className="overflow-hidden rounded border border-zinc-200 bg-white text-left">
+              <img src={s.src} alt={s.label} className="h-24 w-full object-cover" />
+              <div className="px-2 py-1.5 text-xs text-zinc-600">{s.label}</div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {viewer !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/90">
+          <button className="absolute right-6 top-6 text-white" onClick={() => setViewer(null)} aria-label="Close viewer">
+            <X size={28} />
+          </button>
+          <button className="absolute left-6 text-white" onClick={() => setViewer((viewer + 3) % 4)} aria-label="Previous photo">
+            <ChevronLeft size={40} />
+          </button>
+          <figure className="text-center">
+            <img src={shots[viewer].src} alt={shots[viewer].label} className="max-h-[75vh] rounded" />
+            <figcaption className="mt-3 text-sm text-zinc-300">
+              {shots[viewer].label} ({viewer + 1} / 4)
+            </figcaption>
+          </figure>
+          <button className="absolute right-6 text-white" onClick={() => setViewer((viewer + 1) % 4)} aria-label="Next photo">
+            <ChevronRight size={40} />
+          </button>
+        </div>
       )}
 
       {tab === "history" && (

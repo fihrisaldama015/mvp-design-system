@@ -17,7 +17,7 @@ PM -> vibe coding -> MVP -> confirm with HL (high level)
 
 | # | Stage | Status |
 |---|---|---|
-| 1 | **MVP with plain Tailwind.** Ten pages, 60 items, no tokens, no shared components, inconsistent on purpose (`docs/inconsistencies.md`). Batch 1 added: loan detail, borrower profile, reports, 404, toasts, tooltip, action menu, banners, danger dialog, loading / empty / error states. | Done |
+| 1 | **MVP with plain Tailwind.** Twelve pages, 60 items, no tokens, no shared components, inconsistent on purpose (`docs/inconsistencies.md`). Batch 1 added: loan detail, borrower profile, reports, 404, toasts, tooltip, action menu, banners, danger dialog, loading / empty / error states. Batch 2 added: maintenance tickets with a comment thread, CSV import, filter popover, bottom sheet, notification dropdown, Ctrl + K search and two photo viewers. Twelve pages. | Done |
 | 2 | **Foundation: design tokens.** A token source (start with the same kind of Figma export swt-fe uses: `design-token-kit`, `tokens:sync`), colours / text / spacing as CSS variables that Tailwind reads. | Next |
 | 3 | **Components and patterns in Storybook.** Shared Button, Input, Select, Badge, Tabs, Table, Modal, Drawer, then the page patterns (list, detail, form flow, dashboard, settings). Components manifest and the Storybook MCP server so AI can read it. | |
 | 4 | **Migrate the MVP** to the design system, page by page, and compare with `docs/inconsistencies.md`. | |
@@ -25,12 +25,9 @@ PM -> vibe coding -> MVP -> confirm with HL (high level)
 | 6 | **Test the change flow.** Change one token, sync it, and see what moves in Storybook. | |
 | 7 | **Deploy** Storybook and the app to Vercel; write up what worked and what is still manual. | |
 
-## Planned for a second batch of the MVP (not built yet)
-
-- Maintenance tickets (list + thread), CSV import, filter popover, notification dropdown, quick search (Ctrl+K), photo lightbox, calendar.
-
 ## Left out for now
 
+- A calendar view and drag-and-drop (heavy; only if asked).
 - Chromatic (later, once the components exist).
 - Login and a real backend.
 - A Figma token source (until it exists, tokens start as a JSON file).
