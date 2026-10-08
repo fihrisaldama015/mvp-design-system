@@ -89,26 +89,6 @@ Textarea.propTypes = {
   className: PropTypes.string,
 };
 
-/** Select — native dropdown, 40px high. Pass `<option>` children. Use inside Field. */
-export const Select = forwardRef(function Select({ error, className, children, ...props }, ref) {
-  return (
-    <select ref={ref} aria-invalid={error || undefined} className={controlClass(error, cn("h-10 px-3 pr-8", className))} {...props}>
-      {children}
-    </select>
-  );
-});
-
-Select.propTypes = {
-  /** Red border when true. */
-  error: PropTypes.bool,
-  /** Disables the control. */
-  disabled: PropTypes.bool,
-  /** `<option>` elements. */
-  children: PropTypes.node,
-  /** Extra classes, for layout only. */
-  className: PropTypes.string,
-};
-
 /** SearchInput — Input with a search icon on the left, for filtering a list. */
 export const SearchInput = forwardRef(function SearchInput({ className, ...props }, ref) {
   return (

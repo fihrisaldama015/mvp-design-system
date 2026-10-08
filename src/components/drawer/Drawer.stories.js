@@ -1,7 +1,8 @@
 import { useArgs } from "storybook/preview-api";
 import { fn } from "storybook/test";
 import { Button } from "components/button";
-import { Field, Input, Select, Textarea } from "components/field";
+import { Field, Input, Textarea } from "components/field";
+import { Select } from "components/select";
 import { Drawer } from "components/drawer";
 
 /** Drawer — create or edit a record without leaving the list. */
@@ -30,10 +31,7 @@ function DrawerStory(args) {
         <Field label="Name" required>{({ id }) => <Input id={id} />}</Field>
         <Field label="Category">
           {({ id }) => (
-            <Select id={id} defaultValue="Camera">
-              <option>Camera</option>
-              <option>Laptop</option>
-            </Select>
+            <Select id={id} value="camera" options={[{ value: "camera", label: "Camera" }, { value: "laptop", label: "Laptop" }]} />
           )}
         </Field>
         <Field label="Notes">{({ id }) => <Textarea id={id} />}</Field>

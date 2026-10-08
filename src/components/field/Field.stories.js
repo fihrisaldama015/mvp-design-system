@@ -1,4 +1,4 @@
-import { Field, Input, Select, Textarea, SearchInput } from "components/field";
+import { Field, Input, Textarea, SearchInput } from "components/field";
 
 /**
  * Field — label + control + hint/error. The control (Input, Select, Textarea)
@@ -18,22 +18,6 @@ export const WithInput = {
 export const WithError = {
   args: { error: "Name is required", hint: undefined },
   render: (args) => <Field {...args}>{({ id, invalid }) => <Input id={id} error={invalid} />}</Field>,
-};
-
-export const WithSelect = {
-  args: { label: "Category", required: false, hint: undefined },
-  render: (args) => (
-    <Field {...args}>
-      {({ id, invalid }) => (
-        <Select id={id} error={invalid} defaultValue="">
-          <option value="" disabled>Choose a category</option>
-          <option>Camera</option>
-          <option>Laptop</option>
-          <option>Audio</option>
-        </Select>
-      )}
-    </Field>
-  ),
 };
 
 export const WithTextarea = {
