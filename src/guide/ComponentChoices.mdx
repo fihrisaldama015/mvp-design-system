@@ -1,0 +1,37 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Guide/Component choices" />
+
+# Component choices
+
+The MVP pages were written with their own habits. For each component we compared
+the variants found in the app and kept one. This is the decision log.
+
+| Component | Variants found in the MVP | Chosen | Why |
+|---|---|---|---|
+| Page title | `text-3xl bold`, `xl semibold`, `2xl extrabold`, `2xl black`, `lg bold`, coloured titles | `text-2xl font-semibold text-slate-900` | Readable without shouting; neutral colour so it works on every page. |
+| Primary button | blue / indigo / orange / emerald / sky / violet / teal / rose / lime / green, `rounded`, `md`, `lg`, `full` | indigo-600, `rounded-lg`, 40px | The Equipment list version: clear contrast, a visible focus ring, same radius as inputs and cards. |
+| Danger button | `rose-500` for "Mark returned", `rose-600`, `green-600` | red-600 only for destructive actions | "Mark returned" is not destructive, so it is a normal primary/secondary. |
+| Control size | `h-14`, `h-8`, `py-1.5`, `py-2`, `py-3` | 32 / 40 / 44px (sm / md / lg), 40px default | One scale; inputs and buttons share heights so they line up in a row. |
+| Status badge | pill, rectangle, uppercase pill, dot + text, chip, tag | Pill with a dot, soft background | Works for colour-blind users (dot + text), reads small, matches the Dashboard pill. |
+| Table | raw table, zebra, bordered cells, flex rows, grid rows, `text-xs` table | Grey small header, `divide-y` rows, hover, optional clickable row | Quietest and densest; zebra and cell borders add noise. |
+| Pagination | text Previous / Next, numbered squares | "Showing 1–10 of 60" + Previous / Next | Always says where you are; works with few or many pages. |
+| Form fields | `border-2 rounded-xl`, underline-only, `py-3`, default | 40px, `rounded-lg`, 1px slate border, indigo focus ring, label above, red error text | Same look in modal, drawer and page. |
+| Toggle / radio | hand-made toggle, native radio | Toggle for instant settings, Checkbox for form choices | One switch for settings; checkboxes inside forms. |
+| Modal | centred `rounded-xl`, centred `rounded-2xl`, drawer, bottom sheet | **Modal** for short tasks, **Drawer** for create/edit, **ConfirmDialog** for yes/no | Three jobs, three components. Bottom sheet dropped (no mobile layout yet). |
+| Confirm / delete | `window.confirm`, "Keep it / Yes, delete" dialog | ConfirmDialog, red confirm button that names the action | Native dialogs cannot be styled or tested. |
+| Toast | dark top-right, emerald bottom-centre, black bottom-left with Undo | White card, top right, 4 seconds, via `useToast()` | Top right matches where users already look; one API. |
+| Inline message | amber box, red left border, yellow box, green "Saved!" box, rose flash | **Alert** with four tones | Same idea, same component. |
+| Tooltip | custom, native `title` | Dark small label on hover and focus | Visible on keyboard focus too. |
+| Row menu | vertical kebab, horizontal `...` | Horizontal `⋯`, destructive item last in red | Common pattern; the order protects against misclicks. |
+| Tabs | cyan, filled, none | Underline tabs with an optional count | Fits both pages and sections. |
+| Stepper | hand-made 3-step | Numbered circles, tick when done | Shows past, current and next. |
+| Loading | spinner, skeleton, pulsing text | Spinner for actions, Skeleton for content | Two jobs, two components. |
+| Empty state | plain text, emoji + text, dashed box | Icon, title, one line, action | Tells the user what to do next. |
+| Card | many borders, shadows, radii | White, `rounded-xl`, 1px slate-200 border, small shadow | One surface for every block. |
+
+## What was not decided yet
+
+- Colours are Tailwind names, not tokens. Stage 2 replaces them.
+- Photo viewer, file drop zone, command palette, notification dropdown, filter
+  popover and timeline are still inline in the pages.

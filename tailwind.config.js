@@ -2,7 +2,7 @@
 // comes in a later step.
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ["./src/**/*.{js,jsx}"],
+  content: ["./src/**/*.{js,jsx,mdx}", "./.storybook/**/*.{js,jsx}"],
   theme: { extend: {} },
   plugins: [],
 };
