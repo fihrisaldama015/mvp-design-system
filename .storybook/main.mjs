@@ -1,4 +1,5 @@
 import { mergeRsbuildConfig } from "@rsbuild/core";
+import remarkGfm from "remark-gfm";
 
 // Storybook for the shared UI components (src/components). It uses the
 // Rsbuild builder, so it loads the app's own rsbuild.config.js: the same
@@ -8,7 +9,8 @@ const config = {
   framework: "storybook-react-rsbuild",
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx)"],
   addons: [
-    "@storybook/addon-docs",
+    // remark-gfm: lets the Guide MDX pages use Markdown tables.
+    { name: "@storybook/addon-docs", options: { mdxPluginOptions: { mdxCompileOptions: { remarkPlugins: [remarkGfm] } } } },
     "@storybook/addon-a11y",
     // MCP server for AI agents, served by the dev server at /mcp (npm run storybook).
     "@storybook/addon-mcp",
