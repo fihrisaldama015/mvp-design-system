@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import dayjs from "dayjs";
 import { useStore } from "data/store";
-import { CATEGORIES, loanStatus } from "data/mock";
+import { AlertTriangle } from "lucide-react";
+import { CATEGORIES, loanStatus, personByName } from "data/mock";
 
 export default function Dashboard() {
   const { equipment, loans } = useStore();
@@ -11,10 +12,10 @@ export default function Dashboard() {
   const overdue = loans.filter((l) => loanStatus(l) === "Overdue").length;
 
   const stats = [
-    { label: "Total equipment", value: equipment.length },
-    { label: "On loan", value: onLoan },
-    { label: "Overdue", value: overdue },
-    { label: "In maintenance", value: maintenance },
+    { label: "Total items", value: equipment.length },
+    { label: "Borrowed", value: onLoan },
+    { label: "Late", value: overdue },
+    { label: "In repair", value: maintenance },
   ];
 
   const perCategory = CATEGORIES.map((c) => ({
@@ -37,6 +38,18 @@ export default function Dashboard() {
           + New loan
         </Link>
       </div>
+
+      {overdue > 0 && (
+        <div className="flex items-center gap-3 bg-amber-50 border border-amber-300 text-amber-900 rounded-lg px-4 py-3 mb-6">
+          <AlertTriangle size={18} />
+          <span className="text-sm">
+            {overdue} loans are late.{" "}
+            <Link to="/loans?status=Overdue" className="font-semibold underline">
+              Review them
+            </Link>
+          </span>
+        </div>
+      )}
 
       <div className="grid grid-cols-4 gap-6 mb-8">
         {stats.map((s) => (
@@ -87,10 +100,19 @@ export default function Dashboard() {
                 return (
                   <tr key={l.id}>
                     <td className="px-3 py-3 text-gray-800">{nameOf(l.equipmentId)}</td>
-                    <td className="px-3 py-3 text-gray-600">{l.borrower}</td>
+                    <td className="px-3 py-3 text-gray-600">
+                      {personByName(l.borrower) ? (
+                        <Link to={`/people/${personByName(l.borrower).id}`} className="hover:underline">
+                          {l.borrower}
+                        </Link>
+                      ) : (
+                        l.borrower
+                      )}
+                    </td>
                     <td className="px-3 py-3 text-gray-600">{dayjs(l.dueAt).format("D MMM")}</td>
                     <td className="px-3 py-3">
                       <span
+                        title={`Due ${l.dueAt}`}
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
                           status === "Overdue"
                             ? "bg-red-100 text-red-700"

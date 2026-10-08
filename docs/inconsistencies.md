@@ -12,6 +12,37 @@ the code, page by page.
 | Lend equipment | emerald + gray | `text-2xl font-semibold text-emerald-800` | `rounded-full bg-emerald-600` | none | none | hand-made 3-step stepper, `border-2 rounded-xl` fields | `alert()` |
 | Loan log | neutral + gray | `text-2xl font-semibold` | red `bg-rose-500` for "Mark returned" | table with borders on every cell | coloured dot and text, no background | native date and select filters | `window.confirm` |
 | Settings | gray + sky | `text-lg font-bold` | `bg-sky-600` | none | none | hand-made toggle, native radio | green "Saved!" box |
+| Loan detail | violet | `text-2xl font-bold text-violet-900`, with a `Loans / L-001` breadcrumb | `border-violet-600` outline and `bg-violet-600` filled, `rounded-md` | none (vertical timeline with dots) | square-ish tag (`rounded-md`), violet / red / green | none (notes textarea, "Saved ✓" on the button) | red left-border banner when late |
+| Borrower profile | teal | `text-xl font-bold` name inside a side card | `rounded-full bg-teal-600` (error retry) | list rows with `divide-y`, kebab menu per row | none (text colour only: late in red) | custom dropdown menu, "Loading profile..." text, dashed error box | black toast bottom-left with Undo |
+| Reports | stone + amber | `text-2xl font-black` | `h-8` segmented buttons and a dark `EXPORT` button in capitals | small `text-xs` table | none | inline-SVG line chart and donut | skeleton blocks while loading |
+| 404 | gray | `text-5xl font-black text-gray-300` with an emoji | text link | none | none | none | none |
+
+Overlays and feedback, one style each (nothing is shared):
+
+| What | Where | Style |
+|---|---|---|
+| Modal | Equipment list (add) | centered, `rounded-xl`, dark backdrop |
+| Drawer | Equipment detail (edit) | right side, 380px, underline-only fields |
+| Danger dialog | Equipment detail (delete) | centered, `rounded-2xl`, red icon, "Keep it / Yes, delete" |
+| Native dialogs | Equipment list (delete), Loan log (return), Lend flow (`alert`) | `window.confirm`, `alert` |
+| Toast A | Equipment list | dark slate, top right, check icon |
+| Toast B | Loan log | emerald pill, bottom centre |
+| Toast C | Borrower profile | black bar, bottom left, with Undo |
+| Inline "Saved" | Settings, loan note | green box / button text |
+| Tooltip | Equipment list icons (custom), Dashboard badges (native `title`) | two different kinds |
+| Action menu | Borrower profile rows | custom dropdown |
+| Banners | Dashboard (amber box), Loan detail (red left border), Equipment detail (yellow box) | three styles for the same idea |
+| Loading | Equipment list (spinner), Reports (skeleton), Profile (pulsing text) | three styles |
+| Empty | Equipment list (plain text row), Loan log (emoji + text), Profile (dashed box) | three styles |
+| Error | Borrower profile (dashed box with Retry) | one-off |
+
+Words and formats that disagree:
+
+- Terms: "Equipment" in the sidebar and list, "Total items" / "Borrowed" / "Late" / "In repair" on the Dashboard, "Asset" in the detail dialog and "On loan" / "Overdue" in the log.
+- Dates: `5 Oct` (Dashboard), `05/10/26` (Loan log), `28 Sep 2026` (Equipment detail), `2026-10-05` (Loan detail), "3 days ago" (Profile).
+- Letter case: "Add equipment", "Mark returned" (log), "Mark Returned" (profile menu), "EXPORT" (Reports).
+- Control size: `h-8` (Reports), `py-2` (most buttons), `py-3` fields (Lend flow), `py-1.5` (Loan log).
+- Icons: lucide everywhere, plus emoji (🔍 404, 📭 empty log, ✉ ☎ on the profile) and inline SVG (charts).
 
 Shared bits that are also not in one place:
 

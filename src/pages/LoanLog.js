@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
 import { Download } from "lucide-react";
 import { useStore } from "data/store";
-import { loanStatus } from "data/mock";
+import { loanStatus, personByName } from "data/mock";
 
 const PER_PAGE = 8;
 
@@ -14,7 +15,9 @@ const dot = {
 
 export default function LoanLog() {
   const { equipment, loans, returnLoan } = useStore();
-  const [status, setStatus] = useState("");
+  const [params] = useSearchParams();
+  const [status, setStatus] = useState(params.get("status") ?? "");
+  const [toast, setToast] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [page, setPage] = useState(1);
@@ -116,9 +119,21 @@ export default function LoanLog() {
             const s = loanStatus(l);
             return (
               <tr key={l.id}>
-                <td className="border border-gray-300 px-3 py-2">{l.id}</td>
+                <td className="border border-gray-300 px-3 py-2">
+                  <Link to={`/loans/${l.id}`} className="text-blue-700 underline">
+                    {l.id}
+                  </Link>
+                </td>
                 <td className="border border-gray-300 px-3 py-2">{nameOf(l.equipmentId)}</td>
-                <td className="border border-gray-300 px-3 py-2">{l.borrower}</td>
+                <td className="border border-gray-300 px-3 py-2">
+                  {personByName(l.borrower) ? (
+                    <Link to={`/people/${personByName(l.borrower).id}`} className="hover:underline">
+                      {l.borrower}
+                    </Link>
+                  ) : (
+                    l.borrower
+                  )}
+                </td>
                 <td className="border border-gray-300 px-3 py-2">{l.unit}</td>
                 <td className="border border-gray-300 px-3 py-2">{dayjs(l.loanedAt).format("DD/MM/YY")}</td>
                 <td className="border border-gray-300 px-3 py-2">{dayjs(l.dueAt).format("DD/MM/YY")}</td>
@@ -127,7 +142,11 @@ export default function LoanLog() {
                   {!l.returnedAt && (
                     <button
                       onClick={() => {
-                        if (window.confirm("Mark this loan as returned?")) returnLoan(l.id);
+                        if (window.confirm("Mark this loan as returned?")) {
+                          returnLoan(l.id);
+                          setToast("Loan returned");
+                          setTimeout(() => setToast(""), 3000);
+                        }
                       }}
                       className="bg-rose-500 hover:bg-rose-600 text-white text-xs px-2.5 py-1 rounded"
                     >
@@ -141,6 +160,14 @@ export default function LoanLog() {
         </tbody>
       </table>
 
+      {visible.length === 0 && (
+        <div className="border border-t-0 border-gray-300 bg-white py-16 text-center">
+          <div className="mb-2 text-5xl">📭</div>
+          <div className="font-semibold text-gray-700">No loans match these filters</div>
+          <div className="text-sm text-gray-500">Try another status or a wider date range.</div>
+        </div>
+      )}
+
       <div className="flex justify-center gap-1 mt-5">
         {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
           <button
@@ -152,6 +179,11 @@ export default function LoanLog() {
           </button>
         ))}
       </div>
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-emerald-600 px-5 py-2 text-sm font-medium text-white shadow-lg">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

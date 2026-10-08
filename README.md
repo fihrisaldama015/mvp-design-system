@@ -13,12 +13,16 @@ No login and no backend: the data is demo data in memory (a reload resets it).
 
 | Route | Page |
 |---|---|
-| `/` | Dashboard: stat cards, equipment by category, recent loans |
-| `/equipment` | Equipment list: search, filter, paging, add (modal), delete |
-| `/equipment/:id` | Equipment detail: details and loan history tabs, edit (drawer) |
-| `/loans` | Loan log: filters, CSV export, mark returned |
+| `/` | Dashboard: late-loans banner, stat cards, equipment by category, recent loans |
+| `/equipment` | Equipment list (60 items): search, filter, paging, add (modal), delete, tooltips |
+| `/equipment/:id` | Equipment detail: tabs, edit (drawer), delete (danger dialog) |
+| `/loans` | Loan log: filters, CSV export, mark returned, empty state |
+| `/loans/:id` | Loan detail: timeline, extend, notes |
 | `/loans/new` | Lend equipment: 3-step flow |
+| `/people/:id` | Borrower profile: avatar card, open loans with an action menu, history |
+| `/reports` | Reports: line chart, donut, top borrowers, skeleton while loading |
 | `/settings` | Settings: loan rules, reminders, table density |
+| any other | 404 page |
 
 ## Stack
 

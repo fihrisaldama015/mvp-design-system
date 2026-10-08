@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { CheckCircle2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { useStore } from "data/store";
 import { CATEGORIES } from "data/mock";
 
@@ -20,12 +20,31 @@ const schema = Yup.object({
   serial: Yup.string().trim().required("Serial number is required"),
 });
 
+// A tooltip written by hand: shows a dark label above the icon on hover.
+function Tip({ text, children }) {
+  return (
+    <span className="relative group inline-flex">
+      {children}
+      <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-slate-800 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity">
+        {text}
+      </span>
+    </span>
+  );
+}
+
 export default function EquipmentList() {
   const { equipment, addEquipment, removeEquipment } = useStore();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [page, setPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 300);
+    return () => clearTimeout(t);
+  }, []);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -37,13 +56,15 @@ export default function EquipmentList() {
   }, [equipment, search, category]);
 
   const pages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-  const rows = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const rows = loading ? [] : filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const formik = useFormik({
     initialValues: { name: "", category: "", serial: "" },
     validationSchema: schema,
     onSubmit: (values, { resetForm }) => {
       addEquipment({ ...values, condition: "New" });
+      setToast("Equipment added");
+      setTimeout(() => setToast(""), 3000);
       resetForm();
       setShowModal(false);
     },
@@ -119,22 +140,33 @@ export default function EquipmentList() {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2 text-slate-500">
-                    <Link to={`/equipment/${e.id}`} aria-label="Open">
-                      <Pencil size={16} />
-                    </Link>
-                    <button
-                      aria-label="Delete"
-                      onClick={() => {
-                        if (window.confirm(`Delete ${e.name}?`)) removeEquipment(e.id);
-                      }}
-                    >
-                      <Trash2 size={16} className="text-red-500" />
-                    </button>
+                    <Tip text="Open details">
+                      <Link to={`/equipment/${e.id}`} aria-label="Open">
+                        <Pencil size={16} />
+                      </Link>
+                    </Tip>
+                    <Tip text="Delete">
+                      <button
+                        aria-label="Delete"
+                        onClick={() => {
+                          if (window.confirm(`Delete ${e.name}?`)) removeEquipment(e.id);
+                        }}
+                      >
+                        <Trash2 size={16} className="text-red-500" />
+                      </button>
+                    </Tip>
                   </div>
                 </td>
               </tr>
             ))}
-            {rows.length === 0 && (
+            {loading && (
+              <tr>
+                <td colSpan={6} className="py-16">
+                  <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
+                </td>
+              </tr>
+            )}
+            {!loading && rows.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-slate-400">
                   Nothing found
@@ -166,6 +198,12 @@ export default function EquipmentList() {
           </button>
         </div>
       </div>
+
+      {toast && (
+        <div className="fixed top-4 right-4 z-[60] flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-3 text-sm text-white shadow-lg">
+          <CheckCircle2 size={18} className="text-green-400" /> {toast}
+        </div>
+      )}
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">

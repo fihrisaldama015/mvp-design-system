@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { AlertTriangle } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import dayjs from "dayjs";
 import { useStore } from "data/store";
 import { CATEGORIES, CONDITIONS, loanStatus } from "data/mock";
@@ -12,7 +13,9 @@ const statusColor = {
 
 export default function EquipmentDetail() {
   const { id } = useParams();
-  const { equipment, loans, updateEquipment } = useStore();
+  const { equipment, loans, updateEquipment, removeEquipment } = useStore();
+  const navigate = useNavigate();
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const item = equipment.find((e) => e.id === id);
 
   const [tab, setTab] = useState("details");
@@ -80,11 +83,20 @@ export default function EquipmentDetail() {
               Lend this item
             </Link>
           )}
+          <button onClick={() => setConfirmDelete(true)} className="px-4 py-2 text-sm font-semibold text-red-600 border border-red-300 rounded">
+            Delete
+          </button>
           <button onClick={openDrawer} className="px-4 py-2 text-sm font-semibold text-zinc-700 border border-zinc-300 rounded">
             Edit
           </button>
         </div>
       </div>
+
+      {item.status === "On loan" && history.find((l) => !l.returnedAt) && (
+        <div className="mb-6 rounded border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
+          With <b>{history.find((l) => !l.returnedAt).borrower}</b> since {history.find((l) => !l.returnedAt).loanedAt}.
+        </div>
+      )}
 
       <div className="flex gap-8 border-b border-zinc-200 mb-6">
         {[
@@ -186,6 +198,34 @@ export default function EquipmentDetail() {
             </div>
           </div>
         </>
+      )}
+
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-96 rounded-2xl bg-white p-6 text-center shadow-2xl">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+              <AlertTriangle className="text-red-600" />
+            </div>
+            <h2 className="text-lg font-bold text-zinc-900">Delete this asset?</h2>
+            <p className="mt-2 text-sm text-zinc-500">
+              {item.name} ({item.serial || "no serial"}) will be removed. You cannot undo this.
+            </p>
+            <div className="mt-6 flex gap-3">
+              <button onClick={() => setConfirmDelete(false)} className="flex-1 rounded-lg border border-zinc-300 py-2 text-zinc-700">
+                Keep it
+              </button>
+              <button
+                onClick={() => {
+                  removeEquipment(item.id);
+                  navigate("/equipment");
+                }}
+                className="flex-1 rounded-lg bg-red-600 py-2 font-semibold text-white"
+              >
+                Yes, delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

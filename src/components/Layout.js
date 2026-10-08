@@ -1,11 +1,12 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { ClipboardList, LayoutDashboard, Package, PlusCircle, Settings as Cog } from "lucide-react";
+import { BarChart3, ClipboardList, LayoutDashboard, Package, PlusCircle, Settings as Cog } from "lucide-react";
 
 const LINKS = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/equipment", label: "Equipment", icon: Package },
   { to: "/loans", label: "Loan log", icon: ClipboardList, end: true },
   { to: "/loans/new", label: "New loan", icon: PlusCircle },
+  { to: "/reports", label: "Reports", icon: BarChart3 },
   { to: "/settings", label: "Settings", icon: Cog },
 ];
 
