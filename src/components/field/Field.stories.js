@@ -1,4 +1,6 @@
-import { Field, Input, Textarea, SearchInput } from "components/field";
+import { Field } from "components/field";
+import { Input } from "components/input";
+import { Textarea } from "components/textarea";
 
 /**
  * Field — label + control + hint/error. Put one control (Input, Textarea,
@@ -23,6 +25,3 @@ export const WithTextarea = {
 };
 
 export const Disabled = { args: { label: "Asset tag", children: <Input disabled defaultValue="EQ-0042" /> } };
-
-/** For filter bars above a list; no label. */
-export const Search = { render: () => <SearchInput placeholder="Search equipment..." /> };

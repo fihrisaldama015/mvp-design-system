@@ -1,7 +1,8 @@
 import { useArgs } from "storybook/preview-api";
 import { fn } from "storybook/test";
 import { Button } from "components/button";
-import { Field, Input } from "components/field";
+import { Field } from "components/field";
+import { Input } from "components/input";
 import { Modal } from "components/modal";
 
 /** Modal — short task in a centred dialog. */
