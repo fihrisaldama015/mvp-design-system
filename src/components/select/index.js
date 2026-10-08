@@ -2,6 +2,7 @@ import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "re
 import { createPortal } from "react-dom";
 import PropTypes from "prop-types";
 import { Check, ChevronDown } from "lucide-react";
+import { useFieldControl } from "components/field";
 import { cn } from "utils/cn";
 
 /**
@@ -11,7 +12,10 @@ import { cn } from "utils/cn";
  * Enter to choose, Escape to close. Pass `options` as `{ value, label }`; the
  * component is controlled (`value` and `onChange`).
  */
-export function Select({ options, value, onChange, placeholder = "Select...", error, disabled, id, className }) {
+export function Select({ options, value, onChange, placeholder = "Select...", error: errorProp, disabled, id: idProp, className }) {
+  const field = useFieldControl();
+  const id = idProp ?? field.id;
+  const error = errorProp ?? field.invalid;
   const autoId = useId();
   const listId = `${autoId}-list`;
   const [open, setOpen] = useState(false);
@@ -170,11 +174,11 @@ Select.propTypes = {
   onChange: PropTypes.func,
   /** Grey text shown while nothing is chosen. */
   placeholder: PropTypes.string,
-  /** Red border when true. Field passes this for you. */
+  /** Red border when true. Inside a Field it follows the Field's `error`. */
   error: PropTypes.bool,
   /** Disables the control. */
   disabled: PropTypes.bool,
-  /** Id of the button, so Field's label points at it. */
+  /** Id of the button. Inside a Field it is set for you. */
   id: PropTypes.string,
   /** Extra classes on the button, for layout only. */
   className: PropTypes.string,

@@ -1,4 +1,4 @@
-import { forwardRef, useId } from "react";
+import { createContext, forwardRef, useContext, useId } from "react";
 import PropTypes from "prop-types";
 import { Search } from "lucide-react";
 import { cn } from "utils/cn";
@@ -11,30 +11,39 @@ const CONTROL =
 const controlClass = (error, extra) =>
   cn(CONTROL, error ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-slate-300", extra);
 
+const FieldContext = createContext({ id: undefined, invalid: false });
+
+/** useFieldControl — lets a control (Input, Select, ...) read the id and error state of the Field around it. */
+export function useFieldControl() {
+  return useContext(FieldContext);
+}
+
 /**
- * Field — label, control, hint and error message in one block. Wrap an Input,
- * Select or Textarea with it. Pass the `id` from the render function to the
- * control so the label points at it.
+ * Field — label, control, hint and error message in one block. Put one control
+ * inside it (Input, Textarea, Select, ...): the label is connected to it and it
+ * turns red when `error` is set, with nothing to pass by hand.
  */
 export function Field({ label, required, hint, error, children, className }) {
   const id = useId();
   return (
-    <div className={cn("space-y-1.5", className)}>
-      {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-slate-700">
-          {label}
-          {required && <span className="ml-0.5 text-red-600">*</span>}
-        </label>
-      )}
-      {children({ id, invalid: !!error })}
-      {error ? (
-        <p className="text-xs text-red-600" role="alert">
-          {error}
-        </p>
-      ) : (
-        hint && <p className="text-xs text-slate-500">{hint}</p>
-      )}
-    </div>
+    <FieldContext.Provider value={{ id, invalid: !!error }}>
+      <div className={cn("space-y-1.5", className)}>
+        {label && (
+          <label htmlFor={id} className="block text-sm font-medium text-slate-700">
+            {label}
+            {required && <span className="ml-0.5 text-red-600">*</span>}
+          </label>
+        )}
+        {children}
+        {error ? (
+          <p className="text-xs text-red-600" role="alert">
+            {error}
+          </p>
+        ) : (
+          hint && <p className="text-xs text-slate-500">{hint}</p>
+        )}
+      </div>
+    </FieldContext.Provider>
   );
 }
 
@@ -45,21 +54,23 @@ Field.propTypes = {
   required: PropTypes.bool,
   /** Helper text under the control. Hidden while there is an error. */
   hint: PropTypes.string,
-  /** Error message. Turns the text red, replaces the hint. */
+  /** Error message. Turns the control red and replaces the hint. */
   error: PropTypes.string,
-  /** Render function `({ id, invalid }) => <Input id={id} error={invalid} />`. */
-  children: PropTypes.func.isRequired,
+  /** The control: an Input, Textarea or Select. */
+  children: PropTypes.node.isRequired,
   /** Extra classes, for layout only. */
   className: PropTypes.string,
 };
 
 /** Input — single-line text control, 40px high. Use inside Field. */
-export const Input = forwardRef(function Input({ error, className, ...props }, ref) {
-  return <input ref={ref} aria-invalid={error || undefined} className={controlClass(error, cn("h-10 px-3", className))} {...props} />;
+export const Input = forwardRef(function Input({ error, id, className, ...props }, ref) {
+  const field = useFieldControl();
+  const invalid = error ?? field.invalid;
+  return <input ref={ref} id={id ?? field.id} aria-invalid={invalid || undefined} className={controlClass(invalid, cn("h-10 px-3", className))} {...props} />;
 });
 
 Input.propTypes = {
-  /** Red border when true. Field passes this for you. */
+  /** Red border when true. Inside a Field it follows the Field's `error`. */
   error: PropTypes.bool,
   /** Native input type, e.g. text, email, number, date. */
   type: PropTypes.string,
@@ -72,8 +83,10 @@ Input.propTypes = {
 };
 
 /** Textarea — multi-line text control. Use inside Field. */
-export const Textarea = forwardRef(function Textarea({ error, rows = 4, className, ...props }, ref) {
-  return <textarea ref={ref} rows={rows} aria-invalid={error || undefined} className={controlClass(error, cn("px-3 py-2", className))} {...props} />;
+export const Textarea = forwardRef(function Textarea({ error, id, rows = 4, className, ...props }, ref) {
+  const field = useFieldControl();
+  const invalid = error ?? field.invalid;
+  return <textarea ref={ref} id={id ?? field.id} rows={rows} aria-invalid={invalid || undefined} className={controlClass(invalid, cn("px-3 py-2", className))} {...props} />;
 });
 
 Textarea.propTypes = {

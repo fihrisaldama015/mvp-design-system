@@ -34,13 +34,13 @@ export const Error = { args: { error: true }, render: SelectStory };
 
 export const Disabled = { args: { disabled: true, value: "camera" }, render: SelectStory };
 
-/** The usual form: Field gives the label and the error text. */
+/** The usual form: Field gives the label and the error text, and connects them to the Select. */
 export const InField = {
   render: (args) => {
     const [, updateArgs] = useArgs();
     return (
       <Field label="Category" required hint="Pick the closest one.">
-        {({ id, invalid }) => <Select {...args} id={id} error={invalid} onChange={(value) => updateArgs({ value })} />}
+        <Select {...args} onChange={(value) => updateArgs({ value })} />
       </Field>
     );
   },

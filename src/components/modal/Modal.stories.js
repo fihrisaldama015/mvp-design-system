@@ -26,7 +26,9 @@ function ModalStory(args) {
         </>
       }
     >
-      <Field label="Name" required>{({ id }) => <Input id={id} defaultValue="Cameras" />}</Field>
+      <Field label="Name" required>
+        <Input defaultValue="Cameras" />
+      </Field>
     </Modal>
   );
 }

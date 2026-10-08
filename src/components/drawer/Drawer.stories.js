@@ -28,13 +28,15 @@ function DrawerStory(args) {
       }
     >
       <div className="space-y-4">
-        <Field label="Name" required>{({ id }) => <Input id={id} />}</Field>
-        <Field label="Category">
-          {({ id }) => (
-            <Select id={id} value="camera" options={[{ value: "camera", label: "Camera" }, { value: "laptop", label: "Laptop" }]} />
-          )}
+        <Field label="Name" required>
+          <Input />
         </Field>
-        <Field label="Notes">{({ id }) => <Textarea id={id} />}</Field>
+        <Field label="Category">
+          <Select value="camera" options={[{ value: "camera", label: "Camera" }, { value: "laptop", label: "Laptop" }]} />
+        </Field>
+        <Field label="Notes">
+          <Textarea />
+        </Field>
       </div>
     </Drawer>
   );
