@@ -45,8 +45,15 @@ npm run build      # output in build/
 
 ## Deploy (Vercel)
 
-`vercel.json` is ready: build command `npm run build`, output `build`, and a
-rewrite to `index.html` so routes like `/equipment/EQ-002` work on reload.
+Two Vercel projects on this repo, same Production Branch (`main`). Build
+settings live in each project's dashboard, not in `vercel.json` (which only
+holds the rewrite to `index.html`, so routes like `/equipment/EQ-002` work on
+reload).
+
+| Project | Framework Preset | Build Command | Output Directory |
+|---|---|---|---|
+| App | Other | `npm run build` | `build` |
+| Storybook | Other | `npm run build-storybook` | `storybook-static` |
 
 ## Docs
 
