@@ -15,13 +15,3 @@ Spinner.propTypes = {
   /** Extra classes, e.g. a different colour. */
   className: PropTypes.string,
 };
-
-/** Skeleton — grey pulsing block that holds the place of content while it loads. Size it with `className`. */
-export function Skeleton({ className }) {
-  return <div className={cn("animate-pulse rounded-md bg-slate-200", className)} aria-hidden />;
-}
-
-Skeleton.propTypes = {
-  /** Width and height classes, e.g. `h-4 w-40`. */
-  className: PropTypes.string,
-};

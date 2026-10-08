@@ -6,16 +6,17 @@ import { PageHeader } from "components/page-header";
 export default {
   title: "Navigation/PageHeader",
   component: PageHeader,
-  args: { title: "Equipment", description: "60 items across 6 categories" },
+  args: { title: "Equipment" },
   parameters: { layout: "padded" },
 };
 
-export const Default = {};
+export const Default = { args: { description: "60 items across 6 categories" } };
 
 export const WithActions = {
   render: (args) => (
     <PageHeader
       {...args}
+      description="60 items across 6 categories"
       actions={
         <>
           <Button variant="secondary" leftIcon={<Download size={16} />}>Export</Button>
@@ -26,4 +27,4 @@ export const WithActions = {
   ),
 };
 
-export const TitleOnly = { args: { description: undefined } };
+export const TitleOnly = {};

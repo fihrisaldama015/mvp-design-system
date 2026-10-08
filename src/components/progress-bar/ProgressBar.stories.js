@@ -4,15 +4,15 @@ import { ProgressBar } from "components/progress-bar";
 export default {
   title: "Feedback/ProgressBar",
   component: ProgressBar,
-  args: { value: 60, label: "Maintenance budget" },
+  args: { value: 60 },
   decorators: [(Story) => <div className="w-72"><Story /></div>],
   argTypes: { tone: { control: "inline-radio", options: ["primary", "success", "warning", "danger"] } },
 };
 
-export const Default = {};
+export const Default = { args: { label: "Maintenance budget" } };
 
 export const Success = { args: { value: 100, tone: "success", label: "Import complete" } };
 
 export const Danger = { args: { value: 92, tone: "danger", label: "Storage used" } };
 
-export const NoLabel = { args: { label: undefined } };
+export const NoLabel = {};

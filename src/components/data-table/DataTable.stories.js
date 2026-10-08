@@ -22,7 +22,7 @@ const columns = [
 export default {
   title: "Data/DataTable",
   component: DataTable,
-  args: { columns, rows, onRowClick: undefined },
+  args: { columns, rows },
   parameters: { layout: "padded" },
   decorators: [(Story) => <Card padded={false}><Story /></Card>],
 };

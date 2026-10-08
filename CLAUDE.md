@@ -19,6 +19,8 @@ React 18, rsbuild, Tailwind 3, formik + yup, react-router-dom 6.
   layout (flex, grid, gap, width, margin), not to restyle a component.
 - Icons: `lucide-react` only. Text in plain English, sentence case.
 
+- Story code is Storybook code: ignore `fn()` (from `storybook/test`), `useArgs()` and `updateArgs` in it. They only make the story interactive. Copy the JSX, not those helpers.
+
 ## Adding a shared component
 
 - Folder `src/components/<kebab-name>/index.js` plus `<Name>.stories.js`, in the same commit.

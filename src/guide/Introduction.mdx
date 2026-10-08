@@ -26,7 +26,8 @@ modal or toast by hand.
 6. **Icons:** lucide-react only (size 16 in buttons and menus).
 7. **Words:** sentence case ("Add equipment", "Mark returned"). Dates as
    `5 Oct 2026`. Say "equipment", "loan", "borrower".
-8. If nothing fits, **ask before adding a new component** — extend an existing
+8. Story code may contain `fn()` and `useArgs()`. Those are Storybook helpers: copy the JSX, not them.
+9. If nothing fits, **ask before adding a new component** — extend an existing
    one with a prop when you can.
 
 ## What is here
@@ -36,7 +37,7 @@ modal or toast by hand.
 | Actions | Button, IconButton |
 | Forms | Field (the label, hint and error around a control), Input, Textarea, Select, DatePicker, DateRangePicker, SearchInput, Checkbox, Toggle |
 | Data | Card, StatCard, DataTable, Pagination, Badge, Avatar |
-| Feedback | Alert, Toast, EmptyState, Spinner, Skeleton, ProgressBar |
+| Feedback | Alert, Toast (`useToast()`), EmptyState, Spinner, Skeleton, ProgressBar |
 | Overlays | Modal, ConfirmDialog, Drawer, Tooltip, DropdownMenu |
 | Navigation | PageHeader, Tabs, Stepper |
 
