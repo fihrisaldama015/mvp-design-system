@@ -1,0 +1,23 @@
+import { Route, Routes } from "react-router-dom";
+import Layout from "components/Layout";
+import Dashboard from "pages/Dashboard";
+import EquipmentList from "pages/EquipmentList";
+import EquipmentDetail from "pages/EquipmentDetail";
+import LoanLog from "pages/LoanLog";
+import NewLoan from "pages/NewLoan";
+import Settings from "pages/Settings";
+
+export default function App() {
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/equipment" element={<EquipmentList />} />
+        <Route path="/equipment/:id" element={<EquipmentDetail />} />
+        <Route path="/loans" element={<LoanLog />} />
+        <Route path="/loans/new" element={<NewLoan />} />
+        <Route path="/settings" element={<Settings />} />
+      </Route>
+    </Routes>
+  );
+}
