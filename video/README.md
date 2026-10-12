@@ -21,11 +21,19 @@ The TTS gets words and punctuation only, no timestamps, so the video is timed fr
    - generate the whole scene in one file (a pause between sentences is enough, no marker needed);
    - the TTS may mispronounce names (Brücke, ARGS, MCP, rsbuild): respell them for the TTS only
      (for example "Bruecke"). Keep the same number of sentences, since the captions use the original text.
-3. `npm run align` measures each file and writes `src/audioTiming.json`: the scene lasts as long as its audio
-   (plus a short lead and tail), and every caption and animation that keys off a sentence starts when that
-   sentence is spoken. It prints each sentence's start time and marks a scene `CHECK` when the pauses do not
-   match the sentences well.
+3. Find where each sentence starts. Two ways:
+   - `npm run align` alone: finds the pauses in the audio (ffmpeg) and picks the ones that fit the sentences. Quick, but TTS
+     pauses at commas and colons as long as between sentences, so it can pick a pause inside a sentence. Not reliable.
+   - Precise (recommended): once, `python3 -m venv .venv && .venv/bin/pip install faster-whisper`; then
+     `npm run transcribe` (word timestamps, about 30 s for all scenes) and `npm run align`. The transcript is aligned to
+     the narration text and each sentence start is snapped to the pause just before it. Checked on the real TTS audio:
+     every boundary landed on a 0.5 to 0.8 s pause.
+   `align` writes `src/audioTiming.json`: the scene lasts as long as its audio (plus a short lead and tail), and every
+   caption and animation that keys off a sentence starts when that sentence is spoken. It prints each start time and marks
+   a scene `CHECK` when it is not sure.
 4. `npm run studio` or `npm run render`. A scene without audio keeps its planned length and the length-based timing.
+
+Audio files and `src/audioTiming.json` are specific to one recording: they are not committed unless you decide to.
 
 Re-run `npm run align` after replacing any audio file. To go back to the silent version, empty
 `src/audioTiming.json` (`{}`) and the scenes return to their planned timing.
