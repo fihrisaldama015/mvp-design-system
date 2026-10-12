@@ -61,8 +61,9 @@ const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 return await new AsyncFunction("ARGS", src)({ PORT: 9232 });
 ```
 
-`ARGS` per script: `readComponents.js` `{ NAMES: ["Button"], DEPTH: 8 }`,
-`exportVariants.js` `{ SET, WHERE, EACH }`; `readFoundation.js`, `inventory.js`, `selfTest.js`: `{}`.
+`ARGS` per script: `readComponents.js` `{ NAMES: ["Button"], DEPTH: 8 }` or `{ IDS: ["7:21282"] }` (by node ID),
+`resolveIds.js` `{ ITEMS: [{ id, kind, name }] }`, `exportVariants.js` `{ SET, WHERE, EACH }`;
+`readFoundation.js`, `inventory.js`, `selfTest.js`: `{}`.
 A timeout on the first call of a big file is a cold page load: call it again.
 
 ## Phases
@@ -76,6 +77,29 @@ A timeout on the first call of a big file is a cold page load: call it again.
 
 Phase 3 comes before the Foundations pages can be seen; do it right after the tokens build
 when the project has no Storybook.
+
+## Where things live in Figma, and updating without a scan
+
+The project keeps pointers back into Figma, so an update goes straight to the right place:
+
+| File | Holds |
+|---|---|
+| `src/tokens/tokens.index.json` | per token / text style / effect: the Figma name **and `id`** (variable or style ID), CSS variable, classes, value per mode; `collectionIds`; the Figma file key |
+| `src/tokens/figma-ids.json` | the same IDs as a flat lookup (written by `toBruecke.mjs`) |
+| `figma-index.json` (project root, commit it) | per built component: file key, `nodeId`, page, variant count, props, story id, code path (written by `indexComponent.mjs`) |
+| `.figma-dump/inventory.json` | every page and set with node IDs (`listSets.mjs <filter> --ids`) |
+
+To update (design changed):
+
+1. `figma_navigate(url, lock: true)` to the file. Check the pointers still hold:
+   `resolveIds.js` with `ITEMS` taken from the index (a few tokens, the component's `nodeId`).
+   `missing` or `renamed` rows mean the file was duplicated or restructured (a copy gets new IDs):
+   fall back to reading by name, then rebuild the pointers.
+2. Tokens: `readFoundation.js` + `tokens:build` + `diffTokens.mjs` (the foundation is one read of a
+   few hundred variables, seconds; the diff names exactly what changed).
+3. A component: `readComponents.js` with `ARGS.IDS = [nodeId]` from `figma-index.json`. It reads that set
+   only, with no inventory and no page scan. Then `analyzeComponent`, `variantClasses`, update the code.
+After building a component run `node scripts/figma/indexComponent.mjs <Name> --file <figmaFileKey> --story <id> --code <dir>`.
 
 ## Rules that came from real failures
 

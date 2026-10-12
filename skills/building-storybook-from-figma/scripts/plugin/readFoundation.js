@@ -65,8 +65,9 @@ for (const s of await figma.getLocalEffectStylesAsync()) {
     put(effects, s.name, {
       $type: "shadow",
       $value: shadows.map((e) => ({ inset: e.type === "INNER_SHADOW", color: hex8(e.color), offsetX: px(e.offset.x), offsetY: px(e.offset.y), blur: px(e.radius), spread: px(e.spread ?? 0) })),
+      $extensions: { styleId: s.id },
     });
-  else if (blur) put(effects, s.name, { $type: "blur", $value: { role: blur.type === "LAYER_BLUR" ? "layer" : "background", blur: px(blur.radius) } });
+  else if (blur) put(effects, s.name, { $type: "blur", $value: { role: blur.type === "LAYER_BLUR" ? "layer" : "background", blur: px(blur.radius) }, $extensions: { styleId: s.id } });
 }
 
 const paints = {};

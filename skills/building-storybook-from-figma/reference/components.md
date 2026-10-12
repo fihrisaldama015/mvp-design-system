@@ -36,6 +36,7 @@ Needs Phase 1 done: classes come from `src/tokens/tokens.index.json`.
      `src/tokens/tokens.index.json`. Select the element that carries the style (an input's
      wrapper, not the `<input>`). A focus look: add `--shot` after `focus`.
    - `node scripts/figma/checkUtilities.mjs "<every class used>"`, then `bash scripts/figma/renderCheck.sh`.
+   - `node scripts/figma/indexComponent.mjs <Name> --file <figmaFileKey> --story <story id> --code <dir>` records where the set lives (`figma-index.json`).
    - Write `docs/<ds>/<component>.md`: what drives what, colour table, API, checks, notes for the designer.
 
 ## Translation rules (Figma → code)

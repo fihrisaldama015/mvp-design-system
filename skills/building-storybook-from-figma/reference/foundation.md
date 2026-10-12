@@ -29,7 +29,8 @@ a Brücke export (e.g. swt-fe's `scripts/syncDesignTokens.js`) keep working.
 | `src/tokens/design_token.json` | Brücke-shaped tokens + styles; `$extensions["tokens-bruecke-meta"].createdAt` kept |
 | `src/tokens/tokens.css` | Always-on variables on `:root`; extra modes in `[data-theme="<mode>"]` |
 | `src/tokens/tailwind.tokens.js` | Tailwind theme + text-style plugin (`typo-*` classes) |
-| `src/tokens/tokens.index.json` | Token → CSS var → classes → value per mode |
+| `src/tokens/tokens.index.json` | Token → Figma ID → CSS var → classes → value per mode (+ text styles, effects, `collectionIds`) |
+| `src/tokens/figma-ids.json` | Flat lookup of the Figma IDs (variables, collections, text and effect styles) for updates |
 | `src/foundations/*.mdx` | Foundations pages with literal data (AI-readable via the docs manifest) |
 
 ### Wire the tokens into the project

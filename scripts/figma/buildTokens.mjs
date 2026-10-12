@@ -244,10 +244,12 @@ for (const e of effects) {
 
 // Text styles -> component classes, e.g. "Semi Bold/text-sm" -> .typo-semi-bold-text-sm
 const typo = {};
+const typoMeta = {}; // ".typo-..." -> { figma, id }
 const toVar = (val) => (isAlias(val) ? `var(--${aliasSlug(val)})` : typeof val === "object" ? `${val.value}${val.unit}` : val);
 for (const [group, entries] of Object.entries(doc["Typography-styles"] || {})) {
   for (const [name, s] of Object.entries(entries)) {
     const x = s.$value;
+    typoMeta[`.typo-${slugify(group)}-${slugify(name)}`] = { figma: `${group}/${name}`, id: s.$extensions?.styleId ?? null };
     typo[`.typo-${slugify(group)}-${slugify(name)}`] = {
       fontFamily: toVar(x.fontFamily),
       fontWeight: toVar(x.fontWeight),
@@ -344,13 +346,18 @@ for (const t of tokens) if (t.collection === C.breakpoints) addClass(t.slug, `${
 for (const t of tokens)
   if (t.collection === C.typography && t.path[0] === "line-height") addClass(t.slug, `text-${t.path[1]} (line height)`);
 const modeNames = [...new Set(tokens.flatMap((t) => Object.keys(t.modes)))];
+// Figma IDs (written by toBruecke.mjs next to design_token.json): where each token lives in Figma.
+const idsFile = path.join(path.dirname(inArg), "figma-ids.json");
+const IDS = fs.existsSync(idsFile) ? JSON.parse(fs.readFileSync(idsFile, "utf8")) : { collections: {}, variables: {} };
 const index = {
   designSystem: CONFIG.designSystem ?? null,
   collections: C,
+  collectionIds: IDS.collections,
   source: { figmaFileKey: meta.figmaFileKey ?? null, exportedAt: meta.createdAt ?? null },
   modes: modeNames,
   tokens: tokens.map((t) => ({
     figma: `${t.collection}/${t.path.join("/")}`,
+    id: IDS.variables[`${t.collection}/${t.path.join("/")}`] ?? null,
     collection: t.collection,
     type: t.type,
     cssVar: `--${t.slug}`,
@@ -360,8 +367,8 @@ const index = {
     // Only aliases are shown as "points to"; a literal per-mode value is already in value.
     aliasByMode: Object.keys(t.modes).length ? Object.fromEntries(Object.entries(t.modes).map(([m, v]) => [m, isAlias(v) ? v : null])) : null,
   })),
-  effects: effects.map((e) => ({ figma: `${e.group}/${e.name}`, type: e.type, role: e.role ?? null, cssVar: `--${e.slug}`, css: e.css, classes: classesBySlug.get(e.slug) ?? [] })),
-  textStyles: Object.entries(typo).map(([cls, v]) => ({ className: cls.slice(1), ...v })),
+  effects: effects.map((e) => ({ figma: `${e.group}/${e.name}`, id: IDS.effectStyles?.[`${e.group}/${e.name}`] ?? null, type: e.type, role: e.role ?? null, cssVar: `--${e.slug}`, css: e.css, classes: classesBySlug.get(e.slug) ?? [] })),
+  textStyles: Object.entries(typo).map(([cls, v]) => ({ className: cls.slice(1), figma: typoMeta[cls].figma, id: typoMeta[cls].id, ...v })),
 };
 
 fs.mkdirSync(outArg, { recursive: true });

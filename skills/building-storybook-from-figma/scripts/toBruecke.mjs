@@ -138,4 +138,20 @@ out.$extensions = {
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, JSON.stringify(out, null, 2) + "\n");
+
+// Sidecar: where every token lives in Figma (file key + variable / collection / style IDs).
+// design_token.json stays in the plain Brücke shape; buildTokens.mjs copies these IDs into
+// tokens.index.json. IDs come from the export (variableId, collectionId) and from styles.json.
+const ids = { figmaFileKey: src.$extensions?.["figma-console-mcp"]?.figmaFileKey ?? null, exportedAt: src.$extensions?.["figma-console-mcp"]?.exportedAt ?? null, collections: {}, variables: {}, textStyles: {}, effectStyles: {} };
+for (const c of collections) ids.collections[c.name] = c.id;
+for (const { at, token } of leaves) {
+  const ext = token.$extensions["figma-console-mcp"];
+  ids.variables[`${byId.get(ext.collectionId).name}/${at.slice(1).join("/")}`] = ext.variableId;
+}
+const flat = (node, at, into) => {
+  if (node && typeof node === "object" && "$value" in node) { if (node.$extensions?.styleId) into[at.join("/")] = node.$extensions.styleId; return; }
+  for (const [k, v] of Object.entries(node || {})) if (!k.startsWith("$")) flat(v, [...at, k], into);
+};
+if (styles) { flat(styles["Typography-styles"], [], ids.textStyles); flat(styles["Effect-styles"], [], ids.effectStyles); }
+fs.writeFileSync(path.join(path.dirname(outPath), "figma-ids.json"), JSON.stringify(ids, null, 2) + "\n");
 console.log(`Wrote ${outPath}: ${leaves.length} variables in ${collections.length} collections${styles ? " + styles" : ""}`);

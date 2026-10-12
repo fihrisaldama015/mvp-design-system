@@ -110,3 +110,24 @@ Found by the Vite test:
 | 16 | `initStorybook.mjs` refused to run again after a run that stopped half way (`.storybook/` existed). | It stops only when `main.*` and `preview.*` both exist; otherwise it writes the missing files and keeps the rest. |
 
 Project side, not the skill's job: a Vite project that keeps JSX in `.js` files needs its own esbuild loader setting (the test project has it); Storybook and the new component files follow the project's convention.
+
+
+## Figma IDs in the index (owner's main task), 2026-10-12
+
+Goal: an update must know where to look in Figma, without scanning the file.
+
+| Piece | What was added |
+|---|---|
+| Tokens | `readFoundation.js` also saves effect style IDs (text styles already had them); `toBruecke.mjs` writes `src/tokens/figma-ids.json` (file key, collection, variable, text-style and effect-style IDs, from the export's `variableId` / `collectionId`); `buildTokens.mjs` copies them into `tokens.index.json` (`id` per token, text style, effect; `collectionIds`). `design_token.json` keeps its Brücke shape. |
+| Components | `inventory.js` saves page and set node IDs (`listSets.mjs --ids`); `readComponents.js` takes `ARGS.IDS` and saves page, file name and read time; `indexComponent.mjs` writes `figma-index.json` at the project root. |
+| Check | `plugin/resolveIds.js`: given IDs and the names the index expects, says which are missing or renamed. |
+
+Tested (Graphene and SHIELD copies, `shield-test-empty`):
+- 714 of 714 tokens, 58 of 58 text styles and 23 of 23 effects have an ID in the index.
+- `resolveIds`: 10 real IDs (6 variables, 2 text styles, 2 effect styles) resolve to the expected names; a made-up ID is reported missing.
+- Button read by node ID (`7:21282`) vs by name: the two dumps are identical apart from `readAt`. Time with the pages already loaded: 0.9 s by ID, 1.4 s by name.
+
+Limits, so the video does not over-claim:
+- IDs are stable inside one Figma file. A duplicated file (our "(Copy)" files) gets new IDs, so the pointers must be rebuilt after a copy; `resolveIds` shows that.
+- The by-ID read skips `loadAllPagesAsync`, which is what timed out on the first inventory call of a cold file. That saving was not measured: the pages were already loaded in the test.
+- An update still re-reads the foundation file (one read, seconds). The IDs remove the scan for components and the guesswork about where a token came from; they do not remove that read.

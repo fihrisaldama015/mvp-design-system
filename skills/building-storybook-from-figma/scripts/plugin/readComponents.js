@@ -9,7 +9,9 @@
 // figma_execute with fileKey and timeout: 30000.
 // One set per call: a 945-variant set can take most of the 30 s.
 const _A = typeof ARGS !== "undefined" ? ARGS : {};
-const NAMES = _A.NAMES || ["Button"];
+const NAMES = _A.NAMES || (_A.IDS ? [] : ["Button"]);
+const IDS = _A.IDS || []; // node IDs from inventory.json / figma-index.json: jump straight to the set, no page scan
+const T0 = Date.now();
 const DEPTH = _A.DEPTH ?? 8; // layers below the variant to read (text inside an input sits ~5 deep)
 const INSTANCE_DEPTH = 6; // below this depth an instance (icon, nested part) keeps name + size only
 const PORT = _A.PORT || 9232;
@@ -88,16 +90,21 @@ async function spec(node, depth = 0) {
   return s;
 }
 
+const pageOf = (n) => { let p = n; while (p && p.type !== "PAGE") p = p.parent; return p ? { name: p.name, id: p.id } : null; };
 const result = {};
-await figma.loadAllPagesAsync();
-for (const name of NAMES) {
-  const set = figma.root.findOne((n) => n.type === "COMPONENT_SET" && n.name === name);
-  if (!set) { result[name] = "not found"; continue; }
+if (!IDS.length) await figma.loadAllPagesAsync(); // by name the whole file has to be searched; by ID it does not
+const targets = [];
+for (const name of NAMES) targets.push({ key: name, set: figma.root.findOne((n) => n.type === "COMPONENT_SET" && n.name === name) });
+for (const id of IDS) { const n = await figma.getNodeByIdAsync(id); targets.push({ key: id, set: n && n.type === "COMPONENT_SET" ? n : null }); }
+for (const { key, set } of targets) {
+  if (!set) { result[key] = "not found"; continue; }
+  const name = set.name;
   const props = {};
   for (const [key, d] of Object.entries(set.componentPropertyDefinitions)) props[key.split("#")[0]] = { type: d.type, default: d.defaultValue, options: d.variantOptions };
   const variants = [];
   for (const v of set.children) variants.push({ props: v.variantProperties, spec: await spec(v) });
   const file = `components.${name.replace(/[^a-z0-9]+/gi, "-")}.json`;
-  result[name] = { file, variants: variants.length, saved: await save(file, { name, nodeId: set.id, props, defaultVariant: set.defaultVariant ? set.defaultVariant.name : null, variants }) };
+  result[key] = { file, variants: variants.length, saved: await save(file, { name, nodeId: set.id, page: pageOf(set), fileName: figma.root.name, readAt: new Date().toISOString(), props, defaultVariant: set.defaultVariant ? set.defaultVariant.name : null, variants }) };
 }
+result.ms = Date.now() - T0;
 return result;
