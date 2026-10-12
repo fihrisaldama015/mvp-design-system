@@ -89,7 +89,7 @@ effects), `src/tokens/tailwind.tokens.js` and `src/tokens/tokens.index.json`;
 `node scripts/figma/buildTokenDocs.mjs` writes `src/foundations/*.mdx`.
 
 - **Always on.** Tokens live on `:root`; there is no `data-tokens` switch like in swt-fe.
-  Extra modes become `[data-theme="<mode>"]` blocks (here only Dark, 152 overrides).
+  Extra modes become `[data-theme="<mode>"]` blocks (here only Dark, 147 overrides).
 - **Same variable names as swt-fe** (`--color-zinc-50`, `--brand-neutral-500`,
   `--theme-color-text-body`); colours are `r g b` channels, aliases stay `var()` chains.
 - **Tailwind, replaced by tokens:** colors, spacing, borderRadius, borderWidth, fontSize,
