@@ -2,10 +2,11 @@
 // (exportAsync does not change the file). Exports PNGs (2x) of the variants of SET
 // that match WHERE, one per value of EACH, to the local receiver as
 // fig-<set>-<each value>.png, for a side-by-side check against Storybook.
-const SET = "Button";
-const WHERE = { State: "default", Size: "md*", Disabled: "false", Loading: "false" };
-const EACH = ["Kind", "Status"]; // one image per combination of these properties
-const PORT = 9232;
+const _A = typeof ARGS !== "undefined" ? ARGS : {};
+const SET = _A.SET || "Button";
+const WHERE = _A.WHERE || { State: "default", Size: "md*", Disabled: "false", Loading: "false" };
+const EACH = _A.EACH || ["Kind", "Status"]; // one image per combination of these properties
+const PORT = _A.PORT || 9232;
 
 await figma.loadAllPagesAsync();
 const set = figma.root.findOne((n) => n.type === "COMPONENT_SET" && n.name === SET);

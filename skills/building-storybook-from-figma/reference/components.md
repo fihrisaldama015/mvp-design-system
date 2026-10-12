@@ -4,12 +4,12 @@ Needs Phase 1 done: classes come from `src/tokens/tokens.index.json`.
 
 ## Steps per component
 
-1. **Find it.** `plugin/inventory.js` lists sets per page. Skip blocks (`~` pages) and
-   internal parts (names starting with `.`) unless asked; build parts only as needed.
-2. **Read every variant to disk.** Copy `scripts/figma/plugin/readComponents.js` to
-   `.figma-dump/run-read.js`, set `NAMES` (one set per call), keep `DEPTH = 8`, and pass the
-   file content as `code` to `figma_execute` with `fileKey` and **`timeout: 30000`**
-   → `.figma-dump/components.<Name>.json`. Same pattern for every plugin script.
+1. **Find it.** `inventory.js` (loader) saves `inventory.json`; `node scripts/figma/listSets.mjs <name>`
+   prints the matching sets. Skip blocks (`~` pages) and internal parts (names starting with `.`)
+   unless asked; build parts only as needed.
+2. **Read every variant to disk.** Loader (SKILL.md) with `readComponents.js` and
+   `ARGS = { NAMES: ["<Name>"], DEPTH: 8 }` (one set per call), `fileKey`, **`timeout: 30000`**
+   → `.figma-dump/components.<Name>.json`.
 3. **Find what drives what.**
    `node scripts/figma/analyzeComponent.mjs .figma-dump/components.<Name>.json [--values]`
    → groups attributes by the variant properties that decide them (hidden layers skipped,
@@ -25,9 +25,12 @@ Needs Phase 1 done: classes come from `src/tokens/tokens.index.json`.
    main axes for the visual check.
 7. **Prove it.** Serve the build on its own port: `python3 -m http.server 6011 -d storybook-static &`
    (`renderCheck.sh` uses 6010; stop servers with `kill $(lsof -ti :6011)`, never `pkill -f`).
-   - Static look: `plugin/exportVariants.js` (set `SET`, `WHERE`, `EACH`) → `fig-*.png`;
+   - Static look: loader with `exportVariants.js` and `ARGS = { SET, WHERE, EACH }` → `fig-*.png`;
      `node scripts/figma/interact.mjs <story-id> "#storybook-root" --shot sb.png` (cropped, 2×);
-     `python3 scripts/figma/compareSheet.py sheet.png sb.png .figma-dump/fig-<set>-*.png` and **look at it**.
+     `python3 scripts/figma/compareSheet.py sheet.png sb.png <fig files>` and **look at it**. Pass the
+     Figma files **in the order of the story's grid** (the shell glob is alphabetical): build the list
+     in a loop over the same kinds and statuses. The matrix story carries the same optional parts
+     (icons, labels) as the exported variants, or the sheets differ for a reason that is not a bug.
    - States: `node scripts/figma/interact.mjs <story-id> "<the styled element>" hover press` (or
      `focus type=Hi`) prints computed colours per step; they must equal the token values in
      `src/tokens/tokens.index.json`. Select the element that carries the style (an input's
@@ -88,6 +91,8 @@ with a `/** */` description in `propTypes` (feeds the Storybook manifest).
   `ring-*` / `outline-*` only know border colours. Draw it with an extra element that uses the
   `bg-*` token (absolutely placed span behind the box), or a `box-shadow` from a `--theme-*`
   variable. Never fall back to hex.
+- **Class names in full.** Keep every class as a literal string in a map (`{ primary: "border-primary" }`),
+  never `` `border-${status}` ``: Tailwind scans the source for whole class names and drops the rest.
 - **Fixed height vs padding**: when padding + line height exceed the height token, keep the
   height token (`h-component-*`) and drop the vertical padding.
 

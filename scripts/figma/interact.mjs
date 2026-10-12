@@ -2,7 +2,7 @@
 // computed styles after each step; optionally screenshot the element, cropped, at 2x.
 // Serve the static build first: python3 -m http.server 6011 -d storybook-static
 //
-// Usage: node scripts/figma/interact.mjs <story-id> <css selector> [steps...] [--props a,b] [--shot out.png] [--port 6011]
+// Usage: node scripts/figma/interact.mjs <story-id> <css selector inside the story> [steps...] [--props a,b] [--shot out.png] [--port 6011]
 //   steps: hover | focus | press | type=<text> | blur
 //   e.g.  node scripts/figma/interact.mjs actions-button--primary button hover press --props background-color
 //         node scripts/figma/interact.mjs forms-input--all-statuses "#storybook-root" --shot sb.png
@@ -14,7 +14,9 @@ const opt = (name, def) => (args.includes(name) ? args.splice(args.indexOf(name)
 const props = opt("--props", "background-color,border-color,color,box-shadow,outline-color").split(",");
 const shot = opt("--shot", null);
 const port = opt("--port", "6011");
-const [storyId, selector, ...steps] = args;
+const [storyId, rawSelector, ...steps] = args;
+// Scope to the story: a bare `button` would match elements Storybook injects around it.
+const selector = /^(#storybook-root|body|html)/.test(rawSelector) ? rawSelector : `#storybook-root ${rawSelector}`;
 const CHROME = ["google-chrome", "chromium", "chromium-browser"].find((c) => { try { return spawn("which", [c]).pid; } catch { return false; } });
 
 const chrome = spawn(CHROME, ["--headless=new", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--remote-debugging-port=9399", "--window-size=1400,1000", "about:blank"], { stdio: "ignore" });

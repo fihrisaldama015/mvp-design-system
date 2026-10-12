@@ -1,0 +1,100 @@
+# Skill findings: phase 3 test from an empty folder
+
+Test: `building-storybook-from-figma` used only from the skill, in
+`../shield-storybook-test` (empty folder), 2026-10-12. Result: tokens, Tailwind theme and
+6 Foundations pages built from Graphene, `build-storybook` ok, `renderCheck.sh` 6 pages,
+0 errors. Components (phase 2) not tested yet.
+
+## Gaps and decisions
+
+| # | Gap | Decision |
+|---|---|---|
+| 1 | A receiver left running on port 9232 swallowed the data (new one failed to bind silently, files went to another repo's `.figma-dump`). | **Fix.** `dumpServer.py`: fail loudly if the port is taken, resolve the output dir to an absolute path, answer a GET `/ping` with the dir it writes to. |
+| 2 | No templates for `tailwind.config.js`, `postcss.config.js`, `rsbuild.config.js`, `src/index.css`; only prose in `foundation.md`. | **Fix.** Add them as templates for the truly empty folder. Existing boilerplates only get the parts they lack. |
+| 3 | `main.mjs` / `preview.js` assume the project's own `rsbuild.config.js` and `react-router-dom`; `TokenBlocks.js` is not under `templates/storybook/`. | **Done** as proposed: `initStorybook.mjs` detects the stack first; the empty folder is case C on our starter. |
+| 4 | `figma-tokens.config.json` defaults are Graphene's collection names. | **Fix.** Make the roles explicit in setup (read the collection names from `collections.json`, then set the roles) so another design system is not a silent mismatch. |
+| 5 | Every plugin script (≈4 KB for `readFoundation.js`, more for `readComponents.js`) is pasted through the chat into `figma_execute`. | **Fix. Tested, works** (see below). |
+
+## Proposal for #3: start from what the project has
+
+Cases, in order of how often they happen:
+
+1. **A project or boilerplate without Storybook** (the main case). Detect, do not assume:
+   bundler (rsbuild / vite / webpack / next), React version, Tailwind version, CSS entry,
+   import aliases, router. Pick the Storybook framework package from the bundler; add the
+   router decorator only if `react-router-dom` is installed; reuse the project's bundler config.
+2. **A project that already has Storybook**: update tokens or one component (already covered).
+3. **A truly empty folder**: use our stack (React 18, rsbuild, Tailwind 3) from the
+   starter templates of #2, then continue as case 1. Not the main use, so one short reference file.
+
+Limits to state in the skill: `buildTokens.mjs` emits a Tailwind 3 theme. Tailwind 4 and
+projects without Tailwind still get `tokens.css` (plain CSS variables); they need a
+different last step.
+
+## Proposal for #5: bootstrap loader
+
+The receiver also serves the plugin scripts (`GET /script?name=readFoundation.js`). The
+call to `figma_execute` becomes a few lines: fetch the script, run it, pass the constants:
+
+```js
+const src = await (await fetch("http://localhost:9232/script?name=readFoundation.js")).text();
+return await new (Object.getPrototypeOf(async function () {}).constructor)("ARGS", src)({ PORT: 9232 });
+```
+
+**Tested 2026-10-12:** the plugin sandbox allows `new AsyncFunction`. `selfTest.js` ran
+and returned `ARGS`; `readFoundation.js` through the loader wrote `collections.json`,
+`scopes.json` and `styles.json` byte-identical (`cmp`) to the pasted-script run. The call is
+about 280 bytes instead of ≈4 KB.
+
+Still to do in the skill:
+- `dumpServer.py`: the version in `shield-storybook-test/scripts/figma/` has the three routes
+  (`POST /save`, `GET /script`, `GET /ping`), an absolute output dir and a loud error when the
+  port is taken (checked: a second start exits 1 with the `kill $(lsof -ti :PORT)` hint).
+- Plugin scripts read `ARGS` instead of "edit the constants at the top": `readFoundation.js`
+  done (`ARGS.PORT`); `readComponents.js` (`NAMES`, `DEPTH`) and `exportVariants.js`
+  (`SET`, `WHERE`, `EACH`) not yet. Keep the old default when `ARGS` is missing.
+- `SKILL.md`: replace "copy to `.figma-dump/run-*.js`, edit, paste" with the loader snippet;
+  add `plugin/selfTest.js` as the first check after starting the receiver.
+
+## Phase 2 test (Button in the same empty folder, 2026-10-12)
+
+Result: Button built from the skill only: 24-combination Figma vs Storybook sheet matches;
+hover, press, disabled and loading colours equal the tokens; `renderCheck.sh` 18 pages, 0
+errors. Written up in `shield-storybook-test/docs/button.md`. Adding a component to a project
+that has just been given Storybook is the same flow as the "Storybook already exists" case.
+
+New gaps:
+
+| # | Gap | Fix |
+|---|---|---|
+| 6 | `inventory.js` returns ≈12 KB inline through the chat, and the first call timed out (cold page load); the retry worked. | Save `inventory.json` through the receiver and return only counts; say in SKILL.md "a timeout on the first call is a cold load, call again". |
+| 7 | Building class names (`` `border-${status}` ``) hides them from Tailwind's scanner; my first draft did this. | One line in `components.md`: write every class in full in a map. |
+| 8 | `interact.mjs` with selector `button` matched a Storybook-injected element (wrong colours, no error). | Docs: use `#storybook-root button`; the script could default to prefixing `#storybook-root `. |
+| 9 | `compareSheet.py` needs the Figma files in the same order as the Storybook grid; the file glob is alphabetical. | Say it in `components.md` (build the list in story order), or sort by an order argument. |
+| 10 | The matrix story must carry the same optional parts as the Figma export (icons), otherwise the sheets differ for a reason that is not a bug. | One line in `components.md`. |
+
+
+## Fixes applied to the skill and re-tested (2026-10-12)
+
+| # | Change | Where |
+|---|---|---|
+| 1 | Receiver: loud error when the port is taken, absolute dir, `/ping` | `scripts/dumpServer.py` |
+| 2 | Starter files for a truly empty folder | `templates/starter/` (package.json, rsbuild, postcss, tailwind, `index.css`) |
+| 3 | Stack detection; writes only the missing `.storybook/` files, never npm | `scripts/initStorybook.mjs`, `reference/storybook-setup.md` |
+| 4 | Roles checked against the file; unused collections listed | `scripts/checkConfig.mjs` |
+| 5 | Loader instead of pasting; plugin scripts read `ARGS`; `selfTest.js` | `SKILL.md`, `scripts/plugin/*` |
+| 6 | Inventory saved to disk, `listSets.mjs` prints it; cold-load timeout noted | `plugin/inventory.js`, `listSets.mjs` |
+| 7, 9, 10 | Class names in full; compare in story order; same optional parts in the matrix | `reference/components.md` |
+| 8 | `interact.mjs` scopes the selector to `#storybook-root` | `scripts/interact.mjs` |
+| 11 | New: `toBruecke.mjs` and `buildTokenDocs.mjs` did not create `src/tokens` / `src/foundations` (the first test only worked because the folder was made by hand) | both scripts |
+| 12 | New: `figma_export_tokens` uses the locked file, not `fileKey`; with two files open it read the wrong one ("0 tokens", nothing written) | `SKILL.md` setup step 6 |
+| 13 | New: wiring tokens into an existing project: merge snippet for `tailwind.config.js`, class check, before/after screenshot | `reference/foundation.md` |
+
+### Test results
+
+| Case | Folder | Result |
+|---|---|---|
+| C, empty folder, new | `shield-test-empty` | starter + `initStorybook --write` + tokens + Foundations: build ok, 6 pages 0 errors; output identical to the first run (only timestamps differ). Button: sheet pixel-identical to the first test, hover/press equal tokens, 18 pages 0 errors. |
+| A, boilerplate without Storybook (MVP at `96b0e84`) | `shield-boilerplate-test` | project files kept (only `package.json` scripts/deps, `.gitignore`, `tailwind.config.js` and `index.css` merged by hand); 0 of 167 colour classes the app uses went missing; app `npm run build` ok; Storybook 18 pages 0 errors; manifest has all 11 Button props (NODE_PATH works with the project's `components` alias). Dashboard before/after: same layout, Inter font and a few px of line-height shift. |
+
+`initStorybook.mjs` also checked in a temp folder: without `react-router-dom` it writes a `preview.js` with no router; with Vite it picks `@storybook/react-vite` and notes missing Tailwind; with Next.js it stops. Not tested: an actual Storybook build on Vite or webpack, Tailwind 4, Dark mode in the sheets.

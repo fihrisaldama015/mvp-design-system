@@ -1,0 +1,11 @@
+/* Font: the family the tokens use (Graphene: Inter). Change this import for another design system. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import "./tokens/tokens.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-surface text-body;
+  font-family: var(--typography-font-family-default), sans-serif;
+}

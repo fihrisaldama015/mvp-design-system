@@ -136,5 +136,6 @@ out.$extensions = {
   },
 };
 
+fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, JSON.stringify(out, null, 2) + "\n");
 console.log(`Wrote ${outPath}: ${leaves.length} variables in ${collections.length} collections${styles ? " + styles" : ""}`);

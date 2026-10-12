@@ -8,8 +8,9 @@ a Brücke export (e.g. swt-fe's `scripts/syncDesignTokens.js`) keep working.
 1. Open the foundation file (copy) in Figma Desktop, plugin running; `figma_navigate(url, lock: true)`.
 2. `figma_export_tokens` → `format: "dtcg"`, `dtcgDialect: "legacy"`, `sizeUnit: "px"`,
    `resolveAliases: false`, `strategy: "replace"`, `outputPath: ".figma-dump/tokens.dtcg.json"`.
-3. `figma_execute` with `scripts/figma/plugin/readFoundation.js` (writes
-   `collections.json`, `scopes.json`, `styles.json` to `.figma-dump/`).
+3. Run `readFoundation.js` through the loader (SKILL.md; writes `collections.json`,
+   `scopes.json`, `styles.json` to `.figma-dump/`), then `node scripts/figma/checkConfig.mjs`:
+   every role in `figma-tokens.config.json` must say `ok`. Fix the config, not Figma.
 4. `npm run tokens:build`, i.e.
    `node scripts/figma/toBruecke.mjs .figma-dump src/tokens/design_token.json`
    `&& node scripts/figma/buildTokens.mjs && node scripts/figma/buildTokenDocs.mjs`.
@@ -31,29 +32,37 @@ a Brücke export (e.g. swt-fe's `scripts/syncDesignTokens.js`) keep working.
 | `src/tokens/tokens.index.json` | Token → CSS var → classes → value per mode |
 | `src/foundations/*.mdx` | Foundations pages with literal data (AI-readable via the docs manifest) |
 
-`tailwind.config.js`: spread `tokens.theme` (replace colors, spacing, borderRadius,
-borderWidth, fontSize, screens, boxShadow + `none`), put opacity / blur / backdropBlur /
-fontWeight and `tokens.extend` under `extend`, `plugins: tokens.plugins`,
-`darkMode: ["selector", '[data-theme="dark"]']`. `index.css` imports the font and
-`./tokens/tokens.css`; body uses the semantic background and text colour.
+### Wire the tokens into the project
 
-## Brücke format rules (all verified against a real export)
+New project: `templates/starter/` already has both files. **Existing project: merge, do not
+overwrite** (keep its `content`, plugins, other theme keys).
 
-- Top-level keys are the real collection names (`+Theme`, `.Brand`); the southleft export
-  slugs them — map back through `collections.json`. Aliases: `{.Brand.neutral.50}`.
-- `$value` = default mode; `$extensions.mode` = every mode, only for multi-mode collections.
-- FLOAT type from scope: OPACITY → `number` (÷100), FONT_WEIGHT → `fontWeight`, else `dimension` `{value, unit:"px"}`.
-- Lowercase hex, `#rrggbbaa` with alpha. Unbound text-style weight name → number (Bold → 700).
-- Key order per token: `$type, $value, $description, scopes, $extensions`; variable order = Figma's.
+`tailwind.config.js`:
 
-## Tailwind mapping rules (`buildTokens.mjs`)
+```js
+import tokens from "./src/tokens/tailwind.tokens.js";
+const { fontWeight, opacity, blur, backdropBlur, ...replaced } = tokens.theme;
+export default {
+  content: ["./src/**/*.{js,jsx,mdx}"],            // add mdx: the Foundations pages use classes
+  darkMode: ["selector", '[data-theme="dark"]'],
+  theme: {
+    ...replaced,                                    // replaces colors, spacing, borderRadius, borderWidth, fontSize, screens, boxShadow, fontFamily
+    boxShadow: { ...replaced.boxShadow, none: "none" },
+    extend: { ...tokens.extend, fontWeight, opacity, blur, backdropBlur },
+  },
+  plugins: tokens.plugins,                          // the typo-* text styles
+};
+```
 
-- Variable name = `--` + slug(collection.path): `--color-zinc-50`, `--brand-neutral-500`, `--theme-color-text-body`.
-- Colours are `r g b` channels → `rgb(var(--x) / <alpha-value>)`; alias chains stay `var()`.
-- Semantic colours split per utility: `color/text/*` → `text-*`, `color/background/*` → `bg-*`,
-  `color/border/*` → `border-*` (+ `ring-*`, `outline-*`).
-- Semantic numbers routed by **Figma scope**: CORNER_RADIUS → `rounded-*`, GAP/WIDTH_HEIGHT → spacing
-  (`p-page-padding`, `h-component-md`, `w-modal-md`), STROKE_FLOAT → `border-*`.
-- Clashes: text colour named like a `text-*` utility → `-color`; semantic key = palette name → palette keeps its shades, semantic becomes `DEFAULT`.
-- Skipped: TEXT_CONTENT strings (mock copy) and names containing ❌ (deprecated).
-- Collection roles and naming groups live in `figma-tokens.config.json`; edit that, not the scripts.
+`src/index.css`: `@import "./tokens/tokens.css";` before the `@tailwind` lines, the font
+import, and `body { @apply bg-surface text-body; font-family: var(--typography-font-family-default), sans-serif; }`.
+An existing project with plain Tailwind classes: the swap replaces `theme.colors`, so check what the
+app uses still exists (Graphene keeps the whole Tailwind palette, so usually nothing is lost):
+
+```bash
+grep -rohE "\b(bg|text|border|ring|divide|from|to|fill|stroke|placeholder|outline)-(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(-[0-9]+)?\b" src --include='*.js' | sort -u > .figma-dump/used.txt
+node scripts/figma/checkUtilities.mjs "$(tr '\n' ' ' < .figma-dump/used.txt)" | grep -c '^MISS'   # 0 = nothing lost
+```
+
+Then `npm run build` and compare one page before and after: the look stays, but the font becomes
+the token font and line heights follow the token font sizes (a few px shift).

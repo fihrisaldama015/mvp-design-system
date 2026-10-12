@@ -1,7 +1,10 @@
-// Run through figma_execute (Desktop Bridge) in the COMPONENT file. Read-only.
-// Lists every page with its component sets (variant and property counts) and its
-// single components. Small enough to return inline; docs/shield/inventory.md was
-// written from this output.
+// Run through the loader (SKILL.md) in the COMPONENT file. Read-only.
+// Saves inventory.json (every page with its component sets and single components) through
+// the local receiver and returns only the counts, so the list never goes through the chat.
+// Read it with: node scripts/figma/listSets.mjs [filter]
+// The first call on a big file can time out (cold page load): call it again.
+const _A = typeof ARGS !== "undefined" ? ARGS : {};
+const PORT = _A.PORT || 9232;
 await figma.loadAllPagesAsync();
 const pages = [];
 for (const page of figma.root.children) {
@@ -14,6 +17,5 @@ for (const page of figma.root.children) {
     singles: singles.map((c) => c.name),
   });
 }
-return pages
-  .filter((p) => p.sets.length || p.singles.length)
-  .concat([{ emptyPages: pages.filter((p) => !p.sets.length && !p.singles.length).map((p) => p.page) }]);
+const saved = await (await fetch(`http://localhost:${PORT}/save?name=inventory.json`, { method: "POST", body: JSON.stringify({ file: figma.root.name, pages }, null, 1) })).text();
+return { file: figma.root.name, pages: pages.length, sets: pages.reduce((n, p) => n + p.sets.length, 0), saved };

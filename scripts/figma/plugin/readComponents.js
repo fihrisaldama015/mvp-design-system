@@ -5,13 +5,14 @@
 // code can use the matching token class. Saved as components.<set>.json through the
 // local receiver (scripts/figma/dumpServer.py, port 9232).
 //
-// How to run: copy this file to .figma-dump/run-read.js, edit the three constants,
-// then pass its content as `code` to figma_execute with fileKey and timeout: 30000.
+// How to run: through the loader (SKILL.md), ARGS = { NAMES: ["Button"], DEPTH: 8, PORT: 9232 },
+// figma_execute with fileKey and timeout: 30000.
 // One set per call: a 945-variant set can take most of the 30 s.
-const NAMES = ["Button"];
-const DEPTH = 8; // layers below the variant to read (text inside an input sits ~5 deep)
+const _A = typeof ARGS !== "undefined" ? ARGS : {};
+const NAMES = _A.NAMES || ["Button"];
+const DEPTH = _A.DEPTH ?? 8; // layers below the variant to read (text inside an input sits ~5 deep)
 const INSTANCE_DEPTH = 6; // below this depth an instance (icon, nested part) keeps name + size only
-const PORT = 9232;
+const PORT = _A.PORT || 9232;
 const save = async (name, data) => (await fetch(`http://localhost:${PORT}/save?name=${encodeURIComponent(name)}`, { method: "POST", body: JSON.stringify(data, null, 1) })).text();
 
 const varCache = new Map();

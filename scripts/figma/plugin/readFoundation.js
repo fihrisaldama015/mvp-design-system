@@ -2,7 +2,7 @@
 // nothing in the Figma file is created, changed or removed.
 // Saves collections.json, scopes.json and styles.json through the local receiver
 // (scripts/figma/dumpServer.py, port 9232), so big data never goes through the chat.
-const PORT = 9232;
+const PORT = (typeof ARGS !== "undefined" && ARGS.PORT) || 9232;
 const save = async (name, data) => (await fetch(`http://localhost:${PORT}/save?name=${name}`, { method: "POST", body: JSON.stringify(data, null, 2) })).text();
 const px = (v) => ({ value: Math.round(v * 1000) / 1000, unit: "px" });
 const hx = (n) => Math.round(n * 255).toString(16).padStart(2, "0");

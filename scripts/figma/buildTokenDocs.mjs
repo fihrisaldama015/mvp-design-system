@@ -5,6 +5,7 @@
 //
 // Usage: node scripts/figma/buildTokenDocs.mjs
 import fs from "node:fs";
+import path from "node:path";
 
 const index = JSON.parse(fs.readFileSync("src/tokens/tokens.index.json", "utf8"));
 const OUT = "src/foundations";
@@ -214,6 +215,7 @@ npm run tokens:build   # converter + CSS / Tailwind + these pages
 
 for (const [name, content] of Object.entries(pages)) {
   const file = `${OUT}/${name.replace(/ /g, "")}.mdx`;
+  fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, content);
   console.log(`Wrote ${file} (${Math.round(content.length / 1024)} KB)`);
 }
