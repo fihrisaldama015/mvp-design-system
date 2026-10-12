@@ -1,22 +1,13 @@
 import React from "react";
 import { Img, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import narration from "../narration.json";
 import { c, mono } from "../theme";
 import { Chip, Scene, Shot, Term } from "../components/Frame";
 import { T } from "../terminalText";
-import { sentenceStarts } from "../timing";
+import { useStarts } from "../timing";
 import { ramp, window12 } from "../anim";
 
-const NARRATION = [
-  "The Button is 360 variants in Figma.",
-  "In code it is one component.",
-  "Kind, status and size become props; hover and press are CSS states.",
-  "Top: Figma. Bottom: Storybook.",
-  "Twenty-four combinations of kind and status, side by side.",
-  "Then five checks: the side-by-side sheet, hover and press values against the token, disabled and loading values, every class resolving to CSS, and every story rendering.",
-  "Input is 84 variants, same method.",
-  "Statuses, sizes, disabled and read-only all match Figma, with the label, info icon and caption.",
-  "A fresh agent built it using only the skill.",
-];
+const NARRATION = narration.scene6;
 /** Screenshot cropped to its top `keep` source pixels (the rest is empty canvas). */
 const Cropped: React.FC<{ src: string; width: number; nat: [number, number]; keep: number }> = ({ src, width, nat, keep }) => (
   <div style={{ width, height: (keep * width) / nat[0], overflow: "hidden", borderRadius: 16, border: `1px solid ${c.line}`, boxShadow: "0 18px 60px rgba(0,0,0,0.5)", background: "#fff" }}>
@@ -41,7 +32,7 @@ const PROPS: [string, string[]][] = [
 export const Scene6: React.FC = () => {
   const f = useCurrentFrame();
   const { durationInFrames: total } = useVideoConfig();
-  const s = sentenceStarts(NARRATION, total);
+  const s = useStarts(NARRATION);
   const P1 = window12(f, 0, s[2]);
   const P2 = window12(f, s[2], s[3]);
   const P3 = window12(f, s[3], s[5]);

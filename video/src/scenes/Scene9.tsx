@@ -1,18 +1,13 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig } from "remotion";
+import narration from "../narration.json";
 import { c, mono } from "../theme";
 import { Scene, Term } from "../components/Frame";
 import { T } from "../terminalText";
-import { sentenceStarts } from "../timing";
+import { useStarts } from "../timing";
 import { ramp } from "../anim";
 
-const NARRATION = [
-  "Three starting points.",
-  "A project with no Storybook: the skill detects the stack and adds only what is missing; it never overwrites your files.",
-  "We ran it on the MVP before it had Storybook, on rsbuild and on Vite.",
-  "A project that already has Storybook: update tokens or one component.",
-  "And an empty folder: a starter template, then the same flow.",
-];
+const NARRATION = narration.scene9;
 
 const Card: React.FC<{ letter: string; title: string; has: string; tested: string[]; at: number; active: boolean; style: React.CSSProperties }> = ({ letter, title, has, tested, at, active, style }) => {
   const f = useCurrentFrame();
@@ -32,7 +27,7 @@ const Card: React.FC<{ letter: string; title: string; has: string; tested: strin
 export const Scene9: React.FC = () => {
   const f = useCurrentFrame();
   const { durationInFrames: total } = useVideoConfig();
-  const s = sentenceStarts(NARRATION, total);
+  const s = useStarts(NARRATION);
   const cur = f >= s[4] ? 2 : f >= s[3] ? 1 : f >= s[1] ? 0 : -1;
   return (
     <Scene n={9} title="Three starting points" narration={NARRATION}>

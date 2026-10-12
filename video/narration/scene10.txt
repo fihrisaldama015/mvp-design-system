@@ -1,0 +1,4 @@
+Today it supports React 18 with Tailwind 3.
+Tailwind 4, projects without Tailwind, and Next.js are not supported yet: the skill stops and says why, because the workflow differs there and there is no template.
+Webpack, and Dark mode in the component comparison, are not tested yet.
+Next: the other stacks, and more components through the same pipeline.

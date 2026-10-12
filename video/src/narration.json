@@ -1,0 +1,66 @@
+{
+  "scene1": [
+    "Getting a design system from Figma into code usually has a hand-off in the middle: export the tokens, wire them in, rebuild the components, check them by eye.",
+    "This skill is one door instead.",
+    "It reads Figma directly, generates tokens, Foundations pages and components in Storybook, and proves that what it built matches Figma."
+  ],
+  "scene2": [
+    "Figma Desktop runs a plugin, the Desktop Bridge.",
+    "Through the figma-console MCP the AI can run JavaScript inside the Figma file.",
+    "Anything big is written straight to disk by a small local server, bundled scripts turn those files into code, and a last stage checks the result against Figma.",
+    "Foundation first, then components."
+  ],
+  "scene3": [
+    "A tiny local server on port 9232.",
+    "The plugin posts big reads to it and they land as files, so they never pass through the AI's context.",
+    "It also serves the plugin scripts.",
+    "Plugin scripts used to be pasted into every call, about 4 KB each.",
+    "Now the call fetches the script from the server and passes ARGS, the parameters. About 280 bytes.",
+    "We read variables, scopes and styles from Figma ourselves and write them in the Tokens Brücke shape.",
+    "Anything that already consumes a Brücke export keeps working, with nobody exporting anything.",
+    "buildTokens turns that file into CSS variables, a Tailwind 3 theme and the typo-* text-style classes; buildTokenDocs writes the Foundations pages.",
+    "Four more pieces round it out: inventory, the component analysis, initStorybook and checkConfig."
+  ],
+  "scene4": [
+    "The index is the map back into Figma.",
+    "Every one of the 714 variables has its Figma ID next to its CSS variable, its classes and its values; so do the 58 text styles and 23 effects.",
+    "Each built component has a pointer too: the Button is node 7:21282, on the Button page, 360 variants.",
+    "When the design changes, the skill does not scan the file.",
+    "It checks that the IDs still resolve, then reads exactly that node.",
+    "We tested it: reading the Button by its ID returned the same file as reading it by name, and a made-up ID was reported missing right away."
+  ],
+  "scene5": [
+    "What comes out of the foundation step: Graphene's 903 variables in 10 collections become 714 CSS variables, with Dark as a data-theme override.",
+    "The colour palette and semantic tokens, the text styles, spacing and sizing, radius and borders, and the effects: six Foundations pages, generated, not written by hand."
+  ],
+  "scene6": [
+    "The Button is 360 variants in Figma.",
+    "In code it is one component.",
+    "Kind, status and size become props; hover and press are CSS states.",
+    "Top: Figma. Bottom: Storybook.",
+    "Twenty-four combinations of kind and status, side by side.",
+    "Then five checks: the side-by-side sheet, hover and press values against the token, disabled and loading values, every class resolving to CSS, and every story rendering.",
+    "Input is 84 variants, same method.",
+    "Statuses, sizes, disabled and read-only all match Figma, with the label, info icon and caption.",
+    "A fresh agent built it using only the skill."
+  ],
+  "scene8": [
+    "All the big data now goes to disk.",
+    "The first test of the skill, building Input with a fresh agent, used about 184 thousand tokens.",
+    "Most of it came from reading a 775-line analysis output, pasting the same 5 KB script again and again, and the agent writing its own browser helper.",
+    "Those gaps are closed in the skill."
+  ],
+  "scene9": [
+    "Three starting points.",
+    "A project with no Storybook: the skill detects the stack and adds only what is missing; it never overwrites your files.",
+    "We ran it on the MVP before it had Storybook, on rsbuild and on Vite.",
+    "A project that already has Storybook: update tokens or one component.",
+    "And an empty folder: a starter template, then the same flow."
+  ],
+  "scene10": [
+    "Today it supports React 18 with Tailwind 3.",
+    "Tailwind 4, projects without Tailwind, and Next.js are not supported yet: the skill stops and says why, because the workflow differs there and there is no template.",
+    "Webpack, and Dark mode in the component comparison, are not tested yet.",
+    "Next: the other stacks, and more components through the same pipeline."
+  ]
+}

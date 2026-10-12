@@ -1,0 +1,6 @@
+The index is the map back into Figma.
+Every one of the 714 variables has its Figma ID next to its CSS variable, its classes and its values; so do the 58 text styles and 23 effects.
+Each built component has a pointer too: the Button is node 7:21282, on the Button page, 360 variants.
+When the design changes, the skill does not scan the file.
+It checks that the IDs still resolve, then reads exactly that node.
+We tested it: reading the Button by its ID returned the same file as reading it by name, and a made-up ID was reported missing right away.

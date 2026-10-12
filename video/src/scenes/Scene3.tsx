@@ -1,22 +1,13 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig } from "remotion";
+import narration from "../narration.json";
 import { c, mono } from "../theme";
 import { Scene, Term } from "../components/Frame";
 import { T } from "../terminalText";
-import { sentenceStarts } from "../timing";
+import { useStarts } from "../timing";
 import { ramp, window12 } from "../anim";
 
-const NARRATION = [
-  "A tiny local server on port 9232.",
-  "The plugin posts big reads to it and they land as files, so they never pass through the AI's context.",
-  "It also serves the plugin scripts.",
-  "Plugin scripts used to be pasted into every call, about 4 KB each.",
-  "Now the call fetches the script from the server and passes ARGS, the parameters. About 280 bytes.",
-  "We read variables, scopes and styles from Figma ourselves and write them in the Tokens Brücke shape.",
-  "Anything that already consumes a Brücke export keeps working, with nobody exporting anything.",
-  "buildTokens turns that file into CSS variables, a Tailwind 3 theme and the typo-* text-style classes; buildTokenDocs writes the Foundations pages.",
-  "Four more pieces round it out: inventory, the component analysis, initStorybook and checkConfig.",
-];
+const NARRATION = narration.scene3;
 // which sentence each piece starts at; the last entry is the "four more" strip
 const GROUP_START = [0, 3, 5, 7, 8];
 
@@ -38,7 +29,7 @@ const MORE: [string, string][] = [
 export const Scene3: React.FC = () => {
   const f = useCurrentFrame();
   const { durationInFrames: total } = useVideoConfig();
-  const s = sentenceStarts(NARRATION, total);
+  const s = useStarts(NARRATION);
   const at = GROUP_START.map((g) => s[g]);
   return (
     <Scene n={3} title="The pieces" narration={NARRATION}>

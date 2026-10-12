@@ -1,19 +1,13 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig } from "remotion";
+import narration from "../narration.json";
 import { c, mono } from "../theme";
 import { Scene, Term } from "../components/Frame";
 import { T } from "../terminalText";
-import { sentenceStarts } from "../timing";
+import { useStarts } from "../timing";
 import { ramp, window12 } from "../anim";
 
-const NARRATION = [
-  "The index is the map back into Figma.",
-  "Every one of the 714 variables has its Figma ID next to its CSS variable, its classes and its values; so do the 58 text styles and 23 effects.",
-  "Each built component has a pointer too: the Button is node 7:21282, on the Button page, 360 variants.",
-  "When the design changes, the skill does not scan the file.",
-  "It checks that the IDs still resolve, then reads exactly that node.",
-  "We tested it: reading the Button by its ID returned the same file as reading it by name, and a made-up ID was reported missing right away.",
-];
+const NARRATION = narration.scene4;
 // Excerpts of the real files (formatting compacted).
 const ENTRY = `$ node -e "..." src/tokens/tokens.index.json
 {
@@ -61,7 +55,7 @@ const Count: React.FC<{ label: string; n: number; of: number; at: number }> = ({
 export const Scene4: React.FC = () => {
   const f = useCurrentFrame();
   const { durationInFrames: total } = useVideoConfig();
-  const s = sentenceStarts(NARRATION, total);
+  const s = useStarts(NARRATION);
   const A = window12(f, 0, s[2]);
   const B = window12(f, s[2], s[3]);
   const C = window12(f, s[3], s[5]);

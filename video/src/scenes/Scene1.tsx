@@ -1,18 +1,17 @@
 import React from "react";
 import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import narration from "../narration.json";
 import { c, mono } from "../theme";
 import { Scene, Shot, useIn } from "../components/Frame";
-import { sentenceStarts, splitSentences } from "../timing";
+import { useStarts } from "../timing";
 
-const NARRATION = splitSentences(
-  "Getting a design system from Figma into code usually has a hand-off in the middle: export the tokens, wire them in, rebuild the components, check them by eye. This skill is one door instead. It reads Figma directly, generates tokens, Foundations pages and components in Storybook, and proves that what it built matches Figma."
-);
+const NARRATION = narration.scene1;
 const STEPS = ["export the tokens", "wire them in", "rebuild the components", "check them by eye"];
 
 export const Scene1: React.FC = () => {
   const f = useCurrentFrame();
   const { durationInFrames: total } = useVideoConfig();
-  const s = sentenceStarts(NARRATION, total);
+  const s = useStarts(NARRATION);
   const collapse = interpolate(f, [s[1], s[1] + 40], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const arrow = interpolate(f, [s[1] + 20, s[1] + 70], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const tags = useIn(s[2]);

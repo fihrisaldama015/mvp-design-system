@@ -1,0 +1,4 @@
+Figma Desktop runs a plugin, the Desktop Bridge.
+Through the figma-console MCP the AI can run JavaScript inside the Figma file.
+Anything big is written straight to disk by a small local server, bundled scripts turn those files into code, and a last stage checks the result against Figma.
+Foundation first, then components.

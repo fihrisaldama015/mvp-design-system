@@ -1,16 +1,12 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig } from "remotion";
+import narration from "../narration.json";
 import { c, mono } from "../theme";
 import { Scene } from "../components/Frame";
-import { sentenceStarts } from "../timing";
+import { useStarts } from "../timing";
 import { ramp } from "../anim";
 
-const NARRATION = [
-  "All the big data now goes to disk.",
-  "The first test of the skill, building Input with a fresh agent, used about 184 thousand tokens.",
-  "Most of it came from reading a 775-line analysis output, pasting the same 5 KB script again and again, and the agent writing its own browser helper.",
-  "Those gaps are closed in the skill.",
-];
+const NARRATION = narration.scene8;
 // [label, before bytes, after bytes, before label, after label, drop]
 const BARS: [string, number, number, string, string, string][] = [
   ["readFoundation.js per call", 4056, 234, "4,056 B pasted", "234 B loader", "−94%"],
@@ -28,7 +24,7 @@ const MAXW = 700;
 export const Scene8: React.FC = () => {
   const f = useCurrentFrame();
   const { durationInFrames: total } = useVideoConfig();
-  const s = sentenceStarts(NARRATION, total);
+  const s = useStarts(NARRATION);
   return (
     <Scene n={8} title="Token savings" narration={NARRATION}>
       <div style={{ position: "absolute", left: 90, top: 150, width: 1060 }}>

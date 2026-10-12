@@ -1,16 +1,12 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig } from "remotion";
+import narration from "../narration.json";
 import { c, mono } from "../theme";
 import { Scene } from "../components/Frame";
-import { sentenceStarts } from "../timing";
+import { useStarts } from "../timing";
 import { ramp } from "../anim";
 
-const NARRATION = [
-  "Today it supports React 18 with Tailwind 3.",
-  "Tailwind 4, projects without Tailwind, and Next.js are not supported yet: the skill stops and says why, because the workflow differs there and there is no template.",
-  "Webpack, and Dark mode in the component comparison, are not tested yet.",
-  "Next: the other stacks, and more components through the same pipeline.",
-];
+const NARRATION = narration.scene10;
 const Col: React.FC<{ title: string; color: string; items: string[]; note?: string; at: number; left: number }> = ({ title, color, items, note, at, left }) => {
   const f = useCurrentFrame();
   const o = ramp(f, at, at + 16);
@@ -28,7 +24,7 @@ const Col: React.FC<{ title: string; color: string; items: string[]; note?: stri
 export const Scene10: React.FC = () => {
   const f = useCurrentFrame();
   const { durationInFrames: total } = useVideoConfig();
-  const s = sentenceStarts(NARRATION, total);
+  const s = useStarts(NARRATION);
   const next = ramp(f, s[3], s[3] + 18);
   return (
     <Scene n={10} title="Limits and next" narration={NARRATION}>

@@ -1,0 +1,9 @@
+The Button is 360 variants in Figma.
+In code it is one component.
+Kind, status and size become props; hover and press are CSS states.
+Top: Figma. Bottom: Storybook.
+Twenty-four combinations of kind and status, side by side.
+Then five checks: the side-by-side sheet, hover and press values against the token, disabled and loading values, every class resolving to CSS, and every story rendering.
+Input is 84 variants, same method.
+Statuses, sizes, disabled and read-only all match Figma, with the label, info icon and caption.
+A fresh agent built it using only the skill.

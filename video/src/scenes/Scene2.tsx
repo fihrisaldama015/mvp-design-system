@@ -1,12 +1,11 @@
 import React from "react";
 import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import narration from "../narration.json";
 import { c, mono } from "../theme";
 import { Scene, usePop } from "../components/Frame";
-import { sentenceStarts, splitSentences } from "../timing";
+import { useStarts } from "../timing";
 
-const NARRATION = splitSentences(
-  "Figma Desktop runs a plugin, the Desktop Bridge. Through the figma-console MCP the AI can run JavaScript inside the Figma file. Anything big is written straight to disk by a small local server, bundled scripts turn those files into code, and a last stage checks the result against Figma. Foundation first, then components."
-);
+const NARRATION = narration.scene2;
 // [title, detail, appears with sentence index]
 const BOXES: [string, string, number][] = [
   ["Figma Desktop", "Desktop Bridge plugin", 0],
@@ -32,7 +31,7 @@ const Box: React.FC<{ i: number; at: number; title: string; detail: string; acce
 export const Scene2: React.FC = () => {
   const f = useCurrentFrame();
   const { durationInFrames: total } = useVideoConfig();
-  const s = sentenceStarts(NARRATION, total);
+  const s = useStarts(NARRATION);
   // boxes 2-5 share the long third sentence ("...local server, scripts, ..., a last stage checks"): stagger them across it
   const d = s[3] - s[2];
   const at = [s[0], s[1], s[2], s[2] + Math.round(d * 0.34), s[2] + Math.round(d * 0.62), s[2] + Math.round(d * 0.86)];

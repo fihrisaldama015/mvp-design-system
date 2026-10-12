@@ -1,0 +1,5 @@
+Three starting points.
+A project with no Storybook: the skill detects the stack and adds only what is missing; it never overwrites your files.
+We ran it on the MVP before it had Storybook, on rsbuild and on Vite.
+A project that already has Storybook: update tokens or one component.
+And an empty folder: a starter template, then the same flow.

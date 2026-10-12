@@ -1,0 +1,9 @@
+A tiny local server on port 9232.
+The plugin posts big reads to it and they land as files, so they never pass through the AI's context.
+It also serves the plugin scripts.
+Plugin scripts used to be pasted into every call, about 4 KB each.
+Now the call fetches the script from the server and passes ARGS, the parameters. About 280 bytes.
+We read variables, scopes and styles from Figma ourselves and write them in the Tokens Brücke shape.
+Anything that already consumes a Brücke export keeps working, with nobody exporting anything.
+buildTokens turns that file into CSS variables, a Tailwind 3 theme and the typo-* text-style classes; buildTokenDocs writes the Foundations pages.
+Four more pieces round it out: inventory, the component analysis, initStorybook and checkConfig.

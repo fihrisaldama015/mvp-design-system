@@ -1,0 +1,3 @@
+Getting a design system from Figma into code usually has a hand-off in the middle: export the tokens, wire them in, rebuild the components, check them by eye.
+This skill is one door instead.
+It reads Figma directly, generates tokens, Foundations pages and components in Storybook, and proves that what it built matches Figma.

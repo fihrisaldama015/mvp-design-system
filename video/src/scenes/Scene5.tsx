@@ -1,14 +1,12 @@
 import React from "react";
 import { Img, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import narration from "../narration.json";
 import { c, mono } from "../theme";
 import { Scene } from "../components/Frame";
-import { sentenceStarts } from "../timing";
+import { useStarts } from "../timing";
 import { ramp, window12 } from "../anim";
 
-const NARRATION = [
-  "What comes out of the foundation step: Graphene's 903 variables in 10 collections become 714 CSS variables, with Dark as a data-theme override.",
-  "The colour palette and semantic tokens, the text styles, spacing and sizing, radius and borders, and the effects: six Foundations pages, generated, not written by hand.",
-];
+const NARRATION = narration.scene5;
 // [tab label, file, natural height]
 const PAGES: [string, string, number][] = [
   ["Colors · Light", "colors-light", 1500],
@@ -27,7 +25,7 @@ const K = VW / 1040;
 export const Scene5: React.FC = () => {
   const f = useCurrentFrame();
   const { durationInFrames: total } = useVideoConfig();
-  const s = sentenceStarts(NARRATION, total);
+  const s = useStarts(NARRATION);
   const d0 = s[1] - s[0];
   const d1 = total - s[1];
   // when each page starts: Colors Light and Dark share sentence 0, the other four share sentence 1

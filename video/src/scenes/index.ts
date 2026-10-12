@@ -1,5 +1,4 @@
 import React from "react";
-import { sec } from "../timing";
 import { Scene1 } from "./Scene1";
 import { Scene2 } from "./Scene2";
 import { Scene3 } from "./Scene3";
@@ -24,4 +23,3 @@ export const SCENES: { id: string; seconds: number; Component: React.FC }[] = [
   { id: "Scene9", seconds: 30, Component: Scene9 },
   { id: "Scene10", seconds: 30, Component: Scene10 },
 ];
-export const TOTAL_FRAMES = SCENES.reduce((n, s) => n + sec(s.seconds), 0);

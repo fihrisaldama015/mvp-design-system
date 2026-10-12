@@ -1,0 +1,2 @@
+What comes out of the foundation step: Graphene's 903 variables in 10 collections become 714 CSS variables, with Dark as a data-theme override.
+The colour palette and semantic tokens, the text styles, spacing and sizing, radius and borders, and the effects: six Foundations pages, generated, not written by hand.
