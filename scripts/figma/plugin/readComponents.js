@@ -4,7 +4,13 @@
 // style bound to each value (e.g. "+Theme/color/background/primary/default"), so the
 // code can use the matching token class. Saved as components.<set>.json through the
 // local receiver (scripts/figma/dumpServer.py, port 9232).
-const NAMES = ["Button", "Badge", "Input", "Checkbox", "Accordion"];
+//
+// How to run: copy this file to .figma-dump/run-read.js, edit the three constants,
+// then pass its content as `code` to figma_execute with fileKey and timeout: 30000.
+// One set per call: a 945-variant set can take most of the 30 s.
+const NAMES = ["Button"];
+const DEPTH = 8; // layers below the variant to read (text inside an input sits ~5 deep)
+const INSTANCE_DEPTH = 6; // below this depth an instance (icon, nested part) keeps name + size only
 const PORT = 9232;
 const save = async (name, data) => (await fetch(`http://localhost:${PORT}/save?name=${encodeURIComponent(name)}`, { method: "POST", body: JSON.stringify(data, null, 1) })).text();
 
@@ -63,7 +69,7 @@ async function spec(node, depth = 0) {
   }
   const fills = await paints(node.fills, bv.fills); if (fills) s.fills = fills;
   const strokes = await paints(node.strokes, bv.strokes);
-  if (strokes) { s.strokes = strokes; s.strokeWeight = round(node.strokeWeight === figma.mixed ? node.strokeTopWeight : node.strokeWeight); s.strokeVar = await varName(bv.strokeWeight || bv.strokeTopWeight); s.dash = node.dashPattern && node.dashPattern.length ? node.dashPattern : undefined; }
+  if (strokes) { s.strokes = strokes; s.strokeAlign = node.strokeAlign; s.strokeWeight = round(node.strokeWeight === figma.mixed ? node.strokeTopWeight : node.strokeWeight); s.strokeVar = await varName(bv.strokeWeight || bv.strokeTopWeight); s.dash = node.dashPattern && node.dashPattern.length ? node.dashPattern : undefined; }
   if (node.effectStyleId) s.effect = await styleName(node.effectStyleId);
   if (node.opacity !== undefined && node.opacity < 1) s.opacity = round(node.opacity);
   if (node.type === "TEXT") {
@@ -75,9 +81,9 @@ async function spec(node, depth = 0) {
   if (node.type === "INSTANCE") {
     const main = await node.getMainComponentAsync();
     s.instanceOf = main ? (main.parent && main.parent.type === "COMPONENT_SET" ? `${main.parent.name} / ${main.name}` : main.name) : null;
-    if (depth > 1) return s; // icons and nested components: name and size are enough
+    if (depth > INSTANCE_DEPTH) return s; // deep instances: name and size are enough
   }
-  if ("children" in node && depth < 4) s.children = await Promise.all(node.children.map((c) => spec(c, depth + 1)));
+  if ("children" in node && depth < DEPTH) s.children = await Promise.all(node.children.map((c) => spec(c, depth + 1)));
   return s;
 }
 

@@ -43,7 +43,8 @@ Never call write tools (`figma_set_*`, `figma_create_*`, `figma_import_tokens`) 
 | 2. Components | see `reference/components.md` (Button is the worked example) | Figma export vs Storybook sheet; hover/press values equal tokens |
 | 3. Storybook | new project: `reference/storybook-setup.md` | `bash scripts/figma/renderCheck.sh` → 0 errors; manifest has props |
 
-Run `figma_execute` scripts by pasting the file content as `code` with `fileKey` set.
+Run plugin scripts by copying them to `.figma-dump/run-*.js`, editing the constants at the
+top, and passing the content as `code` to `figma_execute` with `fileKey` and `timeout: 30000`.
 
 ## Rules that came from real failures
 
@@ -53,7 +54,8 @@ Run `figma_execute` scripts by pasting the file content as `code` with `fileKey`
 - **Tailwind name clash → `-color`**: a text colour named like a `text-*` utility
   (`color/text/base` vs `text-base` font size) becomes `text-base-color`.
 - **Variants are a matrix, not components**: Kind × Status × Size become props;
-  `State` hovered/pressed become `hover:`/`active:`; `md*` marks the default size.
+  `State` becomes CSS states (`hover:`/`active:` for buttons; for form controls "pressed"
+  with a caret is focus, "filled" means it has a value); `md*` marks the default size.
 - **Every class must be a token class.** No hex, no arbitrary values.
 - Storybook decorators do not run on docs-only pages: follow the theme through the channel.
 - Docs CSS overrides previews inside tables: wrap them in `sb-unstyled`.
@@ -61,6 +63,6 @@ Run `figma_execute` scripts by pasting the file content as `code` with `fileKey`
 ## Red flags — stop and fix
 
 - Writing a value you did not read from Figma ("looks like 8px").
-- Calling a component done without the Figma vs Storybook sheet.
+- Calling a component done without the Figma vs Storybook sheet and the state check (`interact.mjs`).
 - Pasting hundreds of tokens or variants into the chat.
 - `text-base` (or another utility) suddenly changing colour after a token build.

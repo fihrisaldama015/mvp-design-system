@@ -3,12 +3,16 @@
 // short spec: "Size drives height / padding / text style", "Kind + Status + State
 // drive the fill", with the token behind each value.
 //
-// Usage: node scripts/figma/analyzeComponent.mjs <components.Name.json> [--values]
+// Hidden layers are skipped (their own "hidden" flag is kept, so "Loading hides Label"
+// still shows), layer names are compared case-insensitively (Prefix = prefix), and a
+// variant that does not have a layer does not count against a driver.
+// Usage: node scripts/figma/analyzeComponent.mjs <components.Name.json> [--values] [--all]
 import fs from "node:fs";
 
 const [, , file, ...flags] = process.argv;
 const data = JSON.parse(fs.readFileSync(file, "utf8"));
 const SHOW_VALUES = flags.includes("--values");
+const INCLUDE_HIDDEN = flags.includes("--all");
 const propNames = Object.keys(data.variants[0].props);
 
 // Flatten a spec tree into "path.attribute" -> value (value = token name when bound).
@@ -30,7 +34,8 @@ function flatten(node, p, out) {
   put("opacity", node.opacity);
   if (node.type === "TEXT") put("textStyle", node.textStyle ?? `${node.fontSize}/${node.fontWeight}`);
   if (node.type === "INSTANCE") put("instance", node.instanceOf);
-  for (const c of node.children || []) flatten(c, `${p} > ${c.name}`, out);
+  if (node.hidden && !INCLUDE_HIDDEN) return out;
+  for (const c of node.children || []) flatten(c, `${p} > ${c.name.toLowerCase()}`, out);
   return out;
 }
 
@@ -46,14 +51,15 @@ for (let size = 1; size <= propNames.length; size++) {
   })(0, []);
 }
 function drivers(attr) {
-  const values = new Set(rows.map((r) => r.attrs[attr] ?? "∅"));
+  const present = rows.filter((r) => attr in r.attrs);
+  const values = new Set(present.map((r) => r.attrs[attr]));
   if (values.size === 1) return { constant: [...values][0] };
   for (const set of subsets) {
     const seen = new Map();
     let ok = true;
-    for (const r of rows) {
+    for (const r of present) {
       const key = set.map((p) => r.props[p]).join("|");
-      const val = r.attrs[attr] ?? "∅";
+      const val = r.attrs[attr];
       if (seen.has(key) && seen.get(key) !== val) { ok = false; break; }
       seen.set(key, val);
     }
@@ -79,7 +85,12 @@ for (const [key, list] of [...groups].sort((a, b) => (a[0] === "constant") - (b[
     else {
       const distinct = new Set(d.table.values());
       console.log(`- ${attr} (${distinct.size} values)`);
-      if (SHOW_VALUES) for (const [k, v] of d.table) console.log(`    ${k} → ${v}`);
+      if (SHOW_VALUES) {
+        // One line per distinct value with the combinations that give it (short).
+        const byVal = new Map();
+        for (const [k, v] of d.table) byVal.set(v, [...(byVal.get(v) || []), k]);
+        for (const [v, keys] of byVal) console.log(`    ${v}  ← ${keys.slice(0, 4).join(", ")}${keys.length > 4 ? ` (+${keys.length - 4})` : ""}`);
+      }
     }
   }
   console.log("");

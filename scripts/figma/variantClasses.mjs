@@ -24,7 +24,9 @@ function cls(token, prefix) {
   const list = classesOf.get(token) || [];
   const hit = list.find((c) => c.startsWith(`${prefix}-`)) || list.find((c) => c === prefix);
   if (hit) return hit;
-  if (list[0]) return list[0].replace(/^[a-z]+(?=-)/, prefix);
+  // Guessed by swapping the utility prefix: marked "~" because the class may not exist
+  // (a stroke bound to a background token gives ~border-primary-invert-focused).
+  if (list[0]) return `~${list[0].replace(/^[a-z]+(?=-)/, prefix)}`;
   return `?${token}`;
 }
 function lines(node, path, out) {
@@ -38,6 +40,8 @@ function lines(node, path, out) {
     for (const f of node.fills || []) if (f.var) parts.push(cls(f.var, textNode ? "text" : "bg"));
     for (const s of node.strokes || []) if (s.var) parts.push(cls(s.var, "border"));
     if (node.strokeVar) parts.push(cls(node.strokeVar, "border"));
+    else if (node.strokes) parts.push(`border(${node.strokeWeight}px, not a token)`);
+    if (node.strokes && node.strokeAlign && node.strokeAlign !== "INSIDE") parts.push(`[stroke ${node.strokeAlign}]`);
     if (node.hVar) parts.push(cls(node.hVar, "h"));
     if (node.layout) {
       const [t, r, b, l] = node.layout.padVar;
@@ -59,4 +63,4 @@ for (const v of variants) {
   console.log(varying.map((k) => `${k}=${v.props[k]}`).join(" "));
   console.log(lines(v.spec, "", []).join("\n"));
 }
-console.log(`\n${variants.length} variant(s)`);
+console.log(`\n${variants.length} variant(s). "?" = token without a class, "~" = guessed class (check it with checkUtilities.mjs).`);
