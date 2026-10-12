@@ -4,6 +4,10 @@
 # Run after `npm run build-storybook`. Usage: bash scripts/figma/renderCheck.sh [port] [jobs]
 set -u
 PORT="${1:-6010}"; JOBS="${2:-6}"
+# Without a preview file the build passes but has no CSS, tokens or theme: every page would look broken.
+ls .storybook/preview.* >/dev/null 2>&1 || { echo "ERROR no .storybook/preview.*: run initStorybook.mjs --write"; exit 1; }
+# A failed build can leave index.json behind without iframe.html: never report that as 0 errors.
+[ -f storybook-static/iframe.html ] || { echo "ERROR no storybook-static/iframe.html: the Storybook build failed (see its output)"; exit 1; }
 CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
 # python's server keeps iframe.html?id=... queries (plain `npx serve` drops them).
 python3 -m http.server "$PORT" -d storybook-static >/dev/null 2>&1 &

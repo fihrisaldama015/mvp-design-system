@@ -1,3 +1,4 @@
+import { createElement } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { addons } from "storybook/preview-api";
 import "../src/index.css";
@@ -23,14 +24,12 @@ channel.on("setGlobals", ({ globals }) => applyTheme(globals?.theme));
 channel.on("globalsUpdated", ({ globals }) => applyTheme(globals?.theme));
 
 // Components use <Link> and useNavigate, so every story runs inside a router.
+// No JSX in this file on purpose: Vite reads .storybook/preview.* before the project's esbuild
+// settings apply (a config that limits JSX to src/ would break it).
 export const decorators = [
   (Story, context) => {
     applyTheme(context.globals.theme);
-    return (
-      <MemoryRouter>
-        <Story />
-      </MemoryRouter>
-    );
+    return createElement(MemoryRouter, null, createElement(Story));
   },
 ];
 

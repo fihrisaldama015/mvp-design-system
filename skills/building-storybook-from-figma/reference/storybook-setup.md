@@ -8,7 +8,7 @@ node <skill>/scripts/initStorybook.mjs --write  # write the missing files, print
 ```
 
 It detects bundler, React, Tailwind and router, **stops** on a case it does not cover
-(existing `.storybook/`, Next.js, React < 18) and notes Tailwind 4 / none. It never
+(existing `.storybook/main.*`, Next.js, React < 18) and notes Tailwind 4 / none. It never
 overwrites a file and never runs npm: run the `npm i` lines it prints.
 
 | Found | Storybook framework | Router decorator |
@@ -25,7 +25,7 @@ What it writes (and what each is for):
   `tokens:build` → `toBruecke` + `buildTokens` + `buildTokenDocs` (see `foundation.md`).
 - `.storybook/main.mjs`: stories `../src/**/*.mdx` + `*.stories.js`; addons docs (with
   `remarkPlugins: [remarkGfm]` for Markdown tables), a11y, mcp; `features: { componentsManifest: true }`.
-- `.storybook/preview.js`: imports `../src/index.css`; Theme toolbar applied in a decorator **and**
+- `.storybook/preview.js` (no JSX on purpose: Vite reads it before the project's esbuild settings apply): imports `../src/index.css`; Theme toolbar applied in a decorator **and**
   through the channel (`setGlobals` / `globalsUpdated`) for docs-only pages; `storySort`.
 - `.mcp.json` → `http://localhost:6006/mcp`; `src/foundations/TokenBlocks.js` (previews use `sb-unstyled`);
   `.gitignore` lines `storybook-static/`, `.figma-dump/`.
@@ -46,3 +46,5 @@ no `={undefined}` args (they print into "Show code" and the manifest).
 
 Serve a static build with a server that keeps `iframe.html?id=` queries
 (`python3 -m http.server`, or `serve` with `cleanUrls: false`); Vercel works as is.
+
+A Vite project that keeps JSX in `.js` files needs its own esbuild loader setting; new component and story files follow the project's convention (`.js` or `.jsx`).

@@ -97,4 +97,16 @@ New gaps:
 | C, empty folder, new | `shield-test-empty` | starter + `initStorybook --write` + tokens + Foundations: build ok, 6 pages 0 errors; output identical to the first run (only timestamps differ). Button: sheet pixel-identical to the first test, hover/press equal tokens, 18 pages 0 errors. |
 | A, boilerplate without Storybook (MVP at `96b0e84`) | `shield-boilerplate-test` | project files kept (only `package.json` scripts/deps, `.gitignore`, `tailwind.config.js` and `index.css` merged by hand); 0 of 167 colour classes the app uses went missing; app `npm run build` ok; Storybook 18 pages 0 errors; manifest has all 11 Button props (NODE_PATH works with the project's `components` alias). Dashboard before/after: same layout, Inter font and a few px of line-height shift. |
 
-`initStorybook.mjs` also checked in a temp folder: without `react-router-dom` it writes a `preview.js` with no router; with Vite it picks `@storybook/react-vite` and notes missing Tailwind; with Next.js it stops. Not tested: an actual Storybook build on Vite or webpack, Tailwind 4, Dark mode in the sheets.
+| A, boilerplate on Vite (MVP source, bundler swapped; `.js` files hold JSX) | `shield-vite-test` | `initStorybook` picks `@storybook/react-vite`; app `vite build` ok; Storybook 18 pages 0 errors; manifest has 11 Button props; hover/press colours equal the tokens. It took three fixes (14-16 below). |
+
+Also checked in a temp folder: without `react-router-dom` the generated `preview.js` has no router; with Next.js `initStorybook` stops. Not tested: webpack (CRA), Tailwind 4 (a limit now), Dark mode in the sheets.
+
+Found by the Vite test:
+
+| # | Gap | Fix |
+|---|---|---|
+| 14 | The Vite builder parses `.storybook/preview.*` before esbuild runs; a project config that limits JSX to `src/` (the common `esbuild.include` snippet) made the preview fail with a parse error. | The template `preview.js` has no JSX (`createElement`), so it works with any loader config. Rsbuild re-checked: 18 pages, 0 errors. |
+| 15 | `renderCheck.sh` said "0 errors" on a failed build (a stale `index.json`) and on a Storybook with no preview file (no CSS, no theme). | It now fails without `storybook-static/iframe.html` or without `.storybook/preview.*`. |
+| 16 | `initStorybook.mjs` refused to run again after a run that stopped half way (`.storybook/` existed). | It stops only when `main.*` and `preview.*` both exist; otherwise it writes the missing files and keeps the rest. |
+
+Project side, not the skill's job: a Vite project that keeps JSX in `.js` files needs its own esbuild loader setting (the test project has it); Storybook and the new component files follow the project's convention.

@@ -27,12 +27,14 @@ const found = {
   tailwind: major("tailwindcss"),
   router: has("react-router-dom"),
   srcDir: exists("src"),
-  existingStorybook: exists(".storybook"),
+  // A Storybook is "there" when it has a main and a preview file; a half-written .storybook/
+  // (an earlier run that stopped) gets completed: files that exist are kept.
+  existingStorybook: [".js", ".mjs", ".cjs", ".ts"].some((e) => exists(`.storybook/main${e}`)) && [".js", ".jsx", ".ts", ".tsx"].some((e) => exists(`.storybook/preview${e}`)),
   tokens: exists("src/tokens/tokens.css"),
 };
 console.log("Found:", JSON.stringify(found));
 const stop = (why) => { console.log(`\nSTOP: ${why}`); process.exit(2); };
-if (found.existingStorybook) stop(".storybook/ already exists: update tokens or components instead (SKILL.md, case 2).");
+if (found.existingStorybook) stop(".storybook/main.* and preview.* already exist: update tokens or components instead (SKILL.md, case 2).");
 if (!bundler) stop("no bundler found in package.json (rsbuild, vite, webpack).");
 if (bundler === "next") stop("Next.js needs @storybook/nextjs; not covered by the templates. Ask before choosing.");
 if (found.react && found.react < 18) stop(`React ${found.react}: the templates assume 18.`);
@@ -85,7 +87,7 @@ export default config;
 };
 let preview = fs.readFileSync(path.join(tplDir, "preview.js"), "utf8");
 if (!found.router) {
-  preview = preview.replace(/import \{ MemoryRouter \} from "react-router-dom";\n/, "").replace(/\s*<MemoryRouter>\s*<Story \/>\s*<\/MemoryRouter>/, "\n      <Story />").replace("// Components use <Link> and useNavigate, so every story runs inside a router.\n", "");
+  preview = preview.replace(/import \{ MemoryRouter \} from "react-router-dom";\n/, "").replace("createElement(MemoryRouter, null, createElement(Story))", "createElement(Story)").replace("// Components use <Link> and useNavigate, so every story runs inside a router.\n", "");
 }
 const scripts = {
   storybook: "node .storybook/run.mjs dev -p 6006 --no-open",
