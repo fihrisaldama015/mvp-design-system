@@ -27,9 +27,9 @@ Cases, in order of how often they happen:
 3. **A truly empty folder**: use our stack (React 18, rsbuild, Tailwind 3) from the
    starter templates of #2, then continue as case 1. Not the main use, so one short reference file.
 
-Limits to state in the skill: `buildTokens.mjs` emits a Tailwind 3 theme. Tailwind 4 and
-projects without Tailwind still get `tokens.css` (plain CSS variables); they need a
-different last step.
+Limit stated in the skill (decided by the owner): **supported = React 18 + Tailwind 3**. Tailwind 4, no
+Tailwind and Next.js are limits for now: `initStorybook.mjs` stops with the reason (`--force` still
+adds Storybook and `tokens.css`). Their workflow differs and there is no template yet; a later phase.
 
 ## Proposal for #5: bootstrap loader
 

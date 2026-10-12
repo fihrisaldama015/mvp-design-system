@@ -2,6 +2,7 @@
 // file that exists; never runs npm. Run from the project root.
 //   node scripts/figma/initStorybook.mjs            report only (what it found, what it would do)
 //   node scripts/figma/initStorybook.mjs --write    write the missing files, then print the npm command
+//   --force                                         go on although the stack is not supported (not Tailwind 3)
 // Templates are read from templates/storybook/ next to this skill (or ../templates/storybook).
 import fs from "node:fs";
 import path from "node:path";
@@ -36,8 +37,13 @@ if (!bundler) stop("no bundler found in package.json (rsbuild, vite, webpack).")
 if (bundler === "next") stop("Next.js needs @storybook/nextjs; not covered by the templates. Ask before choosing.");
 if (found.react && found.react < 18) stop(`React ${found.react}: the templates assume 18.`);
 const notes = [];
-if (found.tailwind == null) notes.push("No Tailwind: tokens.css (plain CSS variables) still works, but buildTokens.mjs emits a Tailwind 3 theme you cannot use.");
-if (found.tailwind >= 4) notes.push("Tailwind 4: buildTokens.mjs emits a Tailwind 3 theme; the last step needs a different output (@theme).");
+// Supported today: Tailwind 3. Other setups need a different last step and a different workflow
+// (no template for them yet), so stop unless the user chose to go on with --force.
+if (found.tailwind !== 3) {
+  const why = found.tailwind == null ? "no Tailwind" : `Tailwind ${found.tailwind}`;
+  if (!process.argv.includes("--force")) stop(`${why}: this skill supports Tailwind 3 only (buildTokens.mjs emits a Tailwind 3 theme, the components and the checks assume it). Tell the user; with --force you still get Storybook and tokens.css (plain CSS variables), but the Tailwind steps will not work.`);
+  notes.push(`${why}: forced. tokens.css works; the Tailwind theme, checkUtilities.mjs and the component classes do not apply.`);
+}
 const [fwPkg, fwVer] = FRAMEWORK[bundler];
 
 // ---- what to write ----

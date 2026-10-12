@@ -24,8 +24,11 @@ Look at the project first (`ls`, `package.json`). Do not assume a stack.
 | B. Storybook exists | `.storybook/` | Phase 1 to update tokens, Phase 2 for a component |
 | C. Empty folder | nothing | copy `templates/starter/` (our stack: React 18, rsbuild, Tailwind 3), `npm install`, then case A |
 
-Stack limits: the generated Tailwind theme is **Tailwind 3**. With Tailwind 4 or no Tailwind
-you still get `tokens.css` (plain CSS variables); the last step needs another output. Ask.
+**Supported today: React 18 + Tailwind 3** (bundler rsbuild, vite or webpack). Not supported yet:
+Tailwind 4, no Tailwind, Next.js. `initStorybook.mjs` stops on them and says why; tell the user it
+is a limit of the skill. The workflow differs there (another theme output, another class
+check) and there is no template for it yet. `--force` still adds Storybook and `tokens.css`
+(plain CSS variables), but do not promise more than that.
 
 ## Setup (once per machine / project)
 
