@@ -1,0 +1,22 @@
+{
+  "$comment": "Which Figma collection plays which role, for scripts/figma/buildTokens.mjs and buildTokenDocs.mjs. Values are Figma collection names. Defaults are for Graphene.",
+  "designSystem": "Graphene",
+  "collections": {
+    "primitive": "Color",
+    "brand": ".Brand",
+    "semantic": "+Theme",
+    "spacing": "Spacing",
+    "sizing": "Sizing",
+    "border": "Border",
+    "typography": "Typography",
+    "opacity": "Opacity",
+    "breakpoints": "Breakpoints"
+  },
+  "brandPrefix": "brand",
+  "semanticSpacingGroups": {
+    "$comment": "Semantic number groups whose LAST path segment is the class name, with an optional prefix: page spacing/page/page-padding -> p-page-padding.",
+    "page spacing": "",
+    "tv page spacing": "tv-",
+    "sticker size": "sticker-"
+  }
+}

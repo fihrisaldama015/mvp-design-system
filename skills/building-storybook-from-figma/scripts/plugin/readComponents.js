@@ -1,0 +1,96 @@
+// Run through figma_execute (Desktop Bridge) in the COMPONENT file. Read-only.
+// For each component set in NAMES, saves every variant's visual spec — size, auto
+// layout, radius, fills, strokes, effects, text — with the NAME of the variable or
+// style bound to each value (e.g. "+Theme/color/background/primary/default"), so the
+// code can use the matching token class. Saved as components.<set>.json through the
+// local receiver (scripts/figma/dumpServer.py, port 9232).
+const NAMES = ["Button", "Badge", "Input", "Checkbox", "Accordion"];
+const PORT = 9232;
+const save = async (name, data) => (await fetch(`http://localhost:${PORT}/save?name=${encodeURIComponent(name)}`, { method: "POST", body: JSON.stringify(data, null, 1) })).text();
+
+const varCache = new Map();
+async function varName(alias) {
+  if (!alias || !alias.id) return null;
+  if (varCache.has(alias.id)) return varCache.get(alias.id);
+  const v = await figma.variables.getVariableByIdAsync(alias.id);
+  let coll = "?";
+  try { coll = (await figma.variables.getVariableCollectionByIdAsync(v.variableCollectionId)).name; } catch (e) { /* remote collection not readable */ }
+  const name = v ? `${coll}/${v.name}` : null;
+  varCache.set(alias.id, name);
+  return name;
+}
+const styleCache = new Map();
+async function styleName(id) {
+  if (!id || typeof id !== "string") return null;
+  if (!styleCache.has(id)) { const s = await figma.getStyleByIdAsync(id); styleCache.set(id, s ? s.name : null); }
+  return styleCache.get(id);
+}
+const hx = (n) => Math.round(n * 255).toString(16).padStart(2, "0");
+const hex = (c, a = 1) => "#" + hx(c.r) + hx(c.g) + hx(c.b) + (a < 1 ? hx(a) : "");
+const round = (n) => (typeof n === "number" ? Math.round(n * 100) / 100 : n);
+
+async function paints(list, bound) {
+  if (!Array.isArray(list)) return undefined;
+  const out = [];
+  for (let i = 0; i < list.length; i++) {
+    const p = list[i];
+    if (p.visible === false) continue;
+    out.push({ type: p.type, hex: p.type === "SOLID" ? hex(p.color, p.opacity ?? 1) : undefined, var: await varName(bound && bound[i]) });
+  }
+  return out.length ? out : undefined;
+}
+
+async function spec(node, depth = 0) {
+  const bv = node.boundVariables || {};
+  const s = { name: node.name, type: node.type };
+  if (node.visible === false) s.hidden = true;
+  s.w = round(node.width); s.h = round(node.height);
+  if ("layoutMode" in node && node.layoutMode !== "NONE") {
+    s.layout = {
+      mode: node.layoutMode,
+      pad: [node.paddingTop, node.paddingRight, node.paddingBottom, node.paddingLeft].map(round),
+      padVar: await Promise.all(["paddingTop", "paddingRight", "paddingBottom", "paddingLeft"].map((k) => varName(bv[k]))),
+      gap: round(node.itemSpacing), gapVar: await varName(bv.itemSpacing),
+      align: [node.primaryAxisAlignItems, node.counterAxisAlignItems],
+      sizing: [node.layoutSizingHorizontal, node.layoutSizingVertical],
+    };
+  }
+  if (bv.height || bv.minHeight) s.hVar = await varName(bv.height || bv.minHeight);
+  if (bv.width || bv.minWidth) s.wVar = await varName(bv.width || bv.minWidth);
+  if ("cornerRadius" in node && (node.cornerRadius || bv.topLeftRadius)) {
+    s.radius = node.cornerRadius === figma.mixed ? [node.topLeftRadius, node.topRightRadius, node.bottomRightRadius, node.bottomLeftRadius] : round(node.cornerRadius);
+    s.radiusVar = await varName(bv.topLeftRadius);
+  }
+  const fills = await paints(node.fills, bv.fills); if (fills) s.fills = fills;
+  const strokes = await paints(node.strokes, bv.strokes);
+  if (strokes) { s.strokes = strokes; s.strokeWeight = round(node.strokeWeight === figma.mixed ? node.strokeTopWeight : node.strokeWeight); s.strokeVar = await varName(bv.strokeWeight || bv.strokeTopWeight); s.dash = node.dashPattern && node.dashPattern.length ? node.dashPattern : undefined; }
+  if (node.effectStyleId) s.effect = await styleName(node.effectStyleId);
+  if (node.opacity !== undefined && node.opacity < 1) s.opacity = round(node.opacity);
+  if (node.type === "TEXT") {
+    s.text = node.characters.slice(0, 60);
+    s.textStyle = await styleName(node.textStyleId);
+    s.fontSize = node.fontSize === figma.mixed ? "mixed" : node.fontSize;
+    s.fontWeight = node.fontWeight === figma.mixed ? "mixed" : node.fontWeight;
+  }
+  if (node.type === "INSTANCE") {
+    const main = await node.getMainComponentAsync();
+    s.instanceOf = main ? (main.parent && main.parent.type === "COMPONENT_SET" ? `${main.parent.name} / ${main.name}` : main.name) : null;
+    if (depth > 1) return s; // icons and nested components: name and size are enough
+  }
+  if ("children" in node && depth < 4) s.children = await Promise.all(node.children.map((c) => spec(c, depth + 1)));
+  return s;
+}
+
+const result = {};
+await figma.loadAllPagesAsync();
+for (const name of NAMES) {
+  const set = figma.root.findOne((n) => n.type === "COMPONENT_SET" && n.name === name);
+  if (!set) { result[name] = "not found"; continue; }
+  const props = {};
+  for (const [key, d] of Object.entries(set.componentPropertyDefinitions)) props[key.split("#")[0]] = { type: d.type, default: d.defaultValue, options: d.variantOptions };
+  const variants = [];
+  for (const v of set.children) variants.push({ props: v.variantProperties, spec: await spec(v) });
+  const file = `components.${name.replace(/[^a-z0-9]+/gi, "-")}.json`;
+  result[name] = { file, variants: variants.length, saved: await save(file, { name, nodeId: set.id, props, defaultVariant: set.defaultVariant ? set.defaultVariant.name : null, variants }) };
+}
+return result;

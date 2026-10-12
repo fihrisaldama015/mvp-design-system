@@ -18,6 +18,12 @@ const doc = JSON.parse(fs.readFileSync(inArg, "utf8"));
 const meta = doc.$extensions?.["tokens-bruecke-meta"] ?? {};
 const VARIABLE_COLLECTIONS = meta.variableCollections ?? Object.keys(doc).filter((k) => !k.startsWith("$") && !k.endsWith("-styles"));
 
+// Collection roles come from figma-tokens.config.json (defaults: Graphene).
+const CONFIG = fs.existsSync("figma-tokens.config.json") ? JSON.parse(fs.readFileSync("figma-tokens.config.json", "utf8")) : {};
+const C = { primitive: "Color", brand: ".Brand", semantic: "+Theme", spacing: "Spacing", sizing: "Sizing", border: "Border", typography: "Typography", opacity: "Opacity", breakpoints: "Breakpoints", ...(CONFIG.collections || {}) };
+const BRAND_PREFIX = CONFIG.brandPrefix ?? "brand";
+const SPACING_GROUPS = Object.fromEntries(Object.entries(CONFIG.semanticSpacingGroups || { "page spacing": "", "tv page spacing": "tv-", "sticker size": "sticker-" }).filter(([k]) => !k.startsWith("$")));
+
 const slugify = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 const isAlias = (v) => typeof v === "string" && /^\{.+\}$/.test(v);
 const aliasSlug = (v) => slugify(v.slice(1, -1));
@@ -163,9 +169,7 @@ function semanticName(p) {
   if (p[0] === "border" && p[1].startsWith("radius-")) return `${p[1].slice(7)}-${p.slice(2).join("-")}`;
   if (p[0] === "border") return p.slice(1).join("-");
   if (p[0] === "sizing") return p.slice(1).join("-");
-  if (p[0] === "page-spacing") return p.at(-1);
-  if (p[0] === "tv-page-spacing") return `tv-${p.at(-1)}`;
-  if (p[0] === "sticker-size") return `sticker-${p[1]}`;
+  for (const [group, prefix] of Object.entries(SPACING_GROUPS)) if (p[0] === slugify(group)) return prefix + p.at(-1);
   return p.join("-");
 }
 
@@ -187,9 +191,9 @@ for (const t of tokens) {
   const p = t.path.map(k);
   const v = `var(--${t.slug})`;
   if (t.type === "color") {
-    if (t.collection === "Color") setPath(colors, p, colorRef(t));
-    else if (t.collection === ".Brand") setPath(colors, ["brand", ...p], colorRef(t));
-    else if (t.collection === "+Theme" && p[0] === "color") {
+    if (t.collection === C.primitive) setPath(colors, p, colorRef(t));
+    else if (t.collection === C.brand) setPath(colors, [BRAND_PREFIX, ...p], colorRef(t));
+    else if (t.collection === C.semantic && p[0] === "color") {
       const [, kind, ...rest] = p;
       const target = { text: textColor, background: backgroundColor, border: borderColor }[kind];
       if (target) setPath(target, rest, colorRef(t));
@@ -197,29 +201,29 @@ for (const t of tokens) {
     } else setPath(colors, [k(t.collection), ...p], colorRef(t)); // Annotation
     continue;
   }
-  if (t.collection === "Spacing" && p[0].startsWith("space-")) {
+  if (t.collection === C.spacing && p[0].startsWith("space-")) {
     spacing[p[0].slice(6).replace(/-(\d)$/, ".$1").replace(/^0\.5$/, "0.5")] = v;
-  } else if (t.collection === "Sizing" && p[0].startsWith("size-")) {
+  } else if (t.collection === C.sizing && p[0].startsWith("size-")) {
     spacing[p[0].slice(5).replace(/^(\d+)-(\d)$/, "$1.$2")] ??= v;
-  } else if (t.collection === "Border" && p[0] === "radius") {
+  } else if (t.collection === C.border && p[0] === "radius") {
     const name = p[1].replace(/^rounded-?/, "") || "DEFAULT";
     borderRadius[name] = v;
-  } else if (t.collection === "Border" && p[0] === "width") {
+  } else if (t.collection === C.border && p[0] === "width") {
     const name = p[1].replace(/^border-/, "");
     borderWidth[name] = v;
     if (name === "1") borderWidth.DEFAULT ??= v;
-  } else if (t.collection === "Typography" && p[0] === "font-size") {
-    const lh = bySlug.get(slugify(`Typography.line-height.${t.path[1]}`));
+  } else if (t.collection === C.typography && p[0] === "font-size") {
+    const lh = bySlug.get(slugify(`${C.typography}.line-height.${t.path[1]}`));
     const entry = lh ? [v, { lineHeight: `var(--${lh.slug})` }] : v;
     fontSize[p[1]] = entry;
     if (p[1] === "md") fontSize.base = entry; // Graphene's "md" is Tailwind's "base"
-  } else if (t.collection === "Typography" && p[0] === "font-weight") {
+  } else if (t.collection === C.typography && p[0] === "font-weight") {
     fontWeight[{ regular: "normal", "semi-bold": "semibold" }[p[1]] ?? p[1]] = v;
-  } else if (t.collection === "Opacity") {
+  } else if (t.collection === C.opacity) {
     opacity[p[0].replace(/^opacity-/, "")] = v;
-  } else if (t.collection === "Breakpoints") {
+  } else if (t.collection === C.breakpoints) {
     screens[p[0]] = cssValue(t, t.value); // media queries cannot read var()
-  } else if (t.collection === "+Theme") {
+  } else if (t.collection === C.semantic) {
     // Semantic numbers: the Figma scope says which utility they belong to.
     const name = semanticName(p);
     if (t.scopes.includes("CORNER_RADIUS")) borderRadius[name] = v;
@@ -256,7 +260,7 @@ for (const [group, entries] of Object.entries(doc["Typography-styles"] || {})) {
   }
 }
 
-const fontFamilyToken = bySlug.get("theme-typography-font-family-default") || bySlug.get("typography-font-family-default");
+const fontFamilyToken = bySlug.get(slugify(`${C.semantic}.typography.font-family.default`)) || bySlug.get(slugify(`${C.typography}.font-family.default`));
 const fontFamily = fontFamilyToken ? { sans: [`var(--${fontFamilyToken.slug})`, "ui-sans-serif", "system-ui", "sans-serif"] } : {};
 
 // A semantic text colour must not share a name with another text-* utility: Tailwind would
@@ -336,11 +340,13 @@ function literalIn(t, mode, seen = new Set()) {
   seen.add(target.slug);
   return literalIn(target, Object.keys(target.modes).length ? mode : null, seen);
 }
-for (const t of tokens) if (t.collection === "Breakpoints") addClass(t.slug, `${t.path[0]}:`);
+for (const t of tokens) if (t.collection === C.breakpoints) addClass(t.slug, `${t.path[0]}:`);
 for (const t of tokens)
-  if (t.collection === "Typography" && t.path[0] === "line-height") addClass(t.slug, `text-${t.path[1]} (line height)`);
+  if (t.collection === C.typography && t.path[0] === "line-height") addClass(t.slug, `text-${t.path[1]} (line height)`);
 const modeNames = [...new Set(tokens.flatMap((t) => Object.keys(t.modes)))];
 const index = {
+  designSystem: CONFIG.designSystem ?? null,
+  collections: C,
   source: { figmaFileKey: meta.figmaFileKey ?? null, exportedAt: meta.createdAt ?? null },
   modes: modeNames,
   tokens: tokens.map((t) => ({
@@ -354,7 +360,7 @@ const index = {
     // Only aliases are shown as "points to"; a literal per-mode value is already in value.
     aliasByMode: Object.keys(t.modes).length ? Object.fromEntries(Object.entries(t.modes).map(([m, v]) => [m, isAlias(v) ? v : null])) : null,
   })),
-  effects: effects.map((e) => ({ figma: `${e.group}/${e.name}`, type: e.type, cssVar: `--${e.slug}`, css: e.css, classes: classesBySlug.get(e.slug) ?? [] })),
+  effects: effects.map((e) => ({ figma: `${e.group}/${e.name}`, type: e.type, role: e.role ?? null, cssVar: `--${e.slug}`, css: e.css, classes: classesBySlug.get(e.slug) ?? [] })),
   textStyles: Object.entries(typo).map(([cls, v]) => ({ className: cls.slice(1), ...v })),
 };
 

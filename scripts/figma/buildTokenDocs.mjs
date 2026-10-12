@@ -10,6 +10,10 @@ const index = JSON.parse(fs.readFileSync("src/tokens/tokens.index.json", "utf8")
 const OUT = "src/foundations";
 const MODES = index.modes;
 const src = index.source;
+const C = index.collections; // collection roles, from figma-tokens.config.json
+const DS = index.designSystem ? ` (${index.designSystem})` : "";
+const SEM = C.semantic;
+const startsWith = (t, coll, rest) => t.figma.startsWith(`${coll}/${rest}`);
 
 // Preview for a spacing-type token, from the utility it maps to.
 const spaceKind = (t) => {
@@ -56,12 +60,12 @@ import { TokenTable, ColorRamps } from "./TokenBlocks";
 
 ${intro}
 
-Source: Figma file \`${src.figmaFileKey}\` (Graphene), read on ${src.exportedAt}.
+Source: Figma file \`${src.figmaFileKey}\`${DS}, read on ${src.exportedAt}.
 
 `;
 
 const pages = {};
-const semantic = (kind) => pick((t) => t.figma.startsWith(`+Theme/color/${kind}/`)).map((t) => row(t));
+const semantic = (kind) => pick((t) => startsWith(t, SEM, `color/${kind}/`)).map((t) => row(t));
 
 // ---------- Colors ----------
 const rampsOf = (collection, prefix) => {
@@ -90,10 +94,10 @@ colours point to other shades of them.`,
   `## Text\n\n${table("color", semantic("text"))}
 ## Background\n\n${table("color", semantic("background"))}
 ## Border\n\n${table("color", semantic("border"))}
-## Other semantic colours\n\n${table("color", pick((t) => t.type === "color" && t.figma.startsWith("+Theme/color/") && !/^\+Theme\/color\/(text|background|border)\//.test(t.figma)).map((t) => row(t)))}
-## Annotation\n\n${table("color", pick((t) => t.collection === "Annotation").map((t) => row(t)))}
-## Brand ramps (.Brand)\n\n<ColorRamps ramps={${json(rampsOf(".Brand", "brand/"))}} />\n
-## Primitive palette (Color)\n\n<ColorRamps ramps={${json(rampsOf("Color", ""))}} />\n`;
+## Other semantic colours\n\n${table("color", pick((t) => t.type === "color" && startsWith(t, SEM, "color/") && !["text", "background", "border"].some((k) => startsWith(t, SEM, `color/${k}/`))).map((t) => row(t)))}
+## Other colour collections\n\n${table("color", pick((t) => t.type === "color" && ![C.primitive, C.brand, SEM].includes(t.collection)).map((t) => row(t)))}
+## Brand ramps (${C.brand})\n\n<ColorRamps ramps={${json(rampsOf(C.brand, "brand/"))}} />\n
+## Primitive palette (${C.primitive})\n\n<ColorRamps ramps={${json(rampsOf(C.primitive, ""))}} />\n`;
 
 // ---------- Typography ----------
 const tokenVal = (cssVar) => {
@@ -113,13 +117,13 @@ pages.Typography =
     "Typography",
     `Prefer a **text style** class (\`typo-semi-bold-text-sm\`): it sets family, size, line
 height and weight together, exactly like the Figma text style. Single utilities
-(\`text-sm\`, \`font-semibold\`) are for small adjustments. Graphene's \`md\` size is
-Tailwind's \`base\`; both class names work.`,
+(\`text-sm\`, \`font-semibold\`) are for small adjustments. A design-system size named
+\`md\` is also Tailwind's \`base\`; both class names work.`,
   ) +
   `## Text styles\n\n${table("text", textStyleRows)}
-## Font size (with its line height)\n\n${table("fontSize", pick((t) => t.figma.startsWith("Typography/font-size/")).map((t) => row(t)))}
-## Line height\n\n${table("lineHeight", pick((t) => t.figma.startsWith("Typography/line-height/")).map((t) => row(t)))}
-## Font weight\n\n${table("fontWeight", pick((t) => t.figma.startsWith("Typography/font-weight/")).map((t) => row(t)))}
+## Font size (with its line height)\n\n${table("fontSize", pick((t) => startsWith(t, C.typography, "font-size/")).map((t) => row(t)))}
+## Line height\n\n${table("lineHeight", pick((t) => startsWith(t, C.typography, "line-height/")).map((t) => row(t)))}
+## Font weight\n\n${table("fontWeight", pick((t) => startsWith(t, C.typography, "font-weight/")).map((t) => row(t)))}
 ## Font family\n\n${table("fontFamily", pick((t) => /font-family/.test(t.figma)).map((t) => row(t)))}`;
 
 // ---------- Spacing & sizing ----------
@@ -134,10 +138,10 @@ follow the design when it changes.
 Previews: the shaded area is the **padding** around a block, two blocks show a **gap**,
 a box shows a control **height**, a bar shows a panel **width** at ¼ scale.`,
   ) +
-  `## Page and section spacing (semantic)\n\n${table("padding", pick((t) => /^\+Theme\/(tv )?page spacing\//.test(t.figma) && !t.classes.some((c) => c.startsWith("rounded"))).map((t) => row(t, spaceKind(t))))}
-## Component, panel and icon sizes (semantic)\n\n${table("height", pick((t) => /^\+Theme\/(sizing|sticker size)\//.test(t.figma)).map((t) => row(t, spaceKind(t))))}
-## Spacing scale\n\n${table("padding", pick((t) => t.collection === "Spacing").map((t) => row(t)))}
-## Breakpoints (min width, bar at 1/10 scale)\n\n${table("breakpoint", pick((t) => t.collection === "Breakpoints").map((t) => row(t)))}`;
+  `## Page and section spacing (semantic)\n\n${table("padding", pick((t) => t.collection === SEM && t.type === "dimension" && t.classes.some((c) => /^(p|gap)-/.test(c))).map((t) => row(t, spaceKind(t))))}
+## Component, panel and icon sizes (semantic)\n\n${table("height", pick((t) => t.collection === SEM && t.type === "dimension" && t.classes.some((c) => /^(h|w)-/.test(c))).map((t) => row(t, spaceKind(t))))}
+## Spacing scale\n\n${table("padding", pick((t) => t.collection === C.spacing).map((t) => row(t)))}
+## Breakpoints (min width, bar at 1/10 scale)\n\n${table("breakpoint", pick((t) => t.collection === C.breakpoints).map((t) => row(t)))}`;
 
 // ---------- Radius & borders ----------
 pages["Radius and Borders"] =
@@ -146,18 +150,18 @@ pages["Radius and Borders"] =
     `Use the semantic radius for components (\`rounded-default\`, \`rounded-button-md\`,
 \`rounded-form-md\`, \`rounded-modal\`) and the scale (\`rounded-lg\`) only when nothing fits.`,
   ) +
-  `## Radius (semantic)\n\n${table("radius", pick((t) => t.collection === "+Theme" && t.classes.some((c) => c.startsWith("rounded"))).map((t) => row(t)))}
-## Radius scale\n\n${table("radius", pick((t) => t.figma.startsWith("Border/radius/")).map((t) => row(t)))}
-## Border width\n\n${table("border", pick((t) => t.figma.startsWith("Border/width/") || t.figma === "+Theme/border/width/default").map((t) => row(t)))}`;
+  `## Radius (semantic)\n\n${table("radius", pick((t) => t.collection === SEM && t.classes.some((c) => c.startsWith("rounded"))).map((t) => row(t)))}
+## Radius scale\n\n${table("radius", pick((t) => t.collection === C.border && /\/radius\//.test(t.figma)).map((t) => row(t)))}
+## Border width\n\n${table("border", pick((t) => t.type === "dimension" && t.classes.some((c) => /^border(-\d+)?$/.test(c))).map((t) => row(t)))}`;
 
 // ---------- Effects ----------
 const effectRow = (e, kind) => ({ figma: e.figma, classes: e.classes, cssVar: e.cssVar, value: e.css, ...(kind ? { kind } : {}) });
 pages.Effects =
   head("Effects", "Shadows, blurs and opacity from the Figma effect styles and the Opacity collection.") +
   `## Shadows\n\n${table("shadow", index.effects.filter((e) => e.type === "shadow").map((e) => effectRow(e)))}
-## Blur (layer)\n\n${table("blur", index.effects.filter((e) => e.type === "blur" && !e.figma.startsWith("Background blur")).map((e) => effectRow(e)))}
-## Background blur\n\n${table("backdrop", index.effects.filter((e) => e.figma.startsWith("Background blur")).map((e) => effectRow(e)))}
-## Opacity\n\n${table("opacity", pick((t) => t.collection === "Opacity").map((t) => row(t)))}`;
+## Blur (layer)\n\n${table("blur", index.effects.filter((e) => e.type === "blur" && e.role !== "background").map((e) => effectRow(e)))}
+## Background blur\n\n${table("backdrop", index.effects.filter((e) => e.role === "background").map((e) => effectRow(e)))}
+## Opacity\n\n${table("opacity", pick((t) => t.collection === C.opacity).map((t) => row(t)))}`;
 
 // ---------- Overview ----------
 pages.Overview = `{/* Generated by scripts/figma/buildTokenDocs.mjs. Do not edit by hand. */}
@@ -167,7 +171,7 @@ import { Meta } from "@storybook/addon-docs/blocks";
 
 # Foundations
 
-The design tokens come from Figma (**Graphene — Foundation**, file \`${src.figmaFileKey}\`,
+The design tokens come from Figma (**${index.designSystem ?? "design system"}**, file \`${src.figmaFileKey}\`,
 read on ${src.exportedAt}). They are generated, never written by hand:
 
 | File | What it is |
@@ -193,7 +197,7 @@ read on ${src.exportedAt}). They are generated, never written by hand:
 |---|---|---|
 | Colors | Semantic text / background / border, brand ramps, palette | ${index.tokens.filter((t) => t.type === "color").length} colours |
 | Typography | Text styles, sizes, line heights, weights, family | ${index.textStyles.length} text styles |
-| Spacing and Sizing | Semantic page and component sizes, spacing scale, breakpoints | ${index.tokens.filter((t) => t.collection === "Spacing").length} steps |
+| Spacing and Sizing | Semantic page and component sizes, spacing scale, breakpoints | ${index.tokens.filter((t) => t.collection === C.spacing).length} steps |
 | Radius and Borders | Semantic and scale radius, border widths | |
 | Effects | Shadows, blurs, opacity | ${index.effects.length} effects |
 

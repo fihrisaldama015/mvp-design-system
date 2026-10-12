@@ -1,4 +1,16 @@
 {
+  "designSystem": "Graphene",
+  "collections": {
+    "primitive": "Color",
+    "brand": ".Brand",
+    "semantic": "+Theme",
+    "spacing": "Spacing",
+    "sizing": "Sizing",
+    "border": "Border",
+    "typography": "Typography",
+    "opacity": "Opacity",
+    "breakpoints": "Breakpoints"
+  },
   "source": {
     "figmaFileKey": "NNnczhcUg4rupfJCp1kvcj",
     "exportedAt": "2026-10-12T02:52:58.534Z"
@@ -9910,6 +9922,7 @@
     {
       "figma": "Box Shadow/shadow-sm",
       "type": "shadow",
+      "role": null,
       "cssVar": "--shadow-sm",
       "css": "0px 1px 2px 0px rgb(0 0 0 / 0.051)",
       "classes": [
@@ -9919,6 +9932,7 @@
     {
       "figma": "Box Shadow/shadow",
       "type": "shadow",
+      "role": null,
       "cssVar": "--shadow",
       "css": "0px 1px 3px 0px rgb(0 0 0 / 0.102), 0px 1px 2px -1px rgb(0 0 0 / 0.102)",
       "classes": [
@@ -9928,6 +9942,7 @@
     {
       "figma": "Box Shadow/shadow-md",
       "type": "shadow",
+      "role": null,
       "cssVar": "--shadow-md",
       "css": "0px 4px 10px -2px rgb(0 0 0 / 0.102), 0px 4px 4px -1px rgb(0 0 0 / 0.102)",
       "classes": [
@@ -9937,6 +9952,7 @@
     {
       "figma": "Box Shadow/shadow-lg",
       "type": "shadow",
+      "role": null,
       "cssVar": "--shadow-lg",
       "css": "0px 10px 15px -3px rgb(0 0 0 / 0.102), 0px 4px 6px -4px rgb(0 0 0 / 0.102)",
       "classes": [
@@ -9946,6 +9962,7 @@
     {
       "figma": "Box Shadow/shadow-xl",
       "type": "shadow",
+      "role": null,
       "cssVar": "--shadow-xl",
       "css": "0px 20px 25px -5px rgb(0 0 0 / 0.102), 0px 8px 10px -6px rgb(0 0 0 / 0.102)",
       "classes": [
@@ -9955,6 +9972,7 @@
     {
       "figma": "Box Shadow/shadow-2xl",
       "type": "shadow",
+      "role": null,
       "cssVar": "--shadow-2xl",
       "css": "0px 25px 50px -12px rgb(0 0 0 / 0.251)",
       "classes": [
@@ -9964,6 +9982,7 @@
     {
       "figma": "Box Shadow/shadow-inner",
       "type": "shadow",
+      "role": null,
       "cssVar": "--shadow-inner",
       "css": "inset 0px 2px 4px 0px rgb(0 0 0 / 0.051)",
       "classes": [
@@ -9973,6 +9992,7 @@
     {
       "figma": "Blur/blur-none",
       "type": "blur",
+      "role": "layer",
       "cssVar": "--blur-none",
       "css": "0px",
       "classes": [
@@ -9982,6 +10002,7 @@
     {
       "figma": "Blur/blur-sm",
       "type": "blur",
+      "role": "layer",
       "cssVar": "--blur-sm",
       "css": "4px",
       "classes": [
@@ -9991,6 +10012,7 @@
     {
       "figma": "Blur/blur",
       "type": "blur",
+      "role": "layer",
       "cssVar": "--blur",
       "css": "8px",
       "classes": [
@@ -10000,6 +10022,7 @@
     {
       "figma": "Blur/blur-md",
       "type": "blur",
+      "role": "layer",
       "cssVar": "--blur-md",
       "css": "12px",
       "classes": [
@@ -10009,6 +10032,7 @@
     {
       "figma": "Blur/blur-lg",
       "type": "blur",
+      "role": "layer",
       "cssVar": "--blur-lg",
       "css": "16px",
       "classes": [
@@ -10018,6 +10042,7 @@
     {
       "figma": "Blur/blur-xl",
       "type": "blur",
+      "role": "layer",
       "cssVar": "--blur-xl",
       "css": "24px",
       "classes": [
@@ -10027,6 +10052,7 @@
     {
       "figma": "Blur/blur-2xl",
       "type": "blur",
+      "role": "layer",
       "cssVar": "--blur-2xl",
       "css": "40px",
       "classes": [
@@ -10036,6 +10062,7 @@
     {
       "figma": "Blur/blur-3xl",
       "type": "blur",
+      "role": "layer",
       "cssVar": "--blur-3xl",
       "css": "64px",
       "classes": [
@@ -10045,6 +10072,7 @@
     {
       "figma": "Background blur/background-blur-none",
       "type": "blur",
+      "role": "background",
       "cssVar": "--background-blur-none",
       "css": "0px",
       "classes": [
@@ -10054,6 +10082,7 @@
     {
       "figma": "Background blur/background-blur-sm",
       "type": "blur",
+      "role": "background",
       "cssVar": "--background-blur-sm",
       "css": "4px",
       "classes": [
@@ -10063,6 +10092,7 @@
     {
       "figma": "Background blur/background-blur",
       "type": "blur",
+      "role": "background",
       "cssVar": "--background-blur",
       "css": "8px",
       "classes": [
@@ -10072,6 +10102,7 @@
     {
       "figma": "Background blur/background-blur-md",
       "type": "blur",
+      "role": "background",
       "cssVar": "--background-blur-md",
       "css": "12px",
       "classes": [
@@ -10081,6 +10112,7 @@
     {
       "figma": "Background blur/background-blur-lg",
       "type": "blur",
+      "role": "background",
       "cssVar": "--background-blur-lg",
       "css": "16px",
       "classes": [
@@ -10090,6 +10122,7 @@
     {
       "figma": "Background blur/background-blur-xl",
       "type": "blur",
+      "role": "background",
       "cssVar": "--background-blur-xl",
       "css": "24px",
       "classes": [
@@ -10099,6 +10132,7 @@
     {
       "figma": "Background blur/background-blur-2xl",
       "type": "blur",
+      "role": "background",
       "cssVar": "--background-blur-2xl",
       "css": "40px",
       "classes": [
@@ -10108,6 +10142,7 @@
     {
       "figma": "Background blur/background-blur-3xl",
       "type": "blur",
+      "role": "background",
       "cssVar": "--background-blur-3xl",
       "css": "64px",
       "classes": [
