@@ -1,0 +1,22 @@
+{
+  "name": "shield-video",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "assets": "rm -rf public/assets && cp -r ../docs/shield/video-assets public/assets",
+    "studio": "npm run assets && remotion studio src/index.ts",
+    "still": "npm run assets && remotion still src/index.ts",
+    "render": "npm run assets && remotion render src/index.ts ShieldVideo out/shield-video.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "@remotion/google-fonts": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "typescript": "^5.6.0"
+  }
+}
