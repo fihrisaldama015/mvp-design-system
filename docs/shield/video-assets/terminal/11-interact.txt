@@ -1,0 +1,6 @@
+$ node scripts/figma/interact.mjs actions-button--filled button hover press --props background-color,color
+initial    background-color: rgb(139, 8, 54) | color: rgb(255, 255, 255)
+hover      background-color: rgb(76, 5, 25) | color: rgb(255, 255, 255)
+press      background-color: rgb(76, 5, 25) | color: rgb(255, 255, 255)
+
+$ token +Theme/color/background/primary/hovered = #4c0519 = rgb(76, 5, 25)

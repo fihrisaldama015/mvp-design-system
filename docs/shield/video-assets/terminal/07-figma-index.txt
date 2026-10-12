@@ -1,0 +1,26 @@
+$ cat figma-index.json
+{
+  "$comment": "Where each built component lives in Figma. Read by ID: readComponents.js ARGS.IDS; verify with plugin/resolveIds.js.",
+  "components": {
+    "Button": {
+      "figmaFileKey": "o4wdbN7PjV2ugCKDcc2pXd",
+      "fileName": "SHIELD - Base Component (Copy)",
+      "nodeId": "7:21282",
+      "page": {
+        "name": "Button",
+        "id": "7:18915"
+      },
+      "variants": 360,
+      "props": [
+        "🔄 Prefix Icon ",
+        "🔄 Suffix Icon ",
+        "Prefix Icon",
+        "Suffix Icon",
+        "..."
+      ],
+      "readAt": "2026-10-12T08:30:48.101Z",
+      "story": "actions-button",
+      "code": "src/components/button"
+    }
+  }
+}

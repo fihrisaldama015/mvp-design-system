@@ -1,0 +1,8 @@
+$ python3 scripts/figma/dumpServer.py 9232 .figma-dump
+dumpServer: listening on 127.0.0.1:9232, writing to shield-test-empty/.figma-dump
+
+$ curl localhost:9232/ping
+{"dir": "shield-test-empty/.figma-dump"}
+
+$ python3 scripts/figma/dumpServer.py 9232 .figma-dump   # a second start
+dumpServer: port 9232 is already in use ([Errno 98] Address already in use). Stop the old receiver first: kill $(lsof -ti :9232)

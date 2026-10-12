@@ -1,0 +1,22 @@
+$ node -e "..." src/tokens/tokens.index.json   # one entry
+{
+  "figma": "+Theme/color/background/primary/hovered",
+  "id": "VariableID:4509:19190",
+  "collection": "+Theme",
+  "type": "color",
+  "cssVar": "--theme-color-background-primary-hovered",
+  "classes": [
+    "bg-primary-hovered"
+  ],
+  "alias": "{Color.rose.950}",
+  "value": {
+    "Light": "#4c0519",
+    "Dark": "#fecdd3"
+  },
+  "aliasByMode": {
+    "Light": "{Color.rose.950}",
+    "Dark": "{Color.rose.200}"
+  }
+}
+...
+tokens: 714 | textStyles: 58 | effects: 23 | source: {"figmaFileKey":"NNnczhcUg4rupfJCp1kvcj","exportedAt":"2026-10-12T07:54:00.660Z"}

@@ -1,0 +1,9 @@
+$ npm run tokens:build
+Wrote src/tokens/design_token.json: 903 variables in 10 collections + styles
+Wrote src/tokens/tokens.css (714 variables, 23 effects, 1 extra mode block) and tailwind.tokens.js (58 text styles)
+Wrote src/foundations/Colors.mdx (71 KB)
+Wrote src/foundations/Typography.mdx (13 KB)
+Wrote src/foundations/SpacingandSizing.mdx (19 KB)
+Wrote src/foundations/RadiusandBorders.mdx (6 KB)
+Wrote src/foundations/Effects.mdx (5 KB)
+Wrote src/foundations/Overview.mdx (2 KB)

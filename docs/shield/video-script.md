@@ -224,9 +224,6 @@ The self-testing story (bugs found and fixed), the designer findings, the "read-
 a Dark-mode toggle beyond Colors, the glossary end card, the before/after-manual timing, and the
 AI-builds-a-page demo (to be tried later on one MVP page).
 
-## To produce (assets for Remotion)
-- Screenshots from Storybook: Foundations Colors (Light and Dark), Typography, Spacing and Sizing, Radius and Borders, Effects; the Button story and the Button matrix.
-- Existing images: `docs/shield/img/button-figma-vs-storybook.png`, `docs/shield/img/input-figma-vs-storybook-statuses.png`, `docs/shield/img/input-figma-vs-storybook-sizes.png`.
-- Terminal captures (re-run, short): `dumpServer` start, `listSets.mjs button --ids`, `toBruecke` and `buildTokens` output, a `tokens.index.json` entry with its `id`, `figma-index.json`, the `resolveIds` result, the `initStorybook` report, the `renderCheck` result.
-- For scene 7: four stills (Figma Button set, the `.figma-dump/` folder after a read, the `build-storybook` finish, the Button story).
-- A Figma view of the Graphene variables panel (optional, scene 5).
+## Assets
+Captured and listed per scene in `docs/shield/video-assets/README.md` (screenshots, terminal text and PNG, Figma exports).
+Optional and not captured: the Graphene variables panel in Figma (scene 5).

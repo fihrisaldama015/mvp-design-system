@@ -1,0 +1,4 @@
+$ node scripts/figma/listSets.mjs button --ids
+# SHIELD - Base Component (Copy)
+Button: Button (360v, 12p, 7:21282); Button Icon (194v, 8p, 41:106320); Button Icon Rounded (192v, 8p, 174:12984)
+Button Group: Button Group (18v, 2p, 7:27345)

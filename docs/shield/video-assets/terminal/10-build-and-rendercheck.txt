@@ -1,0 +1,6 @@
+$ npm run build-storybook
+◇  Output directory:
+└  Storybook build completed successfully
+
+$ bash scripts/figma/renderCheck.sh
+checked 18 stories and docs pages, errors: 0

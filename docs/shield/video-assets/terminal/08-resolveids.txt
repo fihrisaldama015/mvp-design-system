@@ -1,0 +1,10 @@
+// resolveIds.js  ARGS = { ITEMS: [ 10 real IDs from the index, 1 made-up ID ] }
+{
+  "checked": 11,
+  "missing": 1,
+  "renamed": 0,
+  "rows": [
+    { "id": "VariableID:0:0", "kind": "variable", "expected": "bogus/token", "found": false }
+  ]
+}
+// the 10 real IDs (6 variables, 2 text styles, 2 effect styles) resolved to the expected names

@@ -1,0 +1,9 @@
+// figma_execute (fileKey, timeout 30000): the whole call, 234 bytes
+const src = await (await fetch("http://localhost:9232/script?name=readFoundation.js")).text();
+const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+return await new AsyncFunction("ARGS", src)({ PORT: 9232 });
+
+// components: only the ARGS change
+{ NAMES: ["Button"], DEPTH: 8 }
+// or, straight to a node:
+{ IDS: ["7:21282"], DEPTH: 8 }

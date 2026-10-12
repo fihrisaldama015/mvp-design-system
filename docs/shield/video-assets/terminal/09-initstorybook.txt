@@ -1,0 +1,20 @@
+$ cd mvp-at-96b0e84   # the MVP before it had Storybook
+$ node <skill>/scripts/initStorybook.mjs
+Found: {"bundler":"rsbuild","react":18,"tailwind":3,"router":true,"srcDir":true,"existingStorybook":false,"tokens":false}
+
+Storybook framework: storybook-react-rsbuild
+
+Files:
+  would write   .storybook/main.mjs
+  would write   .storybook/run.mjs
+  would write   .storybook/preview.js
+  would write   .mcp.json
+  would write   src/foundations/TokenBlocks.js
+package.json scripts to add: storybook, build-storybook, tokens:build
+.gitignore lines to add: storybook-static/, .figma-dump/
+
+Then run:
+  npm i -D storybook@^10.6 storybook-react-rsbuild@^3.6 @storybook/addon-docs @storybook/addon-a11y @storybook/addon-mcp remark-gfm
+  npm i prop-types clsx tailwind-merge@^2
+
+(report only: add --write to create the files)

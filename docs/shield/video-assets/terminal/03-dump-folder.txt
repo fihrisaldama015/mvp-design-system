@@ -1,0 +1,10 @@
+$ ls -l .figma-dump
+      1425  collections.json
+    959930  components.Button.json
+     37276  inventory.json
+     70414  sb-button.png
+     51456  scopes.json
+    134606  sheet-button.png
+     56497  styles.json
+    637797  tokens.dtcg.json
+   ... fig-button-*.png (24 images)
