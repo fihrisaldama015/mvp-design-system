@@ -1,7 +1,14 @@
+/* Inter is Graphene's font family (+Theme typography/font-family/default). */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+/* Design tokens from Figma, always on. Dark mode: <html data-theme="dark">. */
+@import "./tokens/tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
   margin: 0;
+  background-color: rgb(var(--theme-color-background-main-background));
+  color: rgb(var(--theme-color-text-default));
 }

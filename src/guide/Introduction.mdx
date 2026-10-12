@@ -14,11 +14,13 @@ modal or toast by hand.
    page. Never guess a prop, an import path or a class.
 2. **Import from `components/<name>`**, for example
    `import { Button } from "components/button"`.
-3. **Plain Tailwind only for now.** There are no design tokens yet. Colours are
-   fixed by the components: primary **indigo**, neutral **slate**, success
-   **emerald**, warning **amber**, danger **red**, info **sky**. On a page, use
-   Tailwind only for layout (flex, grid, gap, width, margin), never to restyle a
-   component.
+3. **Design tokens from Figma.** Colours, type, spacing, radius and shadows come
+   from Graphene (see **Foundations**). Use the semantic classes first
+   (`text-default`, `bg-surface`, `border-default`, `rounded-default`,
+   `p-page-padding`), then the scale (`p-4`, `rounded-lg`). No hex values, no
+   arbitrary values. On a page, use Tailwind only for layout (flex, grid, gap,
+   width, margin), never to restyle a component. _Experiment branch: the existing
+   components still use the plain palette (indigo, slate); they move to SHIELD next._
 4. **One primary button per view.** Use `secondary` for the others, `ghost` for
    Cancel, `danger` for destructive actions.
 5. **Meaning decides the colour.** Status badges: success = available,

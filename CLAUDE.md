@@ -15,8 +15,14 @@ React 18, rsbuild, Tailwind 3, formik + yup, react-router-dom 6.
 - Do not guess a prop, an import path or a colour class. If Storybook has no
   component for it, ask before adding one; extend an existing component with a
   prop when you can.
-- Plain Tailwind for now (no tokens yet). On a page use Tailwind only for
-  layout (flex, grid, gap, width, margin), not to restyle a component.
+- Design tokens come from Figma (Graphene) and are generated: `src/tokens/*` and
+  `src/foundations/*.mdx` are never edited by hand. Read `Foundations/Overview` in
+  Storybook. Semantic classes first (`text-default`, `bg-surface`, `border-default`,
+  `rounded-default`, `h-component-md`, `p-page-padding`), then the scale (`p-4`,
+  `rounded-lg`); no hex, no arbitrary values (`p-[13px]`). Dark mode is
+  `<html data-theme="dark">`; components need no `dark:` variants.
+- On a page use Tailwind only for layout (flex, grid, gap, width, margin), not to
+  restyle a component.
 - Icons: `lucide-react` only. Text in plain English, sentence case.
 
 - Story code is Storybook code: ignore `fn()` (from `storybook/test`), `useArgs()` and `updateArgs` in it. They only make the story interactive. Copy the JSX, not those helpers.
@@ -29,6 +35,15 @@ React 18, rsbuild, Tailwind 3, formik + yup, react-router-dom 6.
 - One story per state; render the real component (no demo wrappers); state in args via `useArgs()`, handlers via `fn()`.
 - Story `title`: `Actions/`, `Forms/`, `Data/`, `Feedback/`, `Overlays/` or `Navigation/`.
 - Overlays (`position: fixed`) set `parameters.docs.story = { inline: false, iframeHeight }`.
+
+## Updating the tokens from Figma
+
+See `docs/shield/foundation.md`. In short: open Graphene in Figma Desktop with the
+Desktop Bridge plugin, run `python3 scripts/figma/dumpServer.py 9232 <dir>`, then
+`figma_export_tokens` + `figma_execute(scripts/figma/plugin/readFoundation.js)`, then
+`node scripts/figma/toBruecke.mjs <dir> src/tokens/design_token.json`,
+`node scripts/figma/buildTokens.mjs` and `node scripts/figma/buildTokenDocs.mjs`.
+`node scripts/figma/checkUtilities.mjs "<classes>"` shows what a class compiles to.
 
 ## Commands
 

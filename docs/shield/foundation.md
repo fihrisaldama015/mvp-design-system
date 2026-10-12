@@ -81,3 +81,38 @@ produced by the generator, so it was added by hand.
   something looks styles up by ID.
 - `figma_get_file_data` and `figma_get_design_system_kit` need a Figma REST token;
   everything above works without one.
+
+## Step 2: CSS variables, Tailwind and the Foundations pages
+
+`node scripts/figma/buildTokens.mjs` writes `src/tokens/tokens.css` (714 variables + 23
+effects), `src/tokens/tailwind.tokens.js` and `src/tokens/tokens.index.json`;
+`node scripts/figma/buildTokenDocs.mjs` writes `src/foundations/*.mdx`.
+
+- **Always on.** Tokens live on `:root`; there is no `data-tokens` switch like in swt-fe.
+  Extra modes become `[data-theme="<mode>"]` blocks (here only Dark, 152 overrides).
+- **Same variable names as swt-fe** (`--color-zinc-50`, `--brand-neutral-500`,
+  `--theme-color-text-body`); colours are `r g b` channels, aliases stay `var()` chains.
+- **Tailwind, replaced by tokens:** colors, spacing, borderRadius, borderWidth, fontSize,
+  screens, boxShadow (Graphene has every default Tailwind key, nothing is lost).
+  **Extended:** opacity, blur, backdropBlur, fontWeight (Graphene has only some keys).
+- **Semantic colours split per utility:** `+Theme/color/text/*` → `text-*`,
+  `color/background/*` → `bg-*`, `color/border/*` → `border-*` / `ring-*` / `outline-*`.
+- **Semantic numbers routed by their Figma scope:** CORNER_RADIUS → `rounded-*`,
+  GAP / WIDTH_HEIGHT → spacing (`p-page-padding`, `h-component-md`, `w-modal-md`),
+  STROKE_FLOAT → `border-*`.
+- **Name clashes found and solved by rule:** a text colour named like another `text-*`
+  utility gets `-color` (`color/text/base` → `text-base-color`, because `text-base` is a
+  font size; without the rule Button's `text-base` turned white); a semantic key equal to
+  a palette name keeps the palette (`text-orange` + `text-orange-500`).
+- **Skipped:** TEXT_CONTENT strings (mock copy, not styling) and names marked ❌.
+- **Text styles** become classes: `typo-semi-bold-text-sm`.
+- **Foundations pages** write every token as literal props in the MDX, so the docs
+  manifest (what AI reads through MCP) has the class, variable and Light / Dark value of
+  each token. The toolbar **Theme** switch sets `data-theme` (also on docs-only pages,
+  through the Storybook channel; decorators only run for stories).
+- Storybook's docs CSS overrides font size and family inside tables; previews use
+  `sb-unstyled` to render like the app.
+
+Checked: Tailwind output per class (`scripts/figma/checkUtilities.mjs`), app build,
+Storybook build, all 155 stories and docs pages rendered with no error, screenshots of
+Colors (Light and Dark) and Typography.
