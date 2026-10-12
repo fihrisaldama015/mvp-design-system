@@ -1,10 +1,11 @@
 import { createContext, useContext, useId } from "react";
 import PropTypes from "prop-types";
+import { FIELD_GAP, FieldCaption, FieldLabel } from "components/field/parts";
 import { cn } from "utils/cn";
 
-const FieldContext = createContext({ id: undefined, invalid: false });
+const FieldContext = createContext({ id: undefined, invalid: false, captionId: undefined });
 
-/** useFieldControl — lets a control (Input, Select, ...) read the id and error state of the Field around it. */
+/** useFieldControl — lets a control (Input, Select, ...) read the id, error state and caption id of the Field around it. */
 export function useFieldControl() {
   return useContext(FieldContext);
 }
@@ -12,26 +13,27 @@ export function useFieldControl() {
 /**
  * Field — label, control, hint and error message in one block. Put one control
  * inside it (Input, Textarea, Select, ...): the label is connected to it and it
- * turns red when `error` is set, with nothing to pass by hand.
+ * turns red when `error` is set, with nothing to pass by hand. Label and caption
+ * use the SHIELD Input look (md size), so `<Field label><Input /></Field>` looks the
+ * same as `<Input label />`.
  */
 export function Field({ label, required, hint, error, children, className }) {
   const id = useId();
+  const captionId = `${id}-caption`;
+  const caption = error || hint;
   return (
-    <FieldContext.Provider value={{ id, invalid: !!error }}>
-      <div className={cn("space-y-1.5", className)}>
+    <FieldContext.Provider value={{ id, invalid: !!error, captionId: caption ? captionId : undefined }}>
+      <div className={cn("flex flex-col", FIELD_GAP.md, className)}>
         {label && (
-          <label htmlFor={id} className="block text-sm font-medium text-slate-700">
+          <FieldLabel htmlFor={id} required={required}>
             {label}
-            {required && <span className="ml-0.5 text-red-600">*</span>}
-          </label>
+          </FieldLabel>
         )}
         {children}
-        {error ? (
-          <p className="text-xs text-red-600" role="alert">
-            {error}
-          </p>
-        ) : (
-          hint && <p className="text-xs text-slate-500">{hint}</p>
+        {caption && (
+          <FieldCaption id={captionId} danger={!!error} alert={!!error}>
+            {caption}
+          </FieldCaption>
         )}
       </div>
     </FieldContext.Provider>
