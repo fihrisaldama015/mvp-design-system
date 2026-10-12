@@ -21,8 +21,9 @@ modal or toast by hand.
    arbitrary values. On a page, use Tailwind only for layout (flex, grid, gap,
    width, margin), never to restyle a component. _Experiment branch: the existing
    components still use the plain palette (indigo, slate); they move to SHIELD next._
-4. **One primary button per view.** Use `secondary` for the others, `ghost` for
-   Cancel, `danger` for destructive actions.
+4. **One filled primary button per view** (`status="primary"`). Use `kind="outlined"`
+   for the other actions, `kind="text"` for Cancel, `status="danger"` for destructive
+   actions.
 5. **Meaning decides the colour.** Status badges: success = available,
    info = on loan, warning = due soon, danger = overdue, neutral = retired.
 6. **Icons:** lucide-react only (size 16 in buttons and menus).

@@ -19,8 +19,8 @@ export const WithActions = {
       description="60 items across 6 categories"
       actions={
         <>
-          <Button variant="secondary" leftIcon={<Download size={16} />}>Export</Button>
-          <Button leftIcon={<Plus size={16} />}>Add equipment</Button>
+          <Button kind="outlined" prefixIcon={<Download />}>Export</Button>
+          <Button status="primary" prefixIcon={<Plus />}>Add equipment</Button>
         </>
       }
     />

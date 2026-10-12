@@ -1,45 +1,73 @@
 import { fn } from "storybook/test";
 import { Link } from "react-router-dom";
-import { Plus, Trash2, Download } from "lucide-react";
+import { Plus, Download, Trash2, ArrowRight } from "lucide-react";
 import { Button } from "components/button";
 
+const KINDS = ["filled", "outlined", "dashed", "text"];
+const STATUSES = ["default", "primary", "info", "success", "warning", "danger"];
+
 /**
- * Button — the one button of the app. One `primary` per view, `secondary` for
- * the other actions, `danger` for destructive ones, `ghost` for quiet ones.
+ * Button — SHIELD button. `kind` is the look, `status` the meaning. One filled
+ * primary per view; `danger` for destructive actions; `text` for quiet ones such
+ * as Cancel in a dialog.
  */
 export default {
   title: "Actions/Button",
   component: Button,
-  args: { children: "Save changes", variant: "primary", size: "md", onClick: fn() },
+  args: { children: "Button", kind: "filled", status: "primary", size: "md", onClick: fn() },
   argTypes: {
-    variant: { control: "inline-radio", options: ["primary", "secondary", "danger", "ghost"] },
+    kind: { control: "inline-radio", options: KINDS },
+    status: { control: "select", options: STATUSES },
     size: { control: "inline-radio", options: ["sm", "md", "lg"] },
   },
 };
 
 export const Primary = {};
 
-export const Secondary = { args: { variant: "secondary", children: "Export" } };
+export const Default = { args: { status: "default" } };
 
-export const Danger = { args: { variant: "danger", children: "Delete item" } };
+export const Outlined = { args: { kind: "outlined", children: "Export" } };
 
-export const Ghost = { args: { variant: "ghost", children: "Cancel" } };
+export const Dashed = { args: { kind: "dashed", prefixIcon: <Plus />, children: "Add item" } };
 
-/** Icons are lucide icons at size 16, before or after the label. */
-export const WithIcon = { args: { leftIcon: <Plus size={16} />, children: "Add equipment" } };
+export const Text = { args: { kind: "text", status: "default", children: "Cancel" } };
 
-export const IconAfter = { args: { variant: "secondary", rightIcon: <Download size={16} />, children: "Export CSV" } };
+export const Danger = { args: { status: "danger", prefixIcon: <Trash2 />, children: "Delete" } };
 
-/** While saving: the spinner replaces the left icon and clicks are blocked. */
+/** Icons are lucide icons; the button sizes them (16px sm, 18px md / lg). */
+export const WithIcons = { args: { prefixIcon: <Plus />, children: "Add equipment" } };
+
+export const SuffixIcon = { args: { kind: "outlined", suffixIcon: <ArrowRight />, children: "Next" } };
+
+/** The label keeps its width while the spinner shows. */
 export const Loading = { args: { loading: true, children: "Saving" } };
 
 export const Disabled = { args: { disabled: true } };
 
-export const Small = { args: { size: "sm", variant: "secondary", leftIcon: <Trash2 size={14} />, children: "Remove" } };
+export const Small = { args: { size: "sm", kind: "outlined", prefixIcon: <Download />, children: "Export" } };
 
 export const Large = { args: { size: "lg", children: "Create loan" } };
 
 /** `as={Link}` renders a link that looks like a button. */
-export const AsLink = {
-  args: { as: Link, to: "/equipment", variant: "secondary", children: "Open the list" },
+export const AsLink = { args: { as: Link, to: "/equipment", kind: "outlined", status: "default", children: "Open the list" } };
+
+/** Every kind x status, as in the SHIELD Figma page (State and Disabled follow on hover / with `disabled`). */
+export const AllKindsAndStatuses = {
+  parameters: { layout: "padded" },
+  render: () => (
+    <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(6, max-content)" }}>
+      {KINDS.map((kind) =>
+        STATUSES.map((status) => (
+          <Button key={`${kind}-${status}`} kind={kind} status={status} prefixIcon={<Plus />} suffixIcon={<ArrowRight />}>
+            Button
+          </Button>
+        )),
+      )}
+      {KINDS.map((kind) => (
+        <Button key={`${kind}-disabled`} kind={kind} status="primary" disabled>
+          Disabled
+        </Button>
+      ))}
+    </div>
+  ),
 };

@@ -20,5 +20,5 @@ export const Danger = { args: { tone: "danger", title: "Import failed", children
 
 export const WithAction = {
   args: { tone: "warning", title: "3 loans are overdue" },
-  render: (args) => <Alert {...args} action={<Button size="sm" variant="secondary">Review</Button>} />,
+  render: (args) => <Alert {...args} action={<Button size="sm" kind="outlined">Review</Button>} />,
 };

@@ -16,13 +16,13 @@ export function Pagination({ page, pageSize, total, onPageChange }) {
         Showing {from}–{to} of {total}
       </span>
       <div className="flex items-center gap-2">
-        <Button size="sm" variant="secondary" leftIcon={<ChevronLeft size={14} />} disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
+        <Button size="sm" kind="outlined" prefixIcon={<ChevronLeft size={14} />} disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
           Previous
         </Button>
         <span className="px-1">
           Page {page} of {pages}
         </span>
-        <Button size="sm" variant="secondary" rightIcon={<ChevronRight size={14} />} disabled={page >= pages} onClick={() => onPageChange(page + 1)}>
+        <Button size="sm" kind="outlined" suffixIcon={<ChevronRight size={14} />} disabled={page >= pages} onClick={() => onPageChange(page + 1)}>
           Next
         </Button>
       </div>

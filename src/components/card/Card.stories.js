@@ -12,7 +12,7 @@ export default {
 export const Default = { args: { title: "Recent loans", description: "Last 7 days" } };
 
 export const WithAction = {
-  args: { title: "Recent loans", description: "Last 7 days", action: <Button size="sm" variant="secondary">View all</Button> },
+  args: { title: "Recent loans", description: "Last 7 days", action: <Button size="sm" kind="outlined">View all</Button> },
 };
 
 export const NoHeader = { args: { children: <p className="text-sm text-slate-600">A plain block without a header.</p> } };

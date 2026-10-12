@@ -20,9 +20,9 @@ export const Default = {
     const toast = useToast();
     return (
       <div className="flex gap-2">
-        <Button onClick={() => toast.success("Loan created")}>Success</Button>
-        <Button variant="danger" onClick={() => toast.error("Could not save the loan")}>Error</Button>
-        <Button variant="secondary" onClick={() => toast.info("Import started")}>Info</Button>
+        <Button status="primary" onClick={() => toast.success("Loan created")}>Success</Button>
+        <Button status="danger" onClick={() => toast.error("Could not save the loan")}>Error</Button>
+        <Button kind="outlined" onClick={() => toast.info("Import started")}>Info</Button>
       </div>
     );
   },

@@ -17,8 +17,8 @@ export function ConfirmDialog({ open, onClose, onConfirm, title, description, co
       size="sm"
       footer={
         <>
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button variant={tone === "danger" ? "danger" : "primary"} loading={loading} onClick={onConfirm}>
+          <Button kind="text" onClick={onClose}>Cancel</Button>
+          <Button status={tone === "danger" ? "danger" : "primary"} loading={loading} onClick={onConfirm}>
             {confirmLabel}
           </Button>
         </>

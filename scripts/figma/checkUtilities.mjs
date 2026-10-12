@@ -9,7 +9,7 @@ const res = await postcss([tailwind({ ...config, content: [{ raw: classes.join("
 let missing = 0;
 for (const cls of classes) {
   const esc = cls.replace(/[./:]/g, (c) => "\\\\" + c);
-  const m = res.css.match(new RegExp("\\." + esc + "\\s*\\{([^}]*)\\}"));
+  const m = res.css.match(new RegExp("\\." + esc + "(?![-\\w])[^{,]*\\{([^}]*)\\}"));
   if (!m) missing++;
   console.log((m ? "ok   " : "MISS ") + cls.padEnd(26) + (m ? m[1].replace(/\s+/g, " ").trim().slice(0, 120) : ""));
 }

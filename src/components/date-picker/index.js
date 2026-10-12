@@ -104,13 +104,13 @@ export function DatePicker({ value = "", onChange, min, max, placeholder = "Sele
               getState={(d) => ({ selected: !!selected?.isSame(d, "day"), band: "none", blocked: blocked(d) })}
             />
             <div className="mt-2 flex justify-between border-t border-slate-100 pt-2">
-              <Button size="sm" variant="ghost" disabled={blocked(today)} onClick={() => pick(today)}>
+              <Button size="sm" kind="text" disabled={blocked(today)} onClick={() => pick(today)}>
                 Today
               </Button>
               {clearable && value && (
                 <Button
                   size="sm"
-                  variant="ghost"
+                  kind="text"
                   onClick={() => {
                     onChange?.("");
                     close();

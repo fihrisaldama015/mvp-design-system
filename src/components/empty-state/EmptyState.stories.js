@@ -12,7 +12,7 @@ export default {
 
 export const Default = {};
 
-export const WithAction = { render: (args) => <EmptyState {...args} action={<Button>New loan</Button>} /> };
+export const WithAction = { render: (args) => <EmptyState {...args} action={<Button status="primary">New loan</Button>} /> };
 
 /** When a search or filter has no result. */
 export const NoResults = { args: { icon: <SearchX size={22} />, title: "No results", description: "Try a different search or clear the filters." } };

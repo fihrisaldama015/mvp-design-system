@@ -167,7 +167,7 @@ export function DateRangePicker({ value, onChange, min, max, placeholder = "Sele
                   PRESETS.map((p) => {
                     const [s, e] = p.range();
                     return (
-                      <Button key={p.label} size="sm" variant="ghost" disabled={blocked(s) || blocked(e)} onClick={() => complete(s, e)}>
+                      <Button key={p.label} size="sm" kind="text" disabled={blocked(s) || blocked(e)} onClick={() => complete(s, e)}>
                         {p.label}
                       </Button>
                     );
@@ -176,7 +176,7 @@ export function DateRangePicker({ value, onChange, min, max, placeholder = "Sele
               {start && (
                 <Button
                   size="sm"
-                  variant="ghost"
+                  kind="text"
                   onClick={() => {
                     onChange?.({ start: "", end: "" });
                     close();

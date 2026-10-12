@@ -22,8 +22,8 @@ function ModalStory(args) {
       onClose={close}
       footer={
         <>
-          <Button variant="ghost" onClick={close}>Cancel</Button>
-          <Button onClick={close}>Save</Button>
+          <Button kind="text" onClick={close}>Cancel</Button>
+          <Button status="primary" onClick={close}>Save</Button>
         </>
       }
     >
