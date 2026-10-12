@@ -37,10 +37,10 @@ read on 2026-10-12T02:52:58.534Z). They are generated, never written by hand:
 
 ## Update after a design change
 
+Two steps. With Figma Desktop open on the foundation file and the Desktop Bridge plugin
+running, ask Claude Code to **update the design tokens from Figma** (the figma-to-storybook
+skill reads Figma into `.figma-dump/`). Then:
+
 ```bash
-python3 scripts/figma/dumpServer.py 9232 <dir> &   # receiver for the plugin
-# in Claude Code: figma_export_tokens + figma_execute(scripts/figma/plugin/readFoundation.js)
-node scripts/figma/toBruecke.mjs <dir> src/tokens/design_token.json
-node scripts/figma/buildTokens.mjs
-node scripts/figma/buildTokenDocs.mjs
+npm run tokens:build   # converter + CSS / Tailwind + these pages
 ```

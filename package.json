@@ -9,7 +9,9 @@
     "build": "rsbuild build",
     "preview": "rsbuild preview",
     "storybook": "node .storybook/run.mjs dev -p 6006 --no-open",
-    "build-storybook": "node .storybook/run.mjs build -o storybook-static"
+    "build-storybook": "node .storybook/run.mjs build -o storybook-static",
+    "tokens:build": "node scripts/figma/toBruecke.mjs .figma-dump src/tokens/design_token.json && node scripts/figma/buildTokens.mjs && node scripts/figma/buildTokenDocs.mjs",
+    "figma:receiver": "python3 scripts/figma/dumpServer.py 9232 .figma-dump"
   },
   "dependencies": {
     "clsx": "^2.1.1",

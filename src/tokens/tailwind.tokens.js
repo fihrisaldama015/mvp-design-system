@@ -10,122 +10,18 @@ export const theme = {
     "transparent": "transparent",
     "black": "rgb(var(--color-black) / <alpha-value>)",
     "white": "rgb(var(--color-white) / <alpha-value>)",
-    "amber": {
-      "50": "rgb(var(--color-amber-50) / <alpha-value>)",
-      "100": "rgb(var(--color-amber-100) / <alpha-value>)",
-      "200": "rgb(var(--color-amber-200) / <alpha-value>)",
-      "300": "rgb(var(--color-amber-300) / <alpha-value>)",
-      "400": "rgb(var(--color-amber-400) / <alpha-value>)",
-      "500": "rgb(var(--color-amber-500) / <alpha-value>)",
-      "600": "rgb(var(--color-amber-600) / <alpha-value>)",
-      "700": "rgb(var(--color-amber-700) / <alpha-value>)",
-      "800": "rgb(var(--color-amber-800) / <alpha-value>)",
-      "900": "rgb(var(--color-amber-900) / <alpha-value>)",
-      "950": "rgb(var(--color-amber-950) / <alpha-value>)"
-    },
-    "blue": {
-      "50": "rgb(var(--color-blue-50) / <alpha-value>)",
-      "100": "rgb(var(--color-blue-100) / <alpha-value>)",
-      "200": "rgb(var(--color-blue-200) / <alpha-value>)",
-      "300": "rgb(var(--color-blue-300) / <alpha-value>)",
-      "400": "rgb(var(--color-blue-400) / <alpha-value>)",
-      "500": "rgb(var(--color-blue-500) / <alpha-value>)",
-      "600": "rgb(var(--color-blue-600) / <alpha-value>)",
-      "700": "rgb(var(--color-blue-700) / <alpha-value>)",
-      "800": "rgb(var(--color-blue-800) / <alpha-value>)",
-      "900": "rgb(var(--color-blue-900) / <alpha-value>)",
-      "950": "rgb(var(--color-blue-950) / <alpha-value>)"
-    },
-    "cyan": {
-      "50": "rgb(var(--color-cyan-50) / <alpha-value>)",
-      "100": "rgb(var(--color-cyan-100) / <alpha-value>)",
-      "200": "rgb(var(--color-cyan-200) / <alpha-value>)",
-      "300": "rgb(var(--color-cyan-300) / <alpha-value>)",
-      "400": "rgb(var(--color-cyan-400) / <alpha-value>)",
-      "500": "rgb(var(--color-cyan-500) / <alpha-value>)",
-      "600": "rgb(var(--color-cyan-600) / <alpha-value>)",
-      "700": "rgb(var(--color-cyan-700) / <alpha-value>)",
-      "800": "rgb(var(--color-cyan-800) / <alpha-value>)",
-      "900": "rgb(var(--color-cyan-900) / <alpha-value>)",
-      "950": "rgb(var(--color-cyan-950) / <alpha-value>)"
-    },
-    "emerald": {
-      "50": "rgb(var(--color-emerald-50) / <alpha-value>)",
-      "100": "rgb(var(--color-emerald-100) / <alpha-value>)",
-      "200": "rgb(var(--color-emerald-200) / <alpha-value>)",
-      "300": "rgb(var(--color-emerald-300) / <alpha-value>)",
-      "400": "rgb(var(--color-emerald-400) / <alpha-value>)",
-      "500": "rgb(var(--color-emerald-500) / <alpha-value>)",
-      "600": "rgb(var(--color-emerald-600) / <alpha-value>)",
-      "700": "rgb(var(--color-emerald-700) / <alpha-value>)",
-      "800": "rgb(var(--color-emerald-800) / <alpha-value>)",
-      "900": "rgb(var(--color-emerald-900) / <alpha-value>)",
-      "950": "rgb(var(--color-emerald-950) / <alpha-value>)"
-    },
-    "fuchsia": {
-      "50": "rgb(var(--color-fuchsia-50) / <alpha-value>)",
-      "100": "rgb(var(--color-fuchsia-100) / <alpha-value>)",
-      "200": "rgb(var(--color-fuchsia-200) / <alpha-value>)",
-      "300": "rgb(var(--color-fuchsia-300) / <alpha-value>)",
-      "400": "rgb(var(--color-fuchsia-400) / <alpha-value>)",
-      "500": "rgb(var(--color-fuchsia-500) / <alpha-value>)",
-      "600": "rgb(var(--color-fuchsia-600) / <alpha-value>)",
-      "700": "rgb(var(--color-fuchsia-700) / <alpha-value>)",
-      "800": "rgb(var(--color-fuchsia-800) / <alpha-value>)",
-      "900": "rgb(var(--color-fuchsia-900) / <alpha-value>)",
-      "950": "rgb(var(--color-fuchsia-950) / <alpha-value>)"
-    },
-    "gray": {
-      "50": "rgb(var(--color-gray-50) / <alpha-value>)",
-      "100": "rgb(var(--color-gray-100) / <alpha-value>)",
-      "200": "rgb(var(--color-gray-200) / <alpha-value>)",
-      "300": "rgb(var(--color-gray-300) / <alpha-value>)",
-      "400": "rgb(var(--color-gray-400) / <alpha-value>)",
-      "500": "rgb(var(--color-gray-500) / <alpha-value>)",
-      "600": "rgb(var(--color-gray-600) / <alpha-value>)",
-      "700": "rgb(var(--color-gray-700) / <alpha-value>)",
-      "800": "rgb(var(--color-gray-800) / <alpha-value>)",
-      "900": "rgb(var(--color-gray-900) / <alpha-value>)",
-      "950": "rgb(var(--color-gray-950) / <alpha-value>)"
-    },
-    "green": {
-      "50": "rgb(var(--color-green-50) / <alpha-value>)",
-      "100": "rgb(var(--color-green-100) / <alpha-value>)",
-      "200": "rgb(var(--color-green-200) / <alpha-value>)",
-      "300": "rgb(var(--color-green-300) / <alpha-value>)",
-      "400": "rgb(var(--color-green-400) / <alpha-value>)",
-      "500": "rgb(var(--color-green-500) / <alpha-value>)",
-      "600": "rgb(var(--color-green-600) / <alpha-value>)",
-      "700": "rgb(var(--color-green-700) / <alpha-value>)",
-      "800": "rgb(var(--color-green-800) / <alpha-value>)",
-      "900": "rgb(var(--color-green-900) / <alpha-value>)",
-      "950": "rgb(var(--color-green-950) / <alpha-value>)"
-    },
-    "indigo": {
-      "50": "rgb(var(--color-indigo-50) / <alpha-value>)",
-      "100": "rgb(var(--color-indigo-100) / <alpha-value>)",
-      "200": "rgb(var(--color-indigo-200) / <alpha-value>)",
-      "300": "rgb(var(--color-indigo-300) / <alpha-value>)",
-      "400": "rgb(var(--color-indigo-400) / <alpha-value>)",
-      "500": "rgb(var(--color-indigo-500) / <alpha-value>)",
-      "600": "rgb(var(--color-indigo-600) / <alpha-value>)",
-      "700": "rgb(var(--color-indigo-700) / <alpha-value>)",
-      "800": "rgb(var(--color-indigo-800) / <alpha-value>)",
-      "900": "rgb(var(--color-indigo-900) / <alpha-value>)",
-      "950": "rgb(var(--color-indigo-950) / <alpha-value>)"
-    },
-    "lime": {
-      "50": "rgb(var(--color-lime-50) / <alpha-value>)",
-      "100": "rgb(var(--color-lime-100) / <alpha-value>)",
-      "200": "rgb(var(--color-lime-200) / <alpha-value>)",
-      "300": "rgb(var(--color-lime-300) / <alpha-value>)",
-      "400": "rgb(var(--color-lime-400) / <alpha-value>)",
-      "500": "rgb(var(--color-lime-500) / <alpha-value>)",
-      "600": "rgb(var(--color-lime-600) / <alpha-value>)",
-      "700": "rgb(var(--color-lime-700) / <alpha-value>)",
-      "800": "rgb(var(--color-lime-800) / <alpha-value>)",
-      "900": "rgb(var(--color-lime-900) / <alpha-value>)",
-      "950": "rgb(var(--color-lime-950) / <alpha-value>)"
+    "zinc": {
+      "50": "rgb(var(--color-zinc-50) / <alpha-value>)",
+      "100": "rgb(var(--color-zinc-100) / <alpha-value>)",
+      "200": "rgb(var(--color-zinc-200) / <alpha-value>)",
+      "300": "rgb(var(--color-zinc-300) / <alpha-value>)",
+      "400": "rgb(var(--color-zinc-400) / <alpha-value>)",
+      "500": "rgb(var(--color-zinc-500) / <alpha-value>)",
+      "600": "rgb(var(--color-zinc-600) / <alpha-value>)",
+      "700": "rgb(var(--color-zinc-700) / <alpha-value>)",
+      "800": "rgb(var(--color-zinc-800) / <alpha-value>)",
+      "900": "rgb(var(--color-zinc-900) / <alpha-value>)",
+      "950": "rgb(var(--color-zinc-950) / <alpha-value>)"
     },
     "neutral": {
       "50": "rgb(var(--color-neutral-50) / <alpha-value>)",
@@ -140,6 +36,19 @@ export const theme = {
       "900": "rgb(var(--color-neutral-900) / <alpha-value>)",
       "950": "rgb(var(--color-neutral-950) / <alpha-value>)"
     },
+    "stone": {
+      "50": "rgb(var(--color-stone-50) / <alpha-value>)",
+      "100": "rgb(var(--color-stone-100) / <alpha-value>)",
+      "200": "rgb(var(--color-stone-200) / <alpha-value>)",
+      "300": "rgb(var(--color-stone-300) / <alpha-value>)",
+      "400": "rgb(var(--color-stone-400) / <alpha-value>)",
+      "500": "rgb(var(--color-stone-500) / <alpha-value>)",
+      "600": "rgb(var(--color-stone-600) / <alpha-value>)",
+      "700": "rgb(var(--color-stone-700) / <alpha-value>)",
+      "800": "rgb(var(--color-stone-800) / <alpha-value>)",
+      "900": "rgb(var(--color-stone-900) / <alpha-value>)",
+      "950": "rgb(var(--color-stone-950) / <alpha-value>)"
+    },
     "orange": {
       "50": "rgb(var(--color-orange-50) / <alpha-value>)",
       "100": "rgb(var(--color-orange-100) / <alpha-value>)",
@@ -153,96 +62,44 @@ export const theme = {
       "900": "rgb(var(--color-orange-900) / <alpha-value>)",
       "950": "rgb(var(--color-orange-950) / <alpha-value>)"
     },
-    "pink": {
-      "50": "rgb(var(--color-pink-50) / <alpha-value>)",
-      "100": "rgb(var(--color-pink-100) / <alpha-value>)",
-      "200": "rgb(var(--color-pink-200) / <alpha-value>)",
-      "300": "rgb(var(--color-pink-300) / <alpha-value>)",
-      "400": "rgb(var(--color-pink-400) / <alpha-value>)",
-      "500": "rgb(var(--color-pink-500) / <alpha-value>)",
-      "600": "rgb(var(--color-pink-600) / <alpha-value>)",
-      "700": "rgb(var(--color-pink-700) / <alpha-value>)",
-      "800": "rgb(var(--color-pink-800) / <alpha-value>)",
-      "900": "rgb(var(--color-pink-900) / <alpha-value>)",
-      "950": "rgb(var(--color-pink-950) / <alpha-value>)"
+    "amber": {
+      "50": "rgb(var(--color-amber-50) / <alpha-value>)",
+      "100": "rgb(var(--color-amber-100) / <alpha-value>)",
+      "200": "rgb(var(--color-amber-200) / <alpha-value>)",
+      "300": "rgb(var(--color-amber-300) / <alpha-value>)",
+      "400": "rgb(var(--color-amber-400) / <alpha-value>)",
+      "500": "rgb(var(--color-amber-500) / <alpha-value>)",
+      "600": "rgb(var(--color-amber-600) / <alpha-value>)",
+      "700": "rgb(var(--color-amber-700) / <alpha-value>)",
+      "800": "rgb(var(--color-amber-800) / <alpha-value>)",
+      "900": "rgb(var(--color-amber-900) / <alpha-value>)",
+      "950": "rgb(var(--color-amber-950) / <alpha-value>)"
     },
-    "purple": {
-      "50": "rgb(var(--color-purple-50) / <alpha-value>)",
-      "100": "rgb(var(--color-purple-100) / <alpha-value>)",
-      "200": "rgb(var(--color-purple-200) / <alpha-value>)",
-      "300": "rgb(var(--color-purple-300) / <alpha-value>)",
-      "400": "rgb(var(--color-purple-400) / <alpha-value>)",
-      "500": "rgb(var(--color-purple-500) / <alpha-value>)",
-      "600": "rgb(var(--color-purple-600) / <alpha-value>)",
-      "700": "rgb(var(--color-purple-700) / <alpha-value>)",
-      "800": "rgb(var(--color-purple-800) / <alpha-value>)",
-      "900": "rgb(var(--color-purple-900) / <alpha-value>)",
-      "950": "rgb(var(--color-purple-950) / <alpha-value>)"
+    "lime": {
+      "50": "rgb(var(--color-lime-50) / <alpha-value>)",
+      "100": "rgb(var(--color-lime-100) / <alpha-value>)",
+      "200": "rgb(var(--color-lime-200) / <alpha-value>)",
+      "300": "rgb(var(--color-lime-300) / <alpha-value>)",
+      "400": "rgb(var(--color-lime-400) / <alpha-value>)",
+      "500": "rgb(var(--color-lime-500) / <alpha-value>)",
+      "600": "rgb(var(--color-lime-600) / <alpha-value>)",
+      "700": "rgb(var(--color-lime-700) / <alpha-value>)",
+      "800": "rgb(var(--color-lime-800) / <alpha-value>)",
+      "900": "rgb(var(--color-lime-900) / <alpha-value>)",
+      "950": "rgb(var(--color-lime-950) / <alpha-value>)"
     },
-    "red": {
-      "50": "rgb(var(--color-red-50) / <alpha-value>)",
-      "100": "rgb(var(--color-red-100) / <alpha-value>)",
-      "200": "rgb(var(--color-red-200) / <alpha-value>)",
-      "300": "rgb(var(--color-red-300) / <alpha-value>)",
-      "400": "rgb(var(--color-red-400) / <alpha-value>)",
-      "500": "rgb(var(--color-red-500) / <alpha-value>)",
-      "600": "rgb(var(--color-red-600) / <alpha-value>)",
-      "700": "rgb(var(--color-red-700) / <alpha-value>)",
-      "800": "rgb(var(--color-red-800) / <alpha-value>)",
-      "900": "rgb(var(--color-red-900) / <alpha-value>)",
-      "950": "rgb(var(--color-red-950) / <alpha-value>)"
-    },
-    "rose": {
-      "50": "rgb(var(--color-rose-50) / <alpha-value>)",
-      "100": "rgb(var(--color-rose-100) / <alpha-value>)",
-      "200": "rgb(var(--color-rose-200) / <alpha-value>)",
-      "300": "rgb(var(--color-rose-300) / <alpha-value>)",
-      "400": "rgb(var(--color-rose-400) / <alpha-value>)",
-      "500": "rgb(var(--color-rose-500) / <alpha-value>)",
-      "600": "rgb(var(--color-rose-600) / <alpha-value>)",
-      "700": "rgb(var(--color-rose-700) / <alpha-value>)",
-      "800": "rgb(var(--color-rose-800) / <alpha-value>)",
-      "900": "rgb(var(--color-rose-900) / <alpha-value>)",
-      "950": "rgb(var(--color-rose-950) / <alpha-value>)"
-    },
-    "sky": {
-      "50": "rgb(var(--color-sky-50) / <alpha-value>)",
-      "100": "rgb(var(--color-sky-100) / <alpha-value>)",
-      "200": "rgb(var(--color-sky-200) / <alpha-value>)",
-      "300": "rgb(var(--color-sky-300) / <alpha-value>)",
-      "400": "rgb(var(--color-sky-400) / <alpha-value>)",
-      "500": "rgb(var(--color-sky-500) / <alpha-value>)",
-      "600": "rgb(var(--color-sky-600) / <alpha-value>)",
-      "700": "rgb(var(--color-sky-700) / <alpha-value>)",
-      "800": "rgb(var(--color-sky-800) / <alpha-value>)",
-      "900": "rgb(var(--color-sky-900) / <alpha-value>)",
-      "950": "rgb(var(--color-sky-950) / <alpha-value>)"
-    },
-    "slate": {
-      "50": "rgb(var(--color-slate-50) / <alpha-value>)",
-      "100": "rgb(var(--color-slate-100) / <alpha-value>)",
-      "200": "rgb(var(--color-slate-200) / <alpha-value>)",
-      "300": "rgb(var(--color-slate-300) / <alpha-value>)",
-      "400": "rgb(var(--color-slate-400) / <alpha-value>)",
-      "500": "rgb(var(--color-slate-500) / <alpha-value>)",
-      "600": "rgb(var(--color-slate-600) / <alpha-value>)",
-      "700": "rgb(var(--color-slate-700) / <alpha-value>)",
-      "800": "rgb(var(--color-slate-800) / <alpha-value>)",
-      "900": "rgb(var(--color-slate-900) / <alpha-value>)",
-      "950": "rgb(var(--color-slate-950) / <alpha-value>)"
-    },
-    "stone": {
-      "50": "rgb(var(--color-stone-50) / <alpha-value>)",
-      "100": "rgb(var(--color-stone-100) / <alpha-value>)",
-      "200": "rgb(var(--color-stone-200) / <alpha-value>)",
-      "300": "rgb(var(--color-stone-300) / <alpha-value>)",
-      "400": "rgb(var(--color-stone-400) / <alpha-value>)",
-      "500": "rgb(var(--color-stone-500) / <alpha-value>)",
-      "600": "rgb(var(--color-stone-600) / <alpha-value>)",
-      "700": "rgb(var(--color-stone-700) / <alpha-value>)",
-      "800": "rgb(var(--color-stone-800) / <alpha-value>)",
-      "900": "rgb(var(--color-stone-900) / <alpha-value>)",
-      "950": "rgb(var(--color-stone-950) / <alpha-value>)"
+    "emerald": {
+      "50": "rgb(var(--color-emerald-50) / <alpha-value>)",
+      "100": "rgb(var(--color-emerald-100) / <alpha-value>)",
+      "200": "rgb(var(--color-emerald-200) / <alpha-value>)",
+      "300": "rgb(var(--color-emerald-300) / <alpha-value>)",
+      "400": "rgb(var(--color-emerald-400) / <alpha-value>)",
+      "500": "rgb(var(--color-emerald-500) / <alpha-value>)",
+      "600": "rgb(var(--color-emerald-600) / <alpha-value>)",
+      "700": "rgb(var(--color-emerald-700) / <alpha-value>)",
+      "800": "rgb(var(--color-emerald-800) / <alpha-value>)",
+      "900": "rgb(var(--color-emerald-900) / <alpha-value>)",
+      "950": "rgb(var(--color-emerald-950) / <alpha-value>)"
     },
     "teal": {
       "50": "rgb(var(--color-teal-50) / <alpha-value>)",
@@ -257,18 +114,96 @@ export const theme = {
       "900": "rgb(var(--color-teal-900) / <alpha-value>)",
       "950": "rgb(var(--color-teal-950) / <alpha-value>)"
     },
-    "violet": {
-      "50": "rgb(var(--color-violet-50) / <alpha-value>)",
-      "100": "rgb(var(--color-violet-100) / <alpha-value>)",
-      "200": "rgb(var(--color-violet-200) / <alpha-value>)",
-      "300": "rgb(var(--color-violet-300) / <alpha-value>)",
-      "400": "rgb(var(--color-violet-400) / <alpha-value>)",
-      "500": "rgb(var(--color-violet-500) / <alpha-value>)",
-      "600": "rgb(var(--color-violet-600) / <alpha-value>)",
-      "700": "rgb(var(--color-violet-700) / <alpha-value>)",
-      "800": "rgb(var(--color-violet-800) / <alpha-value>)",
-      "900": "rgb(var(--color-violet-900) / <alpha-value>)",
-      "950": "rgb(var(--color-violet-950) / <alpha-value>)"
+    "cyan": {
+      "50": "rgb(var(--color-cyan-50) / <alpha-value>)",
+      "100": "rgb(var(--color-cyan-100) / <alpha-value>)",
+      "200": "rgb(var(--color-cyan-200) / <alpha-value>)",
+      "300": "rgb(var(--color-cyan-300) / <alpha-value>)",
+      "400": "rgb(var(--color-cyan-400) / <alpha-value>)",
+      "500": "rgb(var(--color-cyan-500) / <alpha-value>)",
+      "600": "rgb(var(--color-cyan-600) / <alpha-value>)",
+      "700": "rgb(var(--color-cyan-700) / <alpha-value>)",
+      "800": "rgb(var(--color-cyan-800) / <alpha-value>)",
+      "900": "rgb(var(--color-cyan-900) / <alpha-value>)",
+      "950": "rgb(var(--color-cyan-950) / <alpha-value>)"
+    },
+    "sky": {
+      "50": "rgb(var(--color-sky-50) / <alpha-value>)",
+      "100": "rgb(var(--color-sky-100) / <alpha-value>)",
+      "200": "rgb(var(--color-sky-200) / <alpha-value>)",
+      "300": "rgb(var(--color-sky-300) / <alpha-value>)",
+      "400": "rgb(var(--color-sky-400) / <alpha-value>)",
+      "500": "rgb(var(--color-sky-500) / <alpha-value>)",
+      "600": "rgb(var(--color-sky-600) / <alpha-value>)",
+      "700": "rgb(var(--color-sky-700) / <alpha-value>)",
+      "800": "rgb(var(--color-sky-800) / <alpha-value>)",
+      "900": "rgb(var(--color-sky-900) / <alpha-value>)",
+      "950": "rgb(var(--color-sky-950) / <alpha-value>)"
+    },
+    "blue": {
+      "50": "rgb(var(--color-blue-50) / <alpha-value>)",
+      "100": "rgb(var(--color-blue-100) / <alpha-value>)",
+      "200": "rgb(var(--color-blue-200) / <alpha-value>)",
+      "300": "rgb(var(--color-blue-300) / <alpha-value>)",
+      "400": "rgb(var(--color-blue-400) / <alpha-value>)",
+      "500": "rgb(var(--color-blue-500) / <alpha-value>)",
+      "600": "rgb(var(--color-blue-600) / <alpha-value>)",
+      "700": "rgb(var(--color-blue-700) / <alpha-value>)",
+      "800": "rgb(var(--color-blue-800) / <alpha-value>)",
+      "900": "rgb(var(--color-blue-900) / <alpha-value>)",
+      "950": "rgb(var(--color-blue-950) / <alpha-value>)"
+    },
+    "gray": {
+      "50": "rgb(var(--color-gray-50) / <alpha-value>)",
+      "100": "rgb(var(--color-gray-100) / <alpha-value>)",
+      "200": "rgb(var(--color-gray-200) / <alpha-value>)",
+      "300": "rgb(var(--color-gray-300) / <alpha-value>)",
+      "400": "rgb(var(--color-gray-400) / <alpha-value>)",
+      "500": "rgb(var(--color-gray-500) / <alpha-value>)",
+      "600": "rgb(var(--color-gray-600) / <alpha-value>)",
+      "700": "rgb(var(--color-gray-700) / <alpha-value>)",
+      "800": "rgb(var(--color-gray-800) / <alpha-value>)",
+      "900": "rgb(var(--color-gray-900) / <alpha-value>)",
+      "950": "rgb(var(--color-gray-950) / <alpha-value>)"
+    },
+    "red": {
+      "50": "rgb(var(--color-red-50) / <alpha-value>)",
+      "100": "rgb(var(--color-red-100) / <alpha-value>)",
+      "200": "rgb(var(--color-red-200) / <alpha-value>)",
+      "300": "rgb(var(--color-red-300) / <alpha-value>)",
+      "400": "rgb(var(--color-red-400) / <alpha-value>)",
+      "500": "rgb(var(--color-red-500) / <alpha-value>)",
+      "600": "rgb(var(--color-red-600) / <alpha-value>)",
+      "700": "rgb(var(--color-red-700) / <alpha-value>)",
+      "800": "rgb(var(--color-red-800) / <alpha-value>)",
+      "900": "rgb(var(--color-red-900) / <alpha-value>)",
+      "950": "rgb(var(--color-red-950) / <alpha-value>)"
+    },
+    "purple": {
+      "50": "rgb(var(--color-purple-50) / <alpha-value>)",
+      "100": "rgb(var(--color-purple-100) / <alpha-value>)",
+      "200": "rgb(var(--color-purple-200) / <alpha-value>)",
+      "300": "rgb(var(--color-purple-300) / <alpha-value>)",
+      "400": "rgb(var(--color-purple-400) / <alpha-value>)",
+      "500": "rgb(var(--color-purple-500) / <alpha-value>)",
+      "600": "rgb(var(--color-purple-600) / <alpha-value>)",
+      "700": "rgb(var(--color-purple-700) / <alpha-value>)",
+      "800": "rgb(var(--color-purple-800) / <alpha-value>)",
+      "900": "rgb(var(--color-purple-900) / <alpha-value>)",
+      "950": "rgb(var(--color-purple-950) / <alpha-value>)"
+    },
+    "green": {
+      "50": "rgb(var(--color-green-50) / <alpha-value>)",
+      "100": "rgb(var(--color-green-100) / <alpha-value>)",
+      "200": "rgb(var(--color-green-200) / <alpha-value>)",
+      "300": "rgb(var(--color-green-300) / <alpha-value>)",
+      "400": "rgb(var(--color-green-400) / <alpha-value>)",
+      "500": "rgb(var(--color-green-500) / <alpha-value>)",
+      "600": "rgb(var(--color-green-600) / <alpha-value>)",
+      "700": "rgb(var(--color-green-700) / <alpha-value>)",
+      "800": "rgb(var(--color-green-800) / <alpha-value>)",
+      "900": "rgb(var(--color-green-900) / <alpha-value>)",
+      "950": "rgb(var(--color-green-950) / <alpha-value>)"
     },
     "yellow": {
       "50": "rgb(var(--color-yellow-50) / <alpha-value>)",
@@ -283,18 +218,83 @@ export const theme = {
       "900": "rgb(var(--color-yellow-900) / <alpha-value>)",
       "950": "rgb(var(--color-yellow-950) / <alpha-value>)"
     },
-    "zinc": {
-      "50": "rgb(var(--color-zinc-50) / <alpha-value>)",
-      "100": "rgb(var(--color-zinc-100) / <alpha-value>)",
-      "200": "rgb(var(--color-zinc-200) / <alpha-value>)",
-      "300": "rgb(var(--color-zinc-300) / <alpha-value>)",
-      "400": "rgb(var(--color-zinc-400) / <alpha-value>)",
-      "500": "rgb(var(--color-zinc-500) / <alpha-value>)",
-      "600": "rgb(var(--color-zinc-600) / <alpha-value>)",
-      "700": "rgb(var(--color-zinc-700) / <alpha-value>)",
-      "800": "rgb(var(--color-zinc-800) / <alpha-value>)",
-      "900": "rgb(var(--color-zinc-900) / <alpha-value>)",
-      "950": "rgb(var(--color-zinc-950) / <alpha-value>)"
+    "slate": {
+      "50": "rgb(var(--color-slate-50) / <alpha-value>)",
+      "100": "rgb(var(--color-slate-100) / <alpha-value>)",
+      "200": "rgb(var(--color-slate-200) / <alpha-value>)",
+      "300": "rgb(var(--color-slate-300) / <alpha-value>)",
+      "400": "rgb(var(--color-slate-400) / <alpha-value>)",
+      "500": "rgb(var(--color-slate-500) / <alpha-value>)",
+      "600": "rgb(var(--color-slate-600) / <alpha-value>)",
+      "700": "rgb(var(--color-slate-700) / <alpha-value>)",
+      "800": "rgb(var(--color-slate-800) / <alpha-value>)",
+      "900": "rgb(var(--color-slate-900) / <alpha-value>)",
+      "950": "rgb(var(--color-slate-950) / <alpha-value>)"
+    },
+    "indigo": {
+      "50": "rgb(var(--color-indigo-50) / <alpha-value>)",
+      "100": "rgb(var(--color-indigo-100) / <alpha-value>)",
+      "200": "rgb(var(--color-indigo-200) / <alpha-value>)",
+      "300": "rgb(var(--color-indigo-300) / <alpha-value>)",
+      "400": "rgb(var(--color-indigo-400) / <alpha-value>)",
+      "500": "rgb(var(--color-indigo-500) / <alpha-value>)",
+      "600": "rgb(var(--color-indigo-600) / <alpha-value>)",
+      "700": "rgb(var(--color-indigo-700) / <alpha-value>)",
+      "800": "rgb(var(--color-indigo-800) / <alpha-value>)",
+      "900": "rgb(var(--color-indigo-900) / <alpha-value>)",
+      "950": "rgb(var(--color-indigo-950) / <alpha-value>)"
+    },
+    "violet": {
+      "50": "rgb(var(--color-violet-50) / <alpha-value>)",
+      "100": "rgb(var(--color-violet-100) / <alpha-value>)",
+      "200": "rgb(var(--color-violet-200) / <alpha-value>)",
+      "300": "rgb(var(--color-violet-300) / <alpha-value>)",
+      "400": "rgb(var(--color-violet-400) / <alpha-value>)",
+      "500": "rgb(var(--color-violet-500) / <alpha-value>)",
+      "600": "rgb(var(--color-violet-600) / <alpha-value>)",
+      "700": "rgb(var(--color-violet-700) / <alpha-value>)",
+      "800": "rgb(var(--color-violet-800) / <alpha-value>)",
+      "900": "rgb(var(--color-violet-900) / <alpha-value>)",
+      "950": "rgb(var(--color-violet-950) / <alpha-value>)"
+    },
+    "fuchsia": {
+      "50": "rgb(var(--color-fuchsia-50) / <alpha-value>)",
+      "100": "rgb(var(--color-fuchsia-100) / <alpha-value>)",
+      "200": "rgb(var(--color-fuchsia-200) / <alpha-value>)",
+      "300": "rgb(var(--color-fuchsia-300) / <alpha-value>)",
+      "400": "rgb(var(--color-fuchsia-400) / <alpha-value>)",
+      "500": "rgb(var(--color-fuchsia-500) / <alpha-value>)",
+      "600": "rgb(var(--color-fuchsia-600) / <alpha-value>)",
+      "700": "rgb(var(--color-fuchsia-700) / <alpha-value>)",
+      "800": "rgb(var(--color-fuchsia-800) / <alpha-value>)",
+      "900": "rgb(var(--color-fuchsia-900) / <alpha-value>)",
+      "950": "rgb(var(--color-fuchsia-950) / <alpha-value>)"
+    },
+    "pink": {
+      "50": "rgb(var(--color-pink-50) / <alpha-value>)",
+      "100": "rgb(var(--color-pink-100) / <alpha-value>)",
+      "200": "rgb(var(--color-pink-200) / <alpha-value>)",
+      "300": "rgb(var(--color-pink-300) / <alpha-value>)",
+      "400": "rgb(var(--color-pink-400) / <alpha-value>)",
+      "500": "rgb(var(--color-pink-500) / <alpha-value>)",
+      "600": "rgb(var(--color-pink-600) / <alpha-value>)",
+      "700": "rgb(var(--color-pink-700) / <alpha-value>)",
+      "800": "rgb(var(--color-pink-800) / <alpha-value>)",
+      "900": "rgb(var(--color-pink-900) / <alpha-value>)",
+      "950": "rgb(var(--color-pink-950) / <alpha-value>)"
+    },
+    "rose": {
+      "50": "rgb(var(--color-rose-50) / <alpha-value>)",
+      "100": "rgb(var(--color-rose-100) / <alpha-value>)",
+      "200": "rgb(var(--color-rose-200) / <alpha-value>)",
+      "300": "rgb(var(--color-rose-300) / <alpha-value>)",
+      "400": "rgb(var(--color-rose-400) / <alpha-value>)",
+      "500": "rgb(var(--color-rose-500) / <alpha-value>)",
+      "600": "rgb(var(--color-rose-600) / <alpha-value>)",
+      "700": "rgb(var(--color-rose-700) / <alpha-value>)",
+      "800": "rgb(var(--color-rose-800) / <alpha-value>)",
+      "900": "rgb(var(--color-rose-900) / <alpha-value>)",
+      "950": "rgb(var(--color-rose-950) / <alpha-value>)"
     },
     "bullet": {
       "base-1": "rgb(var(--theme-color-bullet-base-1) / <alpha-value>)",
@@ -306,61 +306,9 @@ export const theme = {
     },
     "brand": {
       "base": {
+        "white": "rgb(var(--brand-base-white) / <alpha-value>)",
         "black": "rgb(var(--brand-base-black) / <alpha-value>)",
-        "transparent": "rgb(var(--brand-base-transparent) / 0)",
-        "white": "rgb(var(--brand-base-white) / <alpha-value>)"
-      },
-      "brand-1": {
-        "50": "rgb(var(--brand-brand-1-50) / <alpha-value>)",
-        "100": "rgb(var(--brand-brand-1-100) / <alpha-value>)",
-        "200": "rgb(var(--brand-brand-1-200) / <alpha-value>)",
-        "300": "rgb(var(--brand-brand-1-300) / <alpha-value>)",
-        "400": "rgb(var(--brand-brand-1-400) / <alpha-value>)",
-        "500": "rgb(var(--brand-brand-1-500) / <alpha-value>)",
-        "600": "rgb(var(--brand-brand-1-600) / <alpha-value>)",
-        "700": "rgb(var(--brand-brand-1-700) / <alpha-value>)",
-        "800": "rgb(var(--brand-brand-1-800) / <alpha-value>)",
-        "900": "rgb(var(--brand-brand-1-900) / <alpha-value>)",
-        "950": "rgb(var(--brand-brand-1-950) / <alpha-value>)"
-      },
-      "brand-2": {
-        "50": "rgb(var(--brand-brand-2-50) / <alpha-value>)",
-        "100": "rgb(var(--brand-brand-2-100) / <alpha-value>)",
-        "200": "rgb(var(--brand-brand-2-200) / <alpha-value>)",
-        "300": "rgb(var(--brand-brand-2-300) / <alpha-value>)",
-        "400": "rgb(var(--brand-brand-2-400) / <alpha-value>)",
-        "500": "rgb(var(--brand-brand-2-500) / <alpha-value>)",
-        "600": "rgb(var(--brand-brand-2-600) / <alpha-value>)",
-        "700": "rgb(var(--brand-brand-2-700) / <alpha-value>)",
-        "800": "rgb(var(--brand-brand-2-800) / <alpha-value>)",
-        "900": "rgb(var(--brand-brand-2-900) / <alpha-value>)",
-        "950": "rgb(var(--brand-brand-2-950) / <alpha-value>)"
-      },
-      "danger": {
-        "50": "rgb(var(--brand-danger-50) / <alpha-value>)",
-        "100": "rgb(var(--brand-danger-100) / <alpha-value>)",
-        "200": "rgb(var(--brand-danger-200) / <alpha-value>)",
-        "300": "rgb(var(--brand-danger-300) / <alpha-value>)",
-        "400": "rgb(var(--brand-danger-400) / <alpha-value>)",
-        "500": "rgb(var(--brand-danger-500) / <alpha-value>)",
-        "600": "rgb(var(--brand-danger-600) / <alpha-value>)",
-        "700": "rgb(var(--brand-danger-700) / <alpha-value>)",
-        "800": "rgb(var(--brand-danger-800) / <alpha-value>)",
-        "900": "rgb(var(--brand-danger-900) / <alpha-value>)",
-        "950": "rgb(var(--brand-danger-950) / <alpha-value>)"
-      },
-      "info": {
-        "50": "rgb(var(--brand-info-50) / <alpha-value>)",
-        "100": "rgb(var(--brand-info-100) / <alpha-value>)",
-        "200": "rgb(var(--brand-info-200) / <alpha-value>)",
-        "300": "rgb(var(--brand-info-300) / <alpha-value>)",
-        "400": "rgb(var(--brand-info-400) / <alpha-value>)",
-        "500": "rgb(var(--brand-info-500) / <alpha-value>)",
-        "600": "rgb(var(--brand-info-600) / <alpha-value>)",
-        "700": "rgb(var(--brand-info-700) / <alpha-value>)",
-        "800": "rgb(var(--brand-info-800) / <alpha-value>)",
-        "900": "rgb(var(--brand-info-900) / <alpha-value>)",
-        "950": "rgb(var(--brand-info-950) / <alpha-value>)"
+        "transparent": "rgb(var(--brand-base-transparent) / 0)"
       },
       "neutral": {
         "50": "rgb(var(--brand-neutral-50) / <alpha-value>)",
@@ -388,6 +336,19 @@ export const theme = {
         "900": "rgb(var(--brand-primary-900) / <alpha-value>)",
         "950": "rgb(var(--brand-primary-950) / <alpha-value>)"
       },
+      "info": {
+        "50": "rgb(var(--brand-info-50) / <alpha-value>)",
+        "100": "rgb(var(--brand-info-100) / <alpha-value>)",
+        "200": "rgb(var(--brand-info-200) / <alpha-value>)",
+        "300": "rgb(var(--brand-info-300) / <alpha-value>)",
+        "400": "rgb(var(--brand-info-400) / <alpha-value>)",
+        "500": "rgb(var(--brand-info-500) / <alpha-value>)",
+        "600": "rgb(var(--brand-info-600) / <alpha-value>)",
+        "700": "rgb(var(--brand-info-700) / <alpha-value>)",
+        "800": "rgb(var(--brand-info-800) / <alpha-value>)",
+        "900": "rgb(var(--brand-info-900) / <alpha-value>)",
+        "950": "rgb(var(--brand-info-950) / <alpha-value>)"
+      },
       "success": {
         "50": "rgb(var(--brand-success-50) / <alpha-value>)",
         "100": "rgb(var(--brand-success-100) / <alpha-value>)",
@@ -413,13 +374,52 @@ export const theme = {
         "800": "rgb(var(--brand-warning-800) / <alpha-value>)",
         "900": "rgb(var(--brand-warning-900) / <alpha-value>)",
         "950": "rgb(var(--brand-warning-950) / <alpha-value>)"
+      },
+      "danger": {
+        "50": "rgb(var(--brand-danger-50) / <alpha-value>)",
+        "100": "rgb(var(--brand-danger-100) / <alpha-value>)",
+        "200": "rgb(var(--brand-danger-200) / <alpha-value>)",
+        "300": "rgb(var(--brand-danger-300) / <alpha-value>)",
+        "400": "rgb(var(--brand-danger-400) / <alpha-value>)",
+        "500": "rgb(var(--brand-danger-500) / <alpha-value>)",
+        "600": "rgb(var(--brand-danger-600) / <alpha-value>)",
+        "700": "rgb(var(--brand-danger-700) / <alpha-value>)",
+        "800": "rgb(var(--brand-danger-800) / <alpha-value>)",
+        "900": "rgb(var(--brand-danger-900) / <alpha-value>)",
+        "950": "rgb(var(--brand-danger-950) / <alpha-value>)"
+      },
+      "brand-1": {
+        "50": "rgb(var(--brand-brand-1-50) / <alpha-value>)",
+        "100": "rgb(var(--brand-brand-1-100) / <alpha-value>)",
+        "200": "rgb(var(--brand-brand-1-200) / <alpha-value>)",
+        "300": "rgb(var(--brand-brand-1-300) / <alpha-value>)",
+        "400": "rgb(var(--brand-brand-1-400) / <alpha-value>)",
+        "500": "rgb(var(--brand-brand-1-500) / <alpha-value>)",
+        "600": "rgb(var(--brand-brand-1-600) / <alpha-value>)",
+        "700": "rgb(var(--brand-brand-1-700) / <alpha-value>)",
+        "800": "rgb(var(--brand-brand-1-800) / <alpha-value>)",
+        "900": "rgb(var(--brand-brand-1-900) / <alpha-value>)",
+        "950": "rgb(var(--brand-brand-1-950) / <alpha-value>)"
+      },
+      "brand-2": {
+        "50": "rgb(var(--brand-brand-2-50) / <alpha-value>)",
+        "100": "rgb(var(--brand-brand-2-100) / <alpha-value>)",
+        "200": "rgb(var(--brand-brand-2-200) / <alpha-value>)",
+        "300": "rgb(var(--brand-brand-2-300) / <alpha-value>)",
+        "400": "rgb(var(--brand-brand-2-400) / <alpha-value>)",
+        "500": "rgb(var(--brand-brand-2-500) / <alpha-value>)",
+        "600": "rgb(var(--brand-brand-2-600) / <alpha-value>)",
+        "700": "rgb(var(--brand-brand-2-700) / <alpha-value>)",
+        "800": "rgb(var(--brand-brand-2-800) / <alpha-value>)",
+        "900": "rgb(var(--brand-brand-2-900) / <alpha-value>)",
+        "950": "rgb(var(--brand-brand-2-950) / <alpha-value>)"
       }
     },
     "annotation": {
-      "abandoned": "rgb(var(--annotation-abandoned) / 0.502)",
-      "completed": "rgb(var(--annotation-completed) / 0.502)",
       "in-progress": "rgb(var(--annotation-in-progress) / 0.6)",
       "in-review": "rgb(var(--annotation-in-review) / 0.302)",
+      "completed": "rgb(var(--annotation-completed) / 0.502)",
+      "abandoned": "rgb(var(--annotation-abandoned) / 0.502)",
       "note": "rgb(var(--annotation-note) / 0.502)"
     }
   },
@@ -459,32 +459,32 @@ export const theme = {
     "160": "var(--sizing-size-160)",
     "192": "var(--sizing-size-192)",
     "256": "var(--sizing-size-256)",
+    "px": "var(--spacing-space-px)",
     "0.5": "var(--spacing-space-0-5)",
     "1.5": "var(--spacing-space-1-5)",
     "2.5": "var(--spacing-space-2-5)",
-    "3.5": "var(--spacing-space-3-5)",
-    "px": "var(--spacing-space-px)"
+    "3.5": "var(--spacing-space-3-5)"
   },
   "borderRadius": {
+    "none": "var(--theme-border-radius-none)",
+    "sm": "var(--border-radius-rounded-sm)",
     "DEFAULT": "var(--border-radius-rounded)",
+    "md": "var(--border-radius-rounded-md)",
+    "lg": "var(--border-radius-rounded-lg)",
+    "xl": "var(--border-radius-rounded-xl)",
     "2xl": "var(--border-radius-rounded-2xl)",
     "3xl": "var(--border-radius-rounded-3xl)",
     "full": "var(--theme-border-radius-full)",
-    "lg": "var(--border-radius-rounded-lg)",
-    "md": "var(--border-radius-rounded-md)",
-    "none": "var(--theme-border-radius-none)",
-    "sm": "var(--border-radius-rounded-sm)",
-    "xl": "var(--border-radius-rounded-xl)",
-    "default": "var(--theme-border-radius-default)",
-    "modal": "var(--theme-border-radius-modal)",
-    "section": "var(--theme-border-radius-section)",
     "small": "var(--theme-border-radius-small)",
-    "button-lg": "var(--theme-border-radius-button-lg)",
-    "button-md": "var(--theme-border-radius-button-md)",
+    "default": "var(--theme-border-radius-default)",
+    "section": "var(--theme-border-radius-section)",
+    "modal": "var(--theme-border-radius-modal)",
     "button-sm": "var(--theme-border-radius-button-sm)",
-    "form-lg": "var(--theme-border-radius-form-lg)",
-    "form-md": "var(--theme-border-radius-form-md)",
+    "button-md": "var(--theme-border-radius-button-md)",
+    "button-lg": "var(--theme-border-radius-button-lg)",
     "form-sm": "var(--theme-border-radius-form-sm)",
+    "form-md": "var(--theme-border-radius-form-md)",
+    "form-lg": "var(--theme-border-radius-form-lg)",
     "section-radi": "var(--theme-page-spacing-section-section-radi)",
     "sub-section-1-radi": "var(--theme-page-spacing-sub-section-1-sub-section-1-radi)",
     "sub-section-2-radi": "var(--theme-page-spacing-sub-section-2-sub-section-2-radi)"
@@ -498,6 +498,42 @@ export const theme = {
     "DEFAULT": "var(--theme-border-width-default)"
   },
   "fontSize": {
+    "xs": [
+      "var(--typography-font-size-xs)",
+      {
+        "lineHeight": "var(--typography-line-height-xs)"
+      }
+    ],
+    "sm": [
+      "var(--typography-font-size-sm)",
+      {
+        "lineHeight": "var(--typography-line-height-sm)"
+      }
+    ],
+    "md": [
+      "var(--typography-font-size-md)",
+      {
+        "lineHeight": "var(--typography-line-height-md)"
+      }
+    ],
+    "base": [
+      "var(--typography-font-size-md)",
+      {
+        "lineHeight": "var(--typography-line-height-md)"
+      }
+    ],
+    "lg": [
+      "var(--typography-font-size-lg)",
+      {
+        "lineHeight": "var(--typography-line-height-lg)"
+      }
+    ],
+    "xl": [
+      "var(--typography-font-size-xl)",
+      {
+        "lineHeight": "var(--typography-line-height-xl)"
+      }
+    ],
     "2xl": [
       "var(--typography-font-size-2xl)",
       {
@@ -545,49 +581,13 @@ export const theme = {
       {
         "lineHeight": "var(--typography-line-height-9xl)"
       }
-    ],
-    "lg": [
-      "var(--typography-font-size-lg)",
-      {
-        "lineHeight": "var(--typography-line-height-lg)"
-      }
-    ],
-    "md": [
-      "var(--typography-font-size-md)",
-      {
-        "lineHeight": "var(--typography-line-height-md)"
-      }
-    ],
-    "base": [
-      "var(--typography-font-size-md)",
-      {
-        "lineHeight": "var(--typography-line-height-md)"
-      }
-    ],
-    "sm": [
-      "var(--typography-font-size-sm)",
-      {
-        "lineHeight": "var(--typography-line-height-sm)"
-      }
-    ],
-    "xl": [
-      "var(--typography-font-size-xl)",
-      {
-        "lineHeight": "var(--typography-line-height-xl)"
-      }
-    ],
-    "xs": [
-      "var(--typography-font-size-xs)",
-      {
-        "lineHeight": "var(--typography-line-height-xs)"
-      }
     ]
   },
   "fontWeight": {
-    "bold": "var(--typography-font-weight-bold)",
-    "medium": "var(--typography-font-weight-medium)",
     "normal": "var(--typography-font-weight-regular)",
-    "semibold": "var(--typography-font-weight-semi-bold)"
+    "medium": "var(--typography-font-weight-medium)",
+    "semibold": "var(--typography-font-weight-semi-bold)",
+    "bold": "var(--typography-font-weight-bold)"
   },
   "opacity": {
     "0": "var(--opacity-opacity-0)",
@@ -607,11 +607,11 @@ export const theme = {
     "100": "var(--opacity-opacity-100)"
   },
   "screens": {
-    "2xl": "1536px",
-    "lg": "1024px",
-    "md": "768px",
     "sm": "640px",
-    "xl": "1280px"
+    "md": "768px",
+    "lg": "1024px",
+    "xl": "1280px",
+    "2xl": "1536px"
   },
   "boxShadow": {
     "sm": "var(--shadow-sm)",
@@ -654,310 +654,294 @@ export const theme = {
 
 export const extend = {
   "textColor": {
-    "body": "rgb(var(--theme-color-text-body) / <alpha-value>)",
-    "caption": "rgb(var(--theme-color-text-caption) / <alpha-value>)",
-    "danger": "rgb(var(--theme-color-text-danger) / <alpha-value>)",
     "default": "rgb(var(--theme-color-text-default) / <alpha-value>)",
-    "disabled": "rgb(var(--theme-color-text-disabled) / <alpha-value>)",
-    "info": "rgb(var(--theme-color-text-info) / <alpha-value>)",
-    "invert": {
-      "base": "rgb(var(--theme-color-text-invert-base) / <alpha-value>)",
-      "caption": "rgb(var(--theme-color-text-invert-caption) / <alpha-value>)",
-      "danger": "rgb(var(--theme-color-text-invert-danger) / <alpha-value>)",
-      "default": "rgb(var(--theme-color-text-invert-default) / <alpha-value>)",
-      "info": "rgb(var(--theme-color-text-invert-info) / <alpha-value>)",
-      "link": "rgb(var(--theme-color-text-invert-link) / <alpha-value>)",
-      "loading": "rgb(var(--theme-color-text-invert-loading) / <alpha-value>)",
-      "orange": "rgb(var(--theme-color-text-invert-orange) / <alpha-value>)",
-      "placeholder": "rgb(var(--theme-color-text-invert-placeholder) / <alpha-value>)",
-      "primary": "rgb(var(--theme-color-text-invert-primary) / <alpha-value>)",
-      "purple": "rgb(var(--theme-color-text-invert-purple) / <alpha-value>)",
-      "success": "rgb(var(--theme-color-text-invert-success) / <alpha-value>)",
-      "visited": "rgb(var(--theme-color-text-invert-visited) / <alpha-value>)",
-      "warning": "rgb(var(--theme-color-text-invert-warning) / <alpha-value>)"
-    },
-    "link": "rgb(var(--theme-color-text-link) / <alpha-value>)",
-    "loading": "rgb(var(--theme-color-text-loading) / <alpha-value>)",
-    "orange": {
-      "DEFAULT": "rgb(var(--theme-color-text-orange) / <alpha-value>)"
-    },
+    "body": "rgb(var(--theme-color-text-body) / <alpha-value>)",
     "placeholder": "rgb(var(--theme-color-text-placeholder) / <alpha-value>)",
+    "caption": "rgb(var(--theme-color-text-caption) / <alpha-value>)",
+    "disabled": "rgb(var(--theme-color-text-disabled) / <alpha-value>)",
     "primary": "rgb(var(--theme-color-text-primary) / <alpha-value>)",
+    "info": "rgb(var(--theme-color-text-info) / <alpha-value>)",
+    "success": "rgb(var(--theme-color-text-success) / <alpha-value>)",
+    "warning": "rgb(var(--theme-color-text-warning) / <alpha-value>)",
+    "danger": "rgb(var(--theme-color-text-danger) / <alpha-value>)",
     "purple": {
       "DEFAULT": "rgb(var(--theme-color-text-purple) / <alpha-value>)"
     },
-    "success": "rgb(var(--theme-color-text-success) / <alpha-value>)",
+    "orange": {
+      "DEFAULT": "rgb(var(--theme-color-text-orange) / <alpha-value>)"
+    },
+    "link": "rgb(var(--theme-color-text-link) / <alpha-value>)",
+    "visited": "rgb(var(--theme-color-text-visited) / <alpha-value>)",
+    "loading": "rgb(var(--theme-color-text-loading) / <alpha-value>)",
     "true-black": "rgb(var(--theme-color-text-true-black) / <alpha-value>)",
     "true-white": "rgb(var(--theme-color-text-true-white) / <alpha-value>)",
-    "visited": "rgb(var(--theme-color-text-visited) / <alpha-value>)",
-    "warning": "rgb(var(--theme-color-text-warning) / <alpha-value>)",
+    "invert": {
+      "base": "rgb(var(--theme-color-text-invert-base) / <alpha-value>)",
+      "default": "rgb(var(--theme-color-text-invert-default) / <alpha-value>)",
+      "placeholder": "rgb(var(--theme-color-text-invert-placeholder) / <alpha-value>)",
+      "caption": "rgb(var(--theme-color-text-invert-caption) / <alpha-value>)",
+      "primary": "rgb(var(--theme-color-text-invert-primary) / <alpha-value>)",
+      "info": "rgb(var(--theme-color-text-invert-info) / <alpha-value>)",
+      "success": "rgb(var(--theme-color-text-invert-success) / <alpha-value>)",
+      "warning": "rgb(var(--theme-color-text-invert-warning) / <alpha-value>)",
+      "danger": "rgb(var(--theme-color-text-invert-danger) / <alpha-value>)",
+      "purple": "rgb(var(--theme-color-text-invert-purple) / <alpha-value>)",
+      "orange": "rgb(var(--theme-color-text-invert-orange) / <alpha-value>)",
+      "link": "rgb(var(--theme-color-text-invert-link) / <alpha-value>)",
+      "visited": "rgb(var(--theme-color-text-invert-visited) / <alpha-value>)",
+      "loading": "rgb(var(--theme-color-text-invert-loading) / <alpha-value>)"
+    },
     "base-color": "rgb(var(--theme-color-text-base) / <alpha-value>)"
   },
   "backgroundColor": {
-    "danger": {
-      "default": "rgb(var(--theme-color-background-danger-default) / <alpha-value>)",
-      "focused": "rgb(var(--theme-color-background-danger-focused) / <alpha-value>)",
-      "hovered": "rgb(var(--theme-color-background-danger-hovered) / <alpha-value>)",
-      "invert": {
-        "default": "rgb(var(--theme-color-background-danger-invert-default) / <alpha-value>)",
-        "focused": "rgb(var(--theme-color-background-danger-invert-focused) / <alpha-value>)",
-        "hovered": "rgb(var(--theme-color-background-danger-invert-hovered) / <alpha-value>)",
-        "loading": "rgb(var(--theme-color-background-danger-invert-loading) / <alpha-value>)",
-        "pressed": "rgb(var(--theme-color-background-danger-invert-pressed) / <alpha-value>)",
-        "soft": "rgb(var(--theme-color-background-danger-invert-soft) / <alpha-value>)"
-      },
-      "loading": "rgb(var(--theme-color-background-danger-loading) / <alpha-value>)",
-      "pressed": "rgb(var(--theme-color-background-danger-pressed) / <alpha-value>)"
-    },
     "default": {
+      "soft": "rgb(var(--theme-color-background-default-soft) / <alpha-value>)",
       "default": "rgb(var(--theme-color-background-default-default) / <alpha-value>)",
-      "focused": "rgb(var(--theme-color-background-default-focused) / <alpha-value>)",
       "hovered": "rgb(var(--theme-color-background-default-hovered) / <alpha-value>)",
+      "pressed": "rgb(var(--theme-color-background-default-pressed) / <alpha-value>)",
+      "focused": "rgb(var(--theme-color-background-default-focused) / <alpha-value>)",
+      "loading": "rgb(var(--theme-color-background-default-loading) / <alpha-value>)",
       "invert": {
         "default": "rgb(var(--theme-color-background-default-invert-default) / <alpha-value>)",
-        "focused": "rgb(var(--theme-color-background-default-invert-focused) / <alpha-value>)",
         "hovered": "rgb(var(--theme-color-background-default-invert-hovered) / <alpha-value>)",
-        "loading": "rgb(var(--theme-color-background-default-invert-loading) / <alpha-value>)",
-        "pressed": "rgb(var(--theme-color-background-default-invert-pressed) / <alpha-value>)"
-      },
-      "loading": "rgb(var(--theme-color-background-default-loading) / <alpha-value>)",
-      "pressed": "rgb(var(--theme-color-background-default-pressed) / <alpha-value>)",
-      "soft": "rgb(var(--theme-color-background-default-soft) / <alpha-value>)"
-    },
-    "disabled": "rgb(var(--theme-color-background-disabled) / <alpha-value>)",
-    "divider": "rgb(var(--theme-color-background-divider) / <alpha-value>)",
-    "info": {
-      "default": "rgb(var(--theme-color-background-info-default) / <alpha-value>)",
-      "focused": "rgb(var(--theme-color-background-info-focused) / <alpha-value>)",
-      "hovered": "rgb(var(--theme-color-background-info-hovered) / <alpha-value>)",
-      "invert": {
-        "default": "rgb(var(--theme-color-background-info-invert-default) / <alpha-value>)",
-        "focused": "rgb(var(--theme-color-background-info-invert-focused) / <alpha-value>)",
-        "hovered": "rgb(var(--theme-color-background-info-invert-hovered) / <alpha-value>)",
-        "loading": "rgb(var(--theme-color-background-info-invert-loading) / <alpha-value>)",
-        "pressed": "rgb(var(--theme-color-background-info-invert-pressed) / <alpha-value>)",
-        "soft": "rgb(var(--theme-color-background-info-invert-soft) / <alpha-value>)"
-      },
-      "loading": "rgb(var(--theme-color-background-info-loading) / <alpha-value>)",
-      "pressed": "rgb(var(--theme-color-background-info-pressed) / <alpha-value>)"
-    },
-    "main-background": "rgb(var(--theme-color-background-main-background) / <alpha-value>)",
-    "modal": "rgb(var(--theme-color-background-modal) / <alpha-value>)",
-    "modal-colored": "rgb(var(--theme-color-background-modal-colored) / <alpha-value>)",
-    "orange": {
-      "default": "rgb(var(--theme-color-background-orange-default) / <alpha-value>)",
-      "focused": "rgb(var(--theme-color-background-orange-focused) / <alpha-value>)",
-      "hovered": "rgb(var(--theme-color-background-orange-hovered) / <alpha-value>)",
-      "invert": {
-        "default": "rgb(var(--theme-color-background-orange-invert-default) / <alpha-value>)",
-        "focused": "rgb(var(--theme-color-background-orange-invert-focused) / <alpha-value>)",
-        "hovered": "rgb(var(--theme-color-background-orange-invert-hovered) / <alpha-value>)",
-        "loading": "rgb(var(--theme-color-background-orange-invert-loading) / <alpha-value>)",
-        "pressed": "rgb(var(--theme-color-background-orange-invert-pressed) / <alpha-value>)",
-        "soft": "rgb(var(--theme-color-background-orange-invert-soft) / <alpha-value>)"
-      },
-      "loading": "rgb(var(--theme-color-background-orange-loading) / <alpha-value>)",
-      "pressed": "rgb(var(--theme-color-background-orange-pressed) / <alpha-value>)"
+        "pressed": "rgb(var(--theme-color-background-default-invert-pressed) / <alpha-value>)",
+        "focused": "rgb(var(--theme-color-background-default-invert-focused) / <alpha-value>)",
+        "loading": "rgb(var(--theme-color-background-default-invert-loading) / <alpha-value>)"
+      }
     },
     "primary": {
       "default": "rgb(var(--theme-color-background-primary-default) / <alpha-value>)",
-      "focused": "rgb(var(--theme-color-background-primary-focused) / <alpha-value>)",
       "hovered": "rgb(var(--theme-color-background-primary-hovered) / <alpha-value>)",
-      "invert": {
-        "default": "rgb(var(--theme-color-background-primary-invert-default) / <alpha-value>)",
-        "focused": "rgb(var(--theme-color-background-primary-invert-focused) / <alpha-value>)",
-        "hovered": "rgb(var(--theme-color-background-primary-invert-hovered) / <alpha-value>)",
-        "loading": "rgb(var(--theme-color-background-primary-invert-loading) / <alpha-value>)",
-        "pressed": "rgb(var(--theme-color-background-primary-invert-pressed) / <alpha-value>)",
-        "soft": "rgb(var(--theme-color-background-primary-invert-soft) / <alpha-value>)"
-      },
+      "pressed": "rgb(var(--theme-color-background-primary-pressed) / <alpha-value>)",
+      "focused": "rgb(var(--theme-color-background-primary-focused) / <alpha-value>)",
       "loading": "rgb(var(--theme-color-background-primary-loading) / <alpha-value>)",
-      "pressed": "rgb(var(--theme-color-background-primary-pressed) / <alpha-value>)"
-    },
-    "purple": {
-      "default": "rgb(var(--theme-color-background-purple-default) / <alpha-value>)",
-      "focused": "rgb(var(--theme-color-background-purple-focused) / <alpha-value>)",
-      "hovered": "rgb(var(--theme-color-background-purple-hovered) / <alpha-value>)",
       "invert": {
-        "default": "rgb(var(--theme-color-background-purple-invert-default) / <alpha-value>)",
-        "focused": "rgb(var(--theme-color-background-purple-invert-focused) / <alpha-value>)",
-        "hovered": "rgb(var(--theme-color-background-purple-invert-hovered) / <alpha-value>)",
-        "loading": "rgb(var(--theme-color-background-purple-invert-loading) / <alpha-value>)",
-        "pressed": "rgb(var(--theme-color-background-purple-invert-pressed) / <alpha-value>)",
-        "soft": "rgb(var(--theme-color-background-purple-invert-soft) / <alpha-value>)"
-      },
-      "loading": "rgb(var(--theme-color-background-purple-loading) / <alpha-value>)",
-      "pressed": "rgb(var(--theme-color-background-purple-pressed) / <alpha-value>)"
+        "soft": "rgb(var(--theme-color-background-primary-invert-soft) / <alpha-value>)",
+        "default": "rgb(var(--theme-color-background-primary-invert-default) / <alpha-value>)",
+        "hovered": "rgb(var(--theme-color-background-primary-invert-hovered) / <alpha-value>)",
+        "pressed": "rgb(var(--theme-color-background-primary-invert-pressed) / <alpha-value>)",
+        "focused": "rgb(var(--theme-color-background-primary-invert-focused) / <alpha-value>)",
+        "loading": "rgb(var(--theme-color-background-primary-invert-loading) / <alpha-value>)"
+      }
     },
-    "scroll-bar": "rgb(var(--theme-color-background-scroll-bar) / <alpha-value>)",
-    "success": {
-      "default": "rgb(var(--theme-color-background-success-default) / <alpha-value>)",
-      "focused": "rgb(var(--theme-color-background-success-focused) / <alpha-value>)",
-      "hovered": "rgb(var(--theme-color-background-success-hovered) / <alpha-value>)",
-      "invert": {
-        "default": "rgb(var(--theme-color-background-success-invert-default) / <alpha-value>)",
-        "focused": "rgb(var(--theme-color-background-success-invert-focused) / <alpha-value>)",
-        "hovered": "rgb(var(--theme-color-background-success-invert-hovered) / <alpha-value>)",
-        "loading": "rgb(var(--theme-color-background-success-invert-loading) / <alpha-value>)",
-        "pressed": "rgb(var(--theme-color-background-success-invert-pressed) / <alpha-value>)",
-        "soft": "rgb(var(--theme-color-background-success-invert-soft) / <alpha-value>)"
-      },
-      "loading": "rgb(var(--theme-color-background-success-loading) / <alpha-value>)",
-      "pressed": "rgb(var(--theme-color-background-success-pressed) / <alpha-value>)"
-    },
+    "main-background": "rgb(var(--theme-color-background-main-background) / <alpha-value>)",
     "surface": "rgb(var(--theme-color-background-surface) / <alpha-value>)",
     "surface-lv1": "rgb(var(--theme-color-background-surface-lv1) / <alpha-value>)",
     "surface-lv2": "rgb(var(--theme-color-background-surface-lv2) / <alpha-value>)",
+    "disabled": "rgb(var(--theme-color-background-disabled) / <alpha-value>)",
     "transparent": "rgb(var(--theme-color-background-transparent) / 0)",
-    "warning": {
-      "default": "rgb(var(--theme-color-background-warning-default) / <alpha-value>)",
-      "focused": "rgb(var(--theme-color-background-warning-focused) / <alpha-value>)",
-      "hovered": "rgb(var(--theme-color-background-warning-hovered) / <alpha-value>)",
+    "divider": "rgb(var(--theme-color-background-divider) / <alpha-value>)",
+    "modal": "rgb(var(--theme-color-background-modal) / <alpha-value>)",
+    "modal-colored": "rgb(var(--theme-color-background-modal-colored) / <alpha-value>)",
+    "scroll-bar": "rgb(var(--theme-color-background-scroll-bar) / <alpha-value>)",
+    "info": {
       "invert": {
-        "default": "rgb(var(--theme-color-background-warning-invert-default) / <alpha-value>)",
-        "focused": "rgb(var(--theme-color-background-warning-invert-focused) / <alpha-value>)",
-        "hovered": "rgb(var(--theme-color-background-warning-invert-hovered) / <alpha-value>)",
-        "loading": "rgb(var(--theme-color-background-warning-invert-loading) / <alpha-value>)",
-        "pressed": "rgb(var(--theme-color-background-warning-invert-pressed) / <alpha-value>)",
-        "soft": "rgb(var(--theme-color-background-warning-invert-soft) / <alpha-value>)"
+        "soft": "rgb(var(--theme-color-background-info-invert-soft) / <alpha-value>)",
+        "default": "rgb(var(--theme-color-background-info-invert-default) / <alpha-value>)",
+        "hovered": "rgb(var(--theme-color-background-info-invert-hovered) / <alpha-value>)",
+        "pressed": "rgb(var(--theme-color-background-info-invert-pressed) / <alpha-value>)",
+        "focused": "rgb(var(--theme-color-background-info-invert-focused) / <alpha-value>)",
+        "loading": "rgb(var(--theme-color-background-info-invert-loading) / <alpha-value>)"
       },
-      "loading": "rgb(var(--theme-color-background-warning-loading) / <alpha-value>)",
-      "pressed": "rgb(var(--theme-color-background-warning-pressed) / <alpha-value>)"
+      "default": "rgb(var(--theme-color-background-info-default) / <alpha-value>)",
+      "hovered": "rgb(var(--theme-color-background-info-hovered) / <alpha-value>)",
+      "pressed": "rgb(var(--theme-color-background-info-pressed) / <alpha-value>)",
+      "focused": "rgb(var(--theme-color-background-info-focused) / <alpha-value>)",
+      "loading": "rgb(var(--theme-color-background-info-loading) / <alpha-value>)"
+    },
+    "success": {
+      "invert": {
+        "soft": "rgb(var(--theme-color-background-success-invert-soft) / <alpha-value>)",
+        "default": "rgb(var(--theme-color-background-success-invert-default) / <alpha-value>)",
+        "hovered": "rgb(var(--theme-color-background-success-invert-hovered) / <alpha-value>)",
+        "pressed": "rgb(var(--theme-color-background-success-invert-pressed) / <alpha-value>)",
+        "focused": "rgb(var(--theme-color-background-success-invert-focused) / <alpha-value>)",
+        "loading": "rgb(var(--theme-color-background-success-invert-loading) / <alpha-value>)"
+      },
+      "default": "rgb(var(--theme-color-background-success-default) / <alpha-value>)",
+      "hovered": "rgb(var(--theme-color-background-success-hovered) / <alpha-value>)",
+      "pressed": "rgb(var(--theme-color-background-success-pressed) / <alpha-value>)",
+      "focused": "rgb(var(--theme-color-background-success-focused) / <alpha-value>)",
+      "loading": "rgb(var(--theme-color-background-success-loading) / <alpha-value>)"
+    },
+    "warning": {
+      "invert": {
+        "soft": "rgb(var(--theme-color-background-warning-invert-soft) / <alpha-value>)",
+        "default": "rgb(var(--theme-color-background-warning-invert-default) / <alpha-value>)",
+        "hovered": "rgb(var(--theme-color-background-warning-invert-hovered) / <alpha-value>)",
+        "pressed": "rgb(var(--theme-color-background-warning-invert-pressed) / <alpha-value>)",
+        "focused": "rgb(var(--theme-color-background-warning-invert-focused) / <alpha-value>)",
+        "loading": "rgb(var(--theme-color-background-warning-invert-loading) / <alpha-value>)"
+      },
+      "default": "rgb(var(--theme-color-background-warning-default) / <alpha-value>)",
+      "hovered": "rgb(var(--theme-color-background-warning-hovered) / <alpha-value>)",
+      "pressed": "rgb(var(--theme-color-background-warning-pressed) / <alpha-value>)",
+      "focused": "rgb(var(--theme-color-background-warning-focused) / <alpha-value>)",
+      "loading": "rgb(var(--theme-color-background-warning-loading) / <alpha-value>)"
+    },
+    "danger": {
+      "invert": {
+        "soft": "rgb(var(--theme-color-background-danger-invert-soft) / <alpha-value>)",
+        "default": "rgb(var(--theme-color-background-danger-invert-default) / <alpha-value>)",
+        "hovered": "rgb(var(--theme-color-background-danger-invert-hovered) / <alpha-value>)",
+        "pressed": "rgb(var(--theme-color-background-danger-invert-pressed) / <alpha-value>)",
+        "focused": "rgb(var(--theme-color-background-danger-invert-focused) / <alpha-value>)",
+        "loading": "rgb(var(--theme-color-background-danger-invert-loading) / <alpha-value>)"
+      },
+      "default": "rgb(var(--theme-color-background-danger-default) / <alpha-value>)",
+      "hovered": "rgb(var(--theme-color-background-danger-hovered) / <alpha-value>)",
+      "pressed": "rgb(var(--theme-color-background-danger-pressed) / <alpha-value>)",
+      "focused": "rgb(var(--theme-color-background-danger-focused) / <alpha-value>)",
+      "loading": "rgb(var(--theme-color-background-danger-loading) / <alpha-value>)"
+    },
+    "orange": {
+      "invert": {
+        "soft": "rgb(var(--theme-color-background-orange-invert-soft) / <alpha-value>)",
+        "default": "rgb(var(--theme-color-background-orange-invert-default) / <alpha-value>)",
+        "hovered": "rgb(var(--theme-color-background-orange-invert-hovered) / <alpha-value>)",
+        "pressed": "rgb(var(--theme-color-background-orange-invert-pressed) / <alpha-value>)",
+        "focused": "rgb(var(--theme-color-background-orange-invert-focused) / <alpha-value>)",
+        "loading": "rgb(var(--theme-color-background-orange-invert-loading) / <alpha-value>)"
+      },
+      "default": "rgb(var(--theme-color-background-orange-default) / <alpha-value>)",
+      "hovered": "rgb(var(--theme-color-background-orange-hovered) / <alpha-value>)",
+      "pressed": "rgb(var(--theme-color-background-orange-pressed) / <alpha-value>)",
+      "focused": "rgb(var(--theme-color-background-orange-focused) / <alpha-value>)",
+      "loading": "rgb(var(--theme-color-background-orange-loading) / <alpha-value>)"
+    },
+    "purple": {
+      "invert": {
+        "soft": "rgb(var(--theme-color-background-purple-invert-soft) / <alpha-value>)",
+        "default": "rgb(var(--theme-color-background-purple-invert-default) / <alpha-value>)",
+        "hovered": "rgb(var(--theme-color-background-purple-invert-hovered) / <alpha-value>)",
+        "pressed": "rgb(var(--theme-color-background-purple-invert-pressed) / <alpha-value>)",
+        "focused": "rgb(var(--theme-color-background-purple-invert-focused) / <alpha-value>)",
+        "loading": "rgb(var(--theme-color-background-purple-invert-loading) / <alpha-value>)"
+      },
+      "default": "rgb(var(--theme-color-background-purple-default) / <alpha-value>)",
+      "hovered": "rgb(var(--theme-color-background-purple-hovered) / <alpha-value>)",
+      "pressed": "rgb(var(--theme-color-background-purple-pressed) / <alpha-value>)",
+      "focused": "rgb(var(--theme-color-background-purple-focused) / <alpha-value>)",
+      "loading": "rgb(var(--theme-color-background-purple-loading) / <alpha-value>)"
     }
   },
   "borderColor": {
     "base": "rgb(var(--theme-color-border-base) / <alpha-value>)",
-    "danger": "rgb(var(--theme-color-border-danger) / <alpha-value>)",
-    "default": "rgb(var(--theme-color-border-default) / <alpha-value>)",
-    "disabled": "rgb(var(--theme-color-border-disabled) / <alpha-value>)",
-    "info": "rgb(var(--theme-color-border-info) / <alpha-value>)",
     "invert": {
       "base": "rgb(var(--theme-color-border-invert-base) / <alpha-value>)",
-      "danger": "rgb(var(--theme-color-border-invert-danger) / <alpha-value>)",
       "default": "rgb(var(--theme-color-border-invert-default) / <alpha-value>)",
-      "disabled": "rgb(var(--theme-color-border-invert-disabled) / <alpha-value>)",
-      "info": "rgb(var(--theme-color-border-invert-info) / <alpha-value>)",
-      "orange": "rgb(var(--theme-color-border-invert-orange) / <alpha-value>)",
       "primary": "rgb(var(--theme-color-border-invert-primary) / <alpha-value>)",
-      "purple": "rgb(var(--theme-color-border-invert-purple) / <alpha-value>)",
+      "info": "rgb(var(--theme-color-border-invert-info) / <alpha-value>)",
       "success": "rgb(var(--theme-color-border-invert-success) / <alpha-value>)",
-      "warning": "rgb(var(--theme-color-border-invert-warning) / <alpha-value>)"
+      "warning": "rgb(var(--theme-color-border-invert-warning) / <alpha-value>)",
+      "danger": "rgb(var(--theme-color-border-invert-danger) / <alpha-value>)",
+      "purple": "rgb(var(--theme-color-border-invert-purple) / <alpha-value>)",
+      "orange": "rgb(var(--theme-color-border-invert-orange) / <alpha-value>)",
+      "disabled": "rgb(var(--theme-color-border-invert-disabled) / <alpha-value>)"
+    },
+    "default": "rgb(var(--theme-color-border-default) / <alpha-value>)",
+    "primary": "rgb(var(--theme-color-border-primary) / <alpha-value>)",
+    "info": "rgb(var(--theme-color-border-info) / <alpha-value>)",
+    "success": "rgb(var(--theme-color-border-success) / <alpha-value>)",
+    "warning": "rgb(var(--theme-color-border-warning) / <alpha-value>)",
+    "danger": "rgb(var(--theme-color-border-danger) / <alpha-value>)",
+    "purple": {
+      "DEFAULT": "rgb(var(--theme-color-border-purple) / <alpha-value>)"
     },
     "orange": {
       "DEFAULT": "rgb(var(--theme-color-border-orange) / <alpha-value>)"
     },
-    "primary": "rgb(var(--theme-color-border-primary) / <alpha-value>)",
-    "purple": {
-      "DEFAULT": "rgb(var(--theme-color-border-purple) / <alpha-value>)"
-    },
-    "success": "rgb(var(--theme-color-border-success) / <alpha-value>)",
-    "warning": "rgb(var(--theme-color-border-warning) / <alpha-value>)"
+    "disabled": "rgb(var(--theme-color-border-disabled) / <alpha-value>)"
   },
   "ringColor": {
     "base": "rgb(var(--theme-color-border-base) / <alpha-value>)",
-    "danger": "rgb(var(--theme-color-border-danger) / <alpha-value>)",
-    "default": "rgb(var(--theme-color-border-default) / <alpha-value>)",
-    "disabled": "rgb(var(--theme-color-border-disabled) / <alpha-value>)",
-    "info": "rgb(var(--theme-color-border-info) / <alpha-value>)",
     "invert": {
       "base": "rgb(var(--theme-color-border-invert-base) / <alpha-value>)",
-      "danger": "rgb(var(--theme-color-border-invert-danger) / <alpha-value>)",
       "default": "rgb(var(--theme-color-border-invert-default) / <alpha-value>)",
-      "disabled": "rgb(var(--theme-color-border-invert-disabled) / <alpha-value>)",
-      "info": "rgb(var(--theme-color-border-invert-info) / <alpha-value>)",
-      "orange": "rgb(var(--theme-color-border-invert-orange) / <alpha-value>)",
       "primary": "rgb(var(--theme-color-border-invert-primary) / <alpha-value>)",
-      "purple": "rgb(var(--theme-color-border-invert-purple) / <alpha-value>)",
+      "info": "rgb(var(--theme-color-border-invert-info) / <alpha-value>)",
       "success": "rgb(var(--theme-color-border-invert-success) / <alpha-value>)",
-      "warning": "rgb(var(--theme-color-border-invert-warning) / <alpha-value>)"
+      "warning": "rgb(var(--theme-color-border-invert-warning) / <alpha-value>)",
+      "danger": "rgb(var(--theme-color-border-invert-danger) / <alpha-value>)",
+      "purple": "rgb(var(--theme-color-border-invert-purple) / <alpha-value>)",
+      "orange": "rgb(var(--theme-color-border-invert-orange) / <alpha-value>)",
+      "disabled": "rgb(var(--theme-color-border-invert-disabled) / <alpha-value>)"
+    },
+    "default": "rgb(var(--theme-color-border-default) / <alpha-value>)",
+    "primary": "rgb(var(--theme-color-border-primary) / <alpha-value>)",
+    "info": "rgb(var(--theme-color-border-info) / <alpha-value>)",
+    "success": "rgb(var(--theme-color-border-success) / <alpha-value>)",
+    "warning": "rgb(var(--theme-color-border-warning) / <alpha-value>)",
+    "danger": "rgb(var(--theme-color-border-danger) / <alpha-value>)",
+    "purple": {
+      "DEFAULT": "rgb(var(--theme-color-border-purple) / <alpha-value>)"
     },
     "orange": {
       "DEFAULT": "rgb(var(--theme-color-border-orange) / <alpha-value>)"
     },
-    "primary": "rgb(var(--theme-color-border-primary) / <alpha-value>)",
-    "purple": {
-      "DEFAULT": "rgb(var(--theme-color-border-purple) / <alpha-value>)"
-    },
-    "success": "rgb(var(--theme-color-border-success) / <alpha-value>)",
-    "warning": "rgb(var(--theme-color-border-warning) / <alpha-value>)"
+    "disabled": "rgb(var(--theme-color-border-disabled) / <alpha-value>)"
   },
   "outlineColor": {
     "base": "rgb(var(--theme-color-border-base) / <alpha-value>)",
-    "danger": "rgb(var(--theme-color-border-danger) / <alpha-value>)",
-    "default": "rgb(var(--theme-color-border-default) / <alpha-value>)",
-    "disabled": "rgb(var(--theme-color-border-disabled) / <alpha-value>)",
-    "info": "rgb(var(--theme-color-border-info) / <alpha-value>)",
     "invert": {
       "base": "rgb(var(--theme-color-border-invert-base) / <alpha-value>)",
-      "danger": "rgb(var(--theme-color-border-invert-danger) / <alpha-value>)",
       "default": "rgb(var(--theme-color-border-invert-default) / <alpha-value>)",
-      "disabled": "rgb(var(--theme-color-border-invert-disabled) / <alpha-value>)",
-      "info": "rgb(var(--theme-color-border-invert-info) / <alpha-value>)",
-      "orange": "rgb(var(--theme-color-border-invert-orange) / <alpha-value>)",
       "primary": "rgb(var(--theme-color-border-invert-primary) / <alpha-value>)",
-      "purple": "rgb(var(--theme-color-border-invert-purple) / <alpha-value>)",
+      "info": "rgb(var(--theme-color-border-invert-info) / <alpha-value>)",
       "success": "rgb(var(--theme-color-border-invert-success) / <alpha-value>)",
-      "warning": "rgb(var(--theme-color-border-invert-warning) / <alpha-value>)"
+      "warning": "rgb(var(--theme-color-border-invert-warning) / <alpha-value>)",
+      "danger": "rgb(var(--theme-color-border-invert-danger) / <alpha-value>)",
+      "purple": "rgb(var(--theme-color-border-invert-purple) / <alpha-value>)",
+      "orange": "rgb(var(--theme-color-border-invert-orange) / <alpha-value>)",
+      "disabled": "rgb(var(--theme-color-border-invert-disabled) / <alpha-value>)"
+    },
+    "default": "rgb(var(--theme-color-border-default) / <alpha-value>)",
+    "primary": "rgb(var(--theme-color-border-primary) / <alpha-value>)",
+    "info": "rgb(var(--theme-color-border-info) / <alpha-value>)",
+    "success": "rgb(var(--theme-color-border-success) / <alpha-value>)",
+    "warning": "rgb(var(--theme-color-border-warning) / <alpha-value>)",
+    "danger": "rgb(var(--theme-color-border-danger) / <alpha-value>)",
+    "purple": {
+      "DEFAULT": "rgb(var(--theme-color-border-purple) / <alpha-value>)"
     },
     "orange": {
       "DEFAULT": "rgb(var(--theme-color-border-orange) / <alpha-value>)"
     },
-    "primary": "rgb(var(--theme-color-border-primary) / <alpha-value>)",
-    "purple": {
-      "DEFAULT": "rgb(var(--theme-color-border-purple) / <alpha-value>)"
-    },
-    "success": "rgb(var(--theme-color-border-success) / <alpha-value>)",
-    "warning": "rgb(var(--theme-color-border-warning) / <alpha-value>)"
+    "disabled": "rgb(var(--theme-color-border-disabled) / <alpha-value>)"
   },
   "spacing": {
-    "drawer-content-gap": "var(--theme-page-spacing-drawer-content-gap)",
-    "form-spacing": "var(--theme-page-spacing-form-spacing)",
-    "form-title-with-table": "var(--theme-page-spacing-form-title-with-table)",
-    "multi-forms-spacing": "var(--theme-page-spacing-multi-forms-spacing)",
-    "page-gap": "var(--theme-page-spacing-page-page-gap)",
-    "page-gap-lv2": "var(--theme-page-spacing-page-page-gap-lv2)",
-    "page-padding": "var(--theme-page-spacing-page-page-padding)",
-    "section-gap": "var(--theme-page-spacing-section-section-gap)",
-    "section-gap-lv2": "var(--theme-page-spacing-section-section-gap-lv2)",
-    "section-padding": "var(--theme-page-spacing-section-section-padding)",
-    "sub-section-1-gap": "var(--theme-page-spacing-sub-section-1-sub-section-1-gap)",
-    "sub-section-1-gap-lv2": "var(--theme-page-spacing-sub-section-1-sub-section-1-gap-lv2)",
-    "sub-section-1-padding": "var(--theme-page-spacing-sub-section-1-sub-section-1-padding)",
-    "sub-section-2-gap": "var(--theme-page-spacing-sub-section-2-sub-section-2-gap)",
-    "sub-section-2-gap-lv2": "var(--theme-page-spacing-sub-section-2-sub-section-2-gap-lv2)",
-    "sub-section-2-padding": "var(--theme-page-spacing-sub-section-2-sub-section-2-padding)",
-    "component-2xs": "var(--theme-sizing-component-2xs)",
-    "component-3xs-24px": "var(--theme-sizing-component-3xs-24px)",
-    "component-4xs": "var(--theme-sizing-component-4xs)",
-    "component-5xs": "var(--theme-sizing-component-5xs)",
     "component-lg": "var(--theme-sizing-component-lg)",
     "component-md": "var(--theme-sizing-component-md)",
     "component-sm": "var(--theme-sizing-component-sm)",
     "component-xs": "var(--theme-sizing-component-xs)",
-    "drawer-2xl": "var(--theme-sizing-drawer-2xl)",
-    "drawer-lg": "var(--theme-sizing-drawer-lg)",
-    "drawer-md": "var(--theme-sizing-drawer-md)",
-    "drawer-sm": "var(--theme-sizing-drawer-sm)",
-    "drawer-xl": "var(--theme-sizing-drawer-xl)",
-    "dropdown-lg": "var(--theme-sizing-dropdown-lg)",
-    "dropdown-md": "var(--theme-sizing-dropdown-md)",
-    "dropdown-sm": "var(--theme-sizing-dropdown-sm)",
-    "dropdown-xl": "var(--theme-sizing-dropdown-xl)",
-    "icon-circle-container-lg": "var(--theme-sizing-icon-circle-container-lg)",
-    "icon-circle-container-md": "var(--theme-sizing-icon-circle-container-md)",
-    "icon-circle-container-sm": "var(--theme-sizing-icon-circle-container-sm)",
-    "icon-circle-container-xl": "var(--theme-sizing-icon-circle-container-xl)",
-    "icon-circle-icon-lg": "var(--theme-sizing-icon-circle-icon-lg)",
-    "icon-circle-icon-md": "var(--theme-sizing-icon-circle-icon-md)",
-    "icon-circle-icon-sm": "var(--theme-sizing-icon-circle-icon-sm)",
-    "icon-circle-icon-xl": "var(--theme-sizing-icon-circle-icon-xl)",
-    "modal-confirmation-lg": "var(--theme-sizing-modal-confirmation-lg)",
-    "modal-confirmation-md": "var(--theme-sizing-modal-confirmation-md)",
-    "modal-confirmation-sm": "var(--theme-sizing-modal-confirmation-sm)",
-    "modal-lg": "var(--theme-sizing-modal-lg)",
-    "modal-md": "var(--theme-sizing-modal-md)",
-    "modal-sm": "var(--theme-sizing-modal-sm)",
+    "component-2xs": "var(--theme-sizing-component-2xs)",
+    "component-3xs-24px": "var(--theme-sizing-component-3xs-24px)",
+    "component-4xs": "var(--theme-sizing-component-4xs)",
+    "component-5xs": "var(--theme-sizing-component-5xs)",
     "modal-xs": "var(--theme-sizing-modal-xs)",
+    "modal-sm": "var(--theme-sizing-modal-sm)",
+    "modal-md": "var(--theme-sizing-modal-md)",
+    "modal-lg": "var(--theme-sizing-modal-lg)",
+    "modal-confirmation-sm": "var(--theme-sizing-modal-confirmation-sm)",
+    "modal-confirmation-md": "var(--theme-sizing-modal-confirmation-md)",
+    "modal-confirmation-lg": "var(--theme-sizing-modal-confirmation-lg)",
+    "drawer-sm": "var(--theme-sizing-drawer-sm)",
+    "drawer-md": "var(--theme-sizing-drawer-md)",
+    "drawer-lg": "var(--theme-sizing-drawer-lg)",
+    "drawer-xl": "var(--theme-sizing-drawer-xl)",
+    "drawer-2xl": "var(--theme-sizing-drawer-2xl)",
+    "dropdown-sm": "var(--theme-sizing-dropdown-sm)",
+    "dropdown-md": "var(--theme-sizing-dropdown-md)",
+    "dropdown-lg": "var(--theme-sizing-dropdown-lg)",
+    "dropdown-xl": "var(--theme-sizing-dropdown-xl)",
+    "icon-circle-container-sm": "var(--theme-sizing-icon-circle-container-sm)",
+    "icon-circle-icon-sm": "var(--theme-sizing-icon-circle-icon-sm)",
+    "icon-circle-container-md": "var(--theme-sizing-icon-circle-container-md)",
+    "icon-circle-icon-md": "var(--theme-sizing-icon-circle-icon-md)",
+    "icon-circle-container-lg": "var(--theme-sizing-icon-circle-container-lg)",
+    "icon-circle-icon-lg": "var(--theme-sizing-icon-circle-icon-lg)",
+    "icon-circle-container-xl": "var(--theme-sizing-icon-circle-container-xl)",
+    "icon-circle-icon-xl": "var(--theme-sizing-icon-circle-icon-xl)",
     "sticker-size-1": "var(--theme-sticker-size-size-1)",
     "sticker-size-2": "var(--theme-sticker-size-size-2)",
     "sticker-size-3": "var(--theme-sticker-size-size-3)",
@@ -966,11 +950,27 @@ export const extend = {
     "sticker-size-6": "var(--theme-sticker-size-size-6)",
     "sticker-size-7": "var(--theme-sticker-size-size-7)",
     "sticker-size-8": "var(--theme-sticker-size-size-8)",
-    "tv-form-spacing": "var(--theme-tv-page-spacing-form-spacing)",
+    "page-padding": "var(--theme-page-spacing-page-page-padding)",
+    "page-gap": "var(--theme-page-spacing-page-page-gap)",
+    "page-gap-lv2": "var(--theme-page-spacing-page-page-gap-lv2)",
+    "section-padding": "var(--theme-page-spacing-section-section-padding)",
+    "section-gap": "var(--theme-page-spacing-section-section-gap)",
+    "section-gap-lv2": "var(--theme-page-spacing-section-section-gap-lv2)",
+    "sub-section-1-padding": "var(--theme-page-spacing-sub-section-1-sub-section-1-padding)",
+    "sub-section-1-gap": "var(--theme-page-spacing-sub-section-1-sub-section-1-gap)",
+    "sub-section-1-gap-lv2": "var(--theme-page-spacing-sub-section-1-sub-section-1-gap-lv2)",
+    "form-title-with-table": "var(--theme-page-spacing-form-title-with-table)",
+    "form-spacing": "var(--theme-page-spacing-form-spacing)",
+    "multi-forms-spacing": "var(--theme-page-spacing-multi-forms-spacing)",
+    "drawer-content-gap": "var(--theme-page-spacing-drawer-content-gap)",
+    "sub-section-2-padding": "var(--theme-page-spacing-sub-section-2-sub-section-2-padding)",
+    "sub-section-2-gap": "var(--theme-page-spacing-sub-section-2-sub-section-2-gap)",
+    "sub-section-2-gap-lv2": "var(--theme-page-spacing-sub-section-2-sub-section-2-gap-lv2)",
     "tv-form-title-with-table": "var(--theme-tv-page-spacing-form-title-with-table)",
+    "tv-form-spacing": "var(--theme-tv-page-spacing-form-spacing)",
     "tv-multi-form-spacing": "var(--theme-tv-page-spacing-multi-form-spacing)",
-    "tv-page-gap": "var(--theme-tv-page-spacing-page-page-gap)",
-    "tv-page-padding": "var(--theme-tv-page-spacing-page-page-padding)"
+    "tv-page-padding": "var(--theme-tv-page-spacing-page-page-padding)",
+    "tv-page-gap": "var(--theme-tv-page-spacing-page-page-gap)"
   }
 };
 

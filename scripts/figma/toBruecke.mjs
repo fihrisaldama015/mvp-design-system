@@ -36,6 +36,14 @@ const leaves = [];
   for (const [k, v] of Object.entries(node || {})) if (!k.startsWith("$")) walk(v, [...at, k]);
 })(src, []);
 
+// Keep Figma's order (collection order, then variable order inside it), like Brücke does.
+// The export is alphabetical (opacity-0, opacity-10, opacity-100, opacity-20 ...).
+// scopes.json lists every collection's variables in Figma order.
+const orderOf = new Map();
+collections.forEach((c, ci) => Object.keys(realScopes[c.name] || {}).forEach((name, vi) => orderOf.set(`${c.name}/${name}`, ci * 100000 + vi)));
+const orderKey = ({ at, token }) => orderOf.get(`${byId.get(token.$extensions["figma-console-mcp"].collectionId).name}/${at.slice(1).join("/")}`) ?? Infinity;
+leaves.sort((a, b) => orderKey(a) - orderKey(b));
+
 // The export names collections by slug ("+Theme" -> "theme"); learn slug -> real name.
 const slugToName = new Map();
 for (const { at, token } of leaves) slugToName.set(at[0], byId.get(token.$extensions["figma-console-mcp"].collectionId).name);
