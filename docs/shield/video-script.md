@@ -227,3 +227,11 @@ AI-builds-a-page demo (to be tried later on one MVP page).
 ## Assets
 Captured and listed per scene in `docs/shield/video-assets/README.md` (screenshots, terminal text and PNG, Figma exports).
 Optional and not captured: the Graphene variables panel in Figma (scene 5).
+
+## Changes made while composing (Remotion, `video/`)
+- Scene 3: one narration sentence added for the strip, so the caption matches the screen: "Four more pieces round it out: inventory, the component analysis, initStorybook and checkConfig."
+- Scene 6a: one narration sentence added for the proof panel: "Then five checks: the side-by-side sheet, hover and press values against the token, disabled and loading values, every class resolving to CSS, and every story rendering."
+- Scene 7 is four stills in a 2x2 grid (no screen recording), no narration.
+- Terminals are rendered as text (generated from `video-assets/terminal/*.txt` by `video/scripts/gen-terminal.mjs`), not as scaled screenshots, so they stay readable.
+- Scene 4's `tokens.index.json` and `figma-index.json` blocks are excerpts of the real files (formatting compacted).
+- The Button sheet in scene 6 is the comparison from the MVP pilot (`docs/shield/img/button-figma-vs-storybook.png`).

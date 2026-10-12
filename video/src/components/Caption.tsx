@@ -7,6 +7,7 @@ import { sentenceStarts } from "../timing";
 export const Caption: React.FC<{ sentences: string[] }> = ({ sentences }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
+  if (!sentences.length) return null;
   const starts = sentenceStarts(sentences, durationInFrames);
   const idx = starts.reduce((acc, s, i) => (frame >= s ? i : acc), 0);
   const start = starts[idx];

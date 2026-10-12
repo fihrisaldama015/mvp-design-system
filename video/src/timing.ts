@@ -16,4 +16,4 @@ export const sentenceStarts = (sentences: string[], total: number, lead = 15, ta
 };
 
 /** "A. B. C" -> ["A.", "B.", "C"] (splits after . ? ! followed by a space). */
-export const splitSentences = (text: string) => text.split(/(?<=[.?!:])\s+(?=[A-Z"])/).map((s) => s.trim()).filter(Boolean);
+export const splitSentences = (text: string) => text.split(/(?<=[.?!])\s+(?=[A-Z"])/).map((s) => s.trim()).filter(Boolean);

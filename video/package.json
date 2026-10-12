@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "assets": "rm -rf public/assets && cp -r ../docs/shield/video-assets public/assets",
+    "assets": "rm -rf public/assets && cp -r ../docs/shield/video-assets public/assets && node scripts/gen-terminal.mjs",
     "studio": "npm run assets && remotion studio src/index.ts",
     "still": "npm run assets && remotion still src/index.ts",
     "render": "npm run assets && remotion render src/index.ts ShieldVideo out/shield-video.mp4"
