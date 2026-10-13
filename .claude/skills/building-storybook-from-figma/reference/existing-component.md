@@ -30,7 +30,10 @@ Additions from Figma are safe: they go in without asking. A prop or option that 
 (a `searchable` on Select, a `size="xl"`) must never disappear silently.
 
 1. `node scripts/figma/reviewSync.mjs .figma-dump/components.<Name>.json src/components/<x>/index.js [--map '{"Dismiss":"onDismiss"}'] [--legacy tone=status]`
-   lists *additions*, *default changes* and *removals* (with how many caller files use each) and writes `src/guide/sync-review.json`.
+   lists *additions*, *default changes* and *removals* (with how many caller files use each) and writes .figma-dump/sync-review.json.
+**The review lives on the machine that ran the sync and nowhere else**: `.figma-dump/` (the Figma reads, `sync-review.json`, `review-decisions.json`)
+   is not in git. Another dev's clone has no review and does not need yours; their own syncs get their own. What travels is the *outcome*:
+   the code, the component doc and the commit message. Record the decision there (who decided, what, why: `docs/<ds>/<component>.md`).
 2. The dev opens Storybook > **Guide/Sync review** and answers every removal, then **Save answers**
    (needs `dumpServer.py` running; without it the page shows the JSON to copy into `.figma-dump/review-decisions.json`).
 3. The agent reads `review-decisions.json` and applies it. Nothing is removed before this file exists.
@@ -43,7 +46,7 @@ Additions from Figma are safe: they go in without asking. A prop or option that 
    *unchanged* (it ignores the read time) -> apply; *CHANGED* -> run `reviewSync.mjs` again and have the dev answer again.
    Only prop and variant changes are guaranteed to show; it hashes everything the read contains, so a changed fill or token also shows.
    **A waiting review does not block other work.** The dev may say "sync X first" (e.g. while a PM or tech lead decides). Keep syncing other
-   components: `reviewSync` adds each to `sync-review.json`, the page lists all of them, answers can be saved partially (the rest stay
+   components: `reviewSync` adds each to .figma-dump/sync-review.json, the page lists all of them, answers can be saved partially (the rest stay
    pending), and `--done "<Name>"` only closes its own component. Before touching a component that shares code with a pending one
    (Select and Input share `components/field/control`), say so to the dev. When the dev comes back, start with `reviewState.mjs`, then
    re-read and `--verify` that component, since Figma may have moved on.

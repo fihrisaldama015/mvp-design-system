@@ -1,14 +1,16 @@
-// Is a sync review waiting? Reads src/guide/sync-review.json (made by reviewSync.mjs) and the dev's
+// Is a sync review waiting? Reads .figma-dump/sync-review.json (made by reviewSync.mjs) and the dev's
 // answers (.figma-dump/review-decisions.json, saved from Storybook > Guide/Sync review).
 // A new Claude session starts here: it does not remember the earlier one, the files do.
-// Usage: node scripts/figma/reviewState.mjs        (or import { reviewState } from "./reviewState.mjs")
+// Everything is local to this machine (.figma-dump/ is not in git): a review made here is answered here.
+// Usage: node scripts/figma/reviewState.mjs [--quiet]   (--quiet prints only when a review is pending; used by the SessionStart hook)
+//        or import { reviewState } from "./reviewState.mjs"
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 export function reviewState(root = process.cwd()) {
   const read = (f) => { try { return JSON.parse(fs.readFileSync(path.join(root, f), "utf8")); } catch { return null; } };
-  const review = read("src/guide/sync-review.json");
+  const review = read(".figma-dump/sync-review.json");
   const answers = read(".figma-dump/review-decisions.json")?.decisions ?? {};
   const out = [];
   for (const [name, c] of Object.entries(review?.components ?? {})) {
@@ -21,7 +23,8 @@ export function reviewState(root = process.cwd()) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const st = reviewState();
-  if (!st.length) console.log("No sync review pending.");
+  if (!st.length && !process.argv.includes("--quiet")) console.log("No sync review pending.");
+  if (st.length && process.argv.includes("--quiet")) console.log("Sync review pending on this machine (a previous session left it):");
   for (const c of st) {
     console.log(`${c.name} (Figma ${c.figmaNode}, read ${c.readAt}): ${c.additions} additions, ${c.removals} removals, ${c.state === "waiting-for-dev" ? `${c.unanswered.length} unanswered: ${c.unanswered.join(", ")}` : "all removals answered, not applied yet"}`);
     console.log(c.state === "waiting-for-dev"

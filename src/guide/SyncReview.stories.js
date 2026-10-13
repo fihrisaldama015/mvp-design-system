@@ -3,7 +3,6 @@ import { Alert } from "components/alert";
 import { Badge } from "components/badge";
 import { Button } from "components/button";
 import { Select } from "components/select";
-import review from "./sync-review.json";
 
 const RECEIVER = "http://localhost:9232";
 const FILE = "review-decisions.json";
@@ -30,7 +29,8 @@ const when = (iso) => (iso ? new Date(iso).toLocaleString() : "");
  * longer has needs an answer: remove it, keep it as deprecated (callers keep
  * working, new pages get it off by default), or keep it and ask the designer. The
  * answers are saved as `review-decisions.json` (you can save some now and answer the rest later, e.g. while waiting for someone) next to the Figma dump, and the page
- * shows what is saved there when it opens, so a refresh does not lose them.
+ * shows what is saved there when it opens, so a refresh does not lose them. The review itself
+ * (`.figma-dump/sync-review.json`) is read from the receiver too: it lives on the machine that ran the sync, not in git.
  */
 export default {
   title: "Guide/Sync review",
@@ -58,7 +58,9 @@ function Item({ item, choice, onChoice }) {
 }
 
 function Review() {
-  const names = Object.keys(review.components);
+  const [review, setReview] = useState(null); // { components }, or null while loading / when there is none
+  const [receiverDown, setReceiverDown] = useState(false);
+  const names = Object.keys(review?.components ?? {});
   const [answers, setAnswers] = useState({});
   const [saved, setSaved] = useState(null); // { at, answers } as stored in the file, or null
   const [error, setError] = useState(null);
@@ -66,19 +68,22 @@ function Review() {
 
   // What the file already holds is the truth: show it instead of an empty form.
   useEffect(() => {
-    fetch(`${RECEIVER}/load?name=${FILE}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((file) => {
+    const get = (name) => fetch(`${RECEIVER}/load?name=${name}`).then((r) => (r.ok ? r.json() : null));
+    Promise.all([get("sync-review.json"), get(FILE)])
+      .then(([rev, file]) => {
+        setReview(rev);
         if (file?.decisions) {
           setAnswers(file.decisions);
           setSaved({ at: file.decidedAt, answers: file.decisions });
         }
       })
-      .catch(() => {})
+      .catch(() => setReceiverDown(true))
       .finally(() => setLoaded(true));
   }, []);
 
-  if (!names.length) return <Alert status="info" title="Nothing to review">Run scripts/figma/reviewSync.mjs for a component first.</Alert>;
+  if (receiverDown) return <Alert status="warning" title="The receiver is not running">The review lives on this machine and is read through the receiver: <code>npm run figma:receiver</code>, then reload.</Alert>;
+  if (!loaded) return null;
+  if (!names.length) return <Alert status="info" title="Nothing to review on this machine">Reviews are made by <code>scripts/figma/reviewSync.mjs</code> when a component that already exists is synced from Figma, and stay on the machine that ran it.</Alert>;
 
   const open = names.flatMap((n) => review.components[n].items.filter((i) => i.kind.startsWith("removed")).map((i) => `${n}/${i.id}`));
   const missing = open.filter((k) => !answers[k]);

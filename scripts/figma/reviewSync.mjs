@@ -1,6 +1,6 @@
 // Review step before a component that already exists is synced from Figma: what is
 // added (safe), what is gone from Figma but still in code (needs a human decision),
-// and which defaults change. Writes src/guide/sync-review.json, which the Storybook
+// and which defaults change. Writes .figma-dump/sync-review.json, which the Storybook
 // page "Guide/Sync review" shows; the dev's answers come back as review-decisions.json.
 //   node scripts/figma/reviewSync.mjs --verify <components.Name.json>   after RE-READING the node from Figma: is it still what the review was made from?
 //   node scripts/figma/reviewSync.mjs --done "<Name>"                    after applying the answers: close the review (decisions file is kept as *.applied.json)
@@ -10,14 +10,14 @@
 //          [--behavior value,onChange,...]     code-only props that are data or behaviour, not looks (never flagged as removed)
 //          [--also src/components/field/index.js]  a wrapper whose props count as this component's API (label, hint, required in Field)
 //          [--ignore "State,Label"]           Figma properties that are not props (CSS state, show/hide switches for text that already has a prop)
-//          [--out src/guide/sync-review.json] [--src src]
+//          [--out .figma-dump/sync-review.json] [--src src]
 import fs from "node:fs";
 import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 
 const [, , figmaFile, codeFile, ...rest] = process.argv;
 const flag = (n, d) => (rest.includes(n) ? rest[rest.indexOf(n) + 1] : d);
-const OUT0 = flag("--out", "src/guide/sync-review.json");
+const OUT0 = flag("--out", ".figma-dump/sync-review.json");
 const DUMP = flag("--dump", ".figma-dump");
 // Same data, ignoring the read time: if this changed, Figma changed (or the read was different).
 const hashOf = (d) => { const { readAt, ...rest } = d; return crypto.createHash("sha1").update(JSON.stringify(rest)).digest("hex").slice(0, 12); };
@@ -59,7 +59,7 @@ const LEGACY = Object.fromEntries((flag("--legacy", "") || "").split(",").filter
 const BEHAVIOR = new Set(["id", "name", "ref", "className", "style", "children", "value", "defaultValue", "onChange", "onClick", "onBlur", "onFocus", ...flag("--behavior", "").split(",").filter(Boolean)]);
 const IGNORE = new Set((flag("--ignore", "") || "").split(",").filter(Boolean));
 const ALSO = (flag("--also", "") || "").split(",").filter(Boolean);
-const OUT = flag("--out", "src/guide/sync-review.json");
+const OUT = flag("--out", ".figma-dump/sync-review.json");
 const SRC = flag("--src", "src");
 if (!figmaFile || !codeFile) {
   console.error("Usage: node scripts/figma/reviewSync.mjs <components.Name.json> <src/components/x/index.js> [--map JSON] [--legacy a=b] [--out file]");
