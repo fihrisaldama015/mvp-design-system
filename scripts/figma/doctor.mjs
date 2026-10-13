@@ -9,6 +9,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { findChrome, chromeHelp } from "./findChrome.mjs";
 import { diffScripts } from "./syncSkill.mjs";
+import { reviewState } from "./reviewState.mjs";
 
 const args = process.argv.slice(2);
 const PORT = args.includes("--port") ? args[args.indexOf("--port") + 1] : "9232";
@@ -83,6 +84,8 @@ mcpFiles.length ? add("mcp", "OK", `figma-console MCP is configured (${mcpFiles.
 step("skill and project");
 const skillDirs = [path.join(os.homedir(), ".claude", "skills", "building-storybook-from-figma"), path.join(process.cwd(), ".claude", "skills", "building-storybook-from-figma")];
 skillDirs.some((d) => fs.existsSync(d)) ? add("skill", "OK", "Skill is installed") : add("skill", "WARN", "Skill building-storybook-from-figma not found in ~/.claude/skills or .claude/skills", pick({ win32: "xcopy /E /I skills\\building-storybook-from-figma %USERPROFILE%\\.claude\\skills\\building-storybook-from-figma", darwin: "cp -R .claude/skills/building-storybook-from-figma ~/.claude/skills/", linux: "cp -R .claude/skills/building-storybook-from-figma ~/.claude/skills/" }));
+step("pending sync review");
+for (const c of reviewState()) add("sync-review", "WARN", `${c.name}: ${c.state === "waiting-for-dev" ? `${c.unanswered.length} removal(s) wait for the dev's answer` : "answered, not applied yet"} (Figma read ${c.readAt})`, c.state === "waiting-for-dev" ? "Do not apply anything. Dev: open Storybook > Guide/Sync review and Save. Details: node scripts/figma/reviewState.mjs" : "Re-read the node, reviewSync.mjs --verify, apply, reviewSync.mjs --done. Details: node scripts/figma/reviewState.mjs");
 const drift = diffScripts();
 if (drift?.length) add("scripts-copy", "WARN", `scripts/figma differs from the skill in ${drift.length} file(s): ${drift.slice(0, 4).join(", ")}${drift.length > 4 ? ", ..." : ""}`, "npm run sync-skill   (the skill's scripts are the source; edit there, not in scripts/figma)");
 fs.existsSync("package.json") ? add("project", "OK", "package.json found in this folder") : add("project", "WARN", "No package.json here; run doctor from the project root", "cd to the project (or the empty folder for the starter template).");

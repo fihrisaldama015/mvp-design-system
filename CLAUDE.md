@@ -15,6 +15,14 @@ them: in Figma Desktop import the Desktop Bridge plugin from `~/.figma-console-m
 The skill `building-storybook-from-figma` lives in `.claude/skills/` (nothing to install). Start the receiver with `npm run figma:receiver`.
 The skill's scripts (`.claude/skills/.../scripts/`) are the source; `scripts/figma/` is the copy the project runs. After editing the skill run `npm run sync-skill` (`doctor` warns when they differ).
 
+## Resuming a sync (new session, after sleep or restart)
+
+You do not remember the earlier session; the files do. At the start of any Figma sync work run `node scripts/figma/reviewState.mjs`
+(`doctor` shows the same as `sync-review`). It says whether a review is **waiting for the dev** (do not apply anything, point the dev to
+Storybook > Guide/Sync review, `/?path=/story/guide-sync-review--overview`, and wait) or **answered, not applied** (re-read the node
+from Figma, `reviewSync.mjs --verify <file>`: unchanged -> apply, then `reviewSync.mjs --done "<Name>"`; changed -> run reviewSync
+again and have the dev answer again). Never fill in `review-decisions.json` yourself. Procedure: `reference/existing-component.md`.
+
 ## Build pages from Storybook
 
 - Storybook is the source of truth for the UI. **Before building or changing a

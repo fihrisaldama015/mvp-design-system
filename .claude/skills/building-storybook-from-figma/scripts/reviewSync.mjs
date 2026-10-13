@@ -2,6 +2,8 @@
 // added (safe), what is gone from Figma but still in code (needs a human decision),
 // and which defaults change. Writes src/guide/sync-review.json, which the Storybook
 // page "Guide/Sync review" shows; the dev's answers come back as review-decisions.json.
+//   node scripts/figma/reviewSync.mjs --verify <components.Name.json>   after RE-READING the node from Figma: is it still what the review was made from?
+//   node scripts/figma/reviewSync.mjs --done "<Name>"                    after applying the answers: close the review (decisions file is kept as *.applied.json)
 // Usage: node scripts/figma/reviewSync.mjs <components.Name.json> <src/components/x/index.js>
 //          [--map '{"Dismiss":"onDismiss"}']   Figma property -> code prop (default: camelCase)
 //          [--legacy tone=status,...]          old code prop that Figma replaced (not "removed")
@@ -10,10 +12,38 @@
 //          [--ignore "State,Label"]           Figma properties that are not props (CSS state, show/hide switches for text that already has a prop)
 //          [--out src/guide/sync-review.json] [--src src]
 import fs from "node:fs";
+import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 
 const [, , figmaFile, codeFile, ...rest] = process.argv;
 const flag = (n, d) => (rest.includes(n) ? rest[rest.indexOf(n) + 1] : d);
+const OUT0 = flag("--out", "src/guide/sync-review.json");
+const DUMP = flag("--dump", ".figma-dump");
+// Same data, ignoring the read time: if this changed, Figma changed (or the read was different).
+const hashOf = (d) => { const { readAt, ...rest } = d; return crypto.createHash("sha1").update(JSON.stringify(rest)).digest("hex").slice(0, 12); };
+const load = () => (fs.existsSync(OUT0) ? JSON.parse(fs.readFileSync(OUT0, "utf8")) : { components: {} });
+
+if (process.argv[2] === "--verify") {
+  const fresh = JSON.parse(fs.readFileSync(process.argv[3], "utf8"));
+  const entry = load().components[fresh.name];
+  if (!entry) { console.error(`No review stored for "${fresh.name}" in ${OUT0}.`); process.exit(2); }
+  if (entry.sourceHash === hashOf(fresh)) { console.log(`${fresh.name}: Figma node ${fresh.nodeId} is unchanged since the review (read ${entry.readAt}). Safe to apply.`); process.exit(0); }
+  console.log(`${fresh.name}: Figma node ${fresh.nodeId} CHANGED since the review (read ${entry.readAt}). Run reviewSync again and have the dev answer again; do not apply the old answers.`);
+  process.exit(1);
+}
+if (process.argv[2] === "--done") {
+  const name = process.argv[3];
+  const doc = load();
+  if (!doc.components[name]) { console.error(`No review stored for "${name}".`); process.exit(2); }
+  delete doc.components[name];
+  fs.writeFileSync(OUT0, JSON.stringify(doc, null, 2) + "\n");
+  const d = `${DUMP}/review-decisions.json`;
+  const kept = `${DUMP}/review-decisions.${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.applied.json`;
+  if (fs.existsSync(d)) { fs.renameSync(d, kept); console.log(`Closed the review of ${name}; answers kept in ${kept}.`); }
+  else console.log(`Closed the review of ${name} (there was no decisions file).`);
+  process.exit(0);
+}
+
 const MAP = JSON.parse(flag("--map", "{}"));
 const LEGACY = Object.fromEntries((flag("--legacy", "") || "").split(",").filter(Boolean).map((p) => p.split("=")));
 const BEHAVIOR = new Set(["id", "name", "ref", "className", "style", "children", "value", "defaultValue", "onChange", "onClick", "onBlur", "onFocus", ...flag("--behavior", "").split(",").filter(Boolean)]);
@@ -101,7 +131,7 @@ for (const [p, c] of Object.entries(cProps)) {
 }
 
 const doc = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, "utf8")) : { components: {} };
-doc.components[figma.name] = { figmaNode: figma.nodeId, figmaPage: figma.page?.name ?? figma.page, code: codeFile, readAt: figma.readAt, items };
+doc.components[figma.name] = { figmaNode: figma.nodeId, figmaPage: figma.page?.name ?? figma.page, code: codeFile, readAt: figma.readAt, sourceHash: hashOf(figma), items };
 fs.mkdirSync(OUT.replace(/\/[^/]*$/, "") || ".", { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify(doc, null, 2) + "\n");
 

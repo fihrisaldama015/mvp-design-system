@@ -38,6 +38,12 @@ Additions from Figma are safe: they go in without asking. A prop or option that 
    After `reviewSync` it tells the dev where the page is (Storybook running, `/?path=/story/guide-sync-review--overview`), what each removal
    means (callers, on by default or not), and stops until the file exists. Missing file = no removal, no deprecation, no default flip.
    Testing the flow with a stand-in answer is fine only on a scratch copy and must be said out loud.
+4. **Before applying: is the review still true?** The review was made from a Figma read at a certain time (`readAt`). Re-read the node
+   (`readComponents.js`, `ARGS.IDS = ["<nodeId>"]`, one second) and run `node scripts/figma/reviewSync.mjs --verify .figma-dump/components.<Name>.json`.
+   *unchanged* (it ignores the read time) -> apply; *CHANGED* -> run `reviewSync.mjs` again and have the dev answer again.
+   Only prop and variant changes are guaranteed to show; it hashes everything the read contains, so a changed fill or token also shows.
+5. **After applying and proving:** `node scripts/figma/reviewSync.mjs --done "<Name>"` closes the review (the answers stay as `*.applied.json`).
+   **A new session finds the state in files**, not in memory: `node scripts/figma/reviewState.mjs` says *waiting for the dev*, *answered, not applied*, or nothing.
 
 | Answer | What the agent does |
 |---|---|
