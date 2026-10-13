@@ -11,7 +11,7 @@
 //          [--behavior value,onChange,...]     code-only props that are data or behaviour, not looks (never flagged as removed)
 //          [--also src/components/field/index.js]  a wrapper whose props count as this component's API (label, hint, required in Field)
 //          [--ignore "State,Label"]           Figma properties that are not props (CSS state, show/hide switches for text that already has a prop)
-//          [--src src]
+//          [--src src] [--file <figmaFileKey>]   (the key makes the reviewers' "Open in Figma" link; default: figma-index.json)
 import fs from "node:fs";
 import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
@@ -119,7 +119,7 @@ const items = [];
 const add = (i) => items.push({ id: `${i.kind}:${i.prop}${i.option ? `=${i.option}` : ""}`, decision: null, ...i });
 for (const [p, f] of Object.entries(fProps)) {
   const c = cProps[p] ?? cProps[Object.keys(LEGACY).find((k) => LEGACY[k] === p)];
-  if (!c) { add({ kind: "added-prop", prop: p, detail: `Figma "${f.figma}" (${f.type}${f.options ? `: ${f.options.join(" | ")}` : ""}) has no prop in code.` }); continue; }
+  if (!c) { add({ kind: "added-prop", prop: p, figmaName: f.figma, options: f.options ?? undefined, detail: `Figma "${f.figma}" (${f.type}${f.options ? `: ${f.options.join(" | ")}` : ""}) has no prop in code.` }); continue; }
   if (f.options && c.options) {
     for (const o of f.options.filter((o) => !c.options.some((x) => x.toLowerCase() === o.toLowerCase()))) add({ kind: "added-option", prop: p, option: o, detail: `Figma has ${p}="${o}", code does not.` });
   }
@@ -129,14 +129,15 @@ for (const [p, f] of Object.entries(fProps)) {
 const covered = new Set([...Object.keys(fProps), ...Object.values(LEGACY).length ? Object.keys(LEGACY) : []]);
 for (const [p, c] of Object.entries(cProps)) {
   if (BEHAVIOR.has(p) || /^on[A-Z]/.test(p)) continue; // data / behaviour (handlers too): Figma does not draw it
-  if (!covered.has(p)) add({ kind: "removed-prop", prop: p, deprecated: c.deprecated, ...(() => { const k = callers(p); return { callers: k.app, storyCallers: k.stories, onByDefault: k.byDefault }; })(), detail: `Code has "${p}" but Figma does not. ${c.description}` });
+  if (!covered.has(p)) add({ kind: "removed-prop", prop: p, deprecated: c.deprecated, description: c.description, default: c.default, ...(() => { const k = callers(p); return { callers: k.app, storyCallers: k.stories, onByDefault: k.byDefault }; })(), detail: `Code has "${p}" but Figma does not. ${c.description}` });
   else if (fProps[p]?.options && c.options)
     for (const o of c.options.filter((o) => !fProps[p].options.some((x) => x.toLowerCase() === o.toLowerCase()))) add({ kind: "removed-option", prop: p, option: o, ...(() => { const k = callers(p, o); return { callers: k.app, storyCallers: k.stories }; })(), detail: `Code has ${p}="${o}" but Figma does not.` });
 }
 
 const api = reviewApi();
 try {
-  await api.publish({ component: figma.name, figmaNode: figma.nodeId, figmaPage: figma.page?.name ?? figma.page, code: codeFile, readAt: figma.readAt, sourceHash: hashOf(figma), items });
+  const idx = (() => { try { return JSON.parse(fs.readFileSync("figma-index.json", "utf8")).components?.[figma.name]; } catch { return null; } })();
+  await api.publish({ component: figma.name, jsxName: COMP, figmaFileKey: flag("--file", idx?.figmaFileKey ?? null), figmaNode: figma.nodeId, figmaPage: figma.page?.name ?? figma.page, code: codeFile, readAt: figma.readAt, sourceHash: hashOf(figma), items });
 } catch (e) { fail(`Could not publish the review: ${e.message}`); }
 
 const count = (k) => items.filter((i) => i.kind === k).length;
