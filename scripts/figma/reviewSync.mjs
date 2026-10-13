@@ -137,7 +137,8 @@ for (const [p, c] of Object.entries(cProps)) {
 const api = reviewApi();
 try {
   const idx = (() => { try { return JSON.parse(fs.readFileSync("figma-index.json", "utf8")).components?.[figma.name]; } catch { return null; } })();
-  await api.publish({ component: figma.name, jsxName: COMP, figmaFileKey: flag("--file", idx?.figmaFileKey ?? null), figmaNode: figma.nodeId, figmaPage: figma.page?.name ?? figma.page, code: codeFile, readAt: figma.readAt, sourceHash: hashOf(figma), items });
+  const cfg = (() => { try { return JSON.parse(fs.readFileSync("figma-tokens.config.json", "utf8")); } catch { return {}; } })();
+  await api.publish({ component: figma.name, jsxName: COMP, storybookUrl: cfg.storybookUrl || null, storyId: idx?.story ?? null, figmaFileKey: flag("--file", idx?.figmaFileKey ?? null), figmaNode: figma.nodeId, figmaPage: figma.page?.name ?? figma.page, code: codeFile, readAt: figma.readAt, sourceHash: hashOf(figma), items });
 } catch (e) { fail(`Could not publish the review: ${e.message}`); }
 
 const count = (k) => items.filter((i) => i.kind === k).length;

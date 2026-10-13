@@ -41,6 +41,7 @@ Additions from Figma are safe: they go in without asking. A prop or option that 
    `src/pages/review/previews.js`, one entry per component folder: when a review involves a visual property of a component that has no entry, **add one**
    (the real component, sample props, and for a property that is not an on/off switch the `with` / `without` props). Run `reviewSync` with `--file <figmaFileKey>`
    (or keep `figma-index.json` up to date) so the page can link "Open in Figma" to the node.
+   The page also links "Open in Storybook" (`storybookUrl` in `figma-tokens.config.json` + the story id in `figma-index.json`): it is the fallback for a property without a live preview, so set both.
 2. The reviewers open `/review`, enter the shared password and their name, answer the removals and **Save answers**. They can answer some now and
    the rest later; a second save by someone else is refused (409) until they reload, so nobody overwrites an answer unseen.
 3. The agent reads the answers with `node scripts/figma/reviewSync.mjs --answers "<Name>"` and applies them. Nothing is removed before the review is *answered*.

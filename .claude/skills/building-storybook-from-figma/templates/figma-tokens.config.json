@@ -1,6 +1,7 @@
 {
   "$comment": "Which Figma collection plays which role, for scripts/figma/buildTokens.mjs and buildTokenDocs.mjs. Values are Figma collection names. Defaults are for Graphene.",
   "staleAfterDays": 7,
+  "storybookUrl": "",
   "designSystem": "Graphene",
   "collections": {
     "primitive": "Color",

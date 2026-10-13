@@ -25,7 +25,7 @@ dash-separated component name (`Input - Single Select/Base` is `input-single-sel
 Document (one per component, key `review:<slug>`):
 
 ```json
-{ "component": "Input - Single Select/Base", "jsxName": "Select", "figmaFileKey": "o4wdbN7PjV2ugCKDcc2pXd", "figmaNode": "7:94371", "figmaPage": "...", "code": "src/components/select/index.js",
+{ "component": "Input - Single Select/Base", "jsxName": "Select", "storybookUrl": "https://<storybook>", "storyId": "forms-select", "figmaFileKey": "o4wdbN7PjV2ugCKDcc2pXd", "figmaNode": "7:94371", "figmaPage": "...", "code": "src/components/select/index.js",
   "readAt": "2026-10-13T04:48:49Z", "sourceHash": "460b1f89d95c",
   "status": "pending | answered | applied", "version": 3,
   "items": [ { "id": "removed-prop:searchable", "kind": "removed-prop", "prop": "searchable", "description": "Shows a search box ...", "default": "true", "detail": "...", "callers": 0, "storyCallers": 2, "onByDefault": true } ],
@@ -34,7 +34,7 @@ Document (one per component, key `review:<slug>`):
   "createdAt": "...", "updatedAt": "..." }
 ```
 
-The page turns these fields into plain language for people who do not read code: what the property does (`description`), who is affected (`callers`, `storyCallers`, `onByDefault`, `jsxName`), a link to the Figma node (`figmaFileKey` + `figmaNode`), and what each choice means. `figmaFileKey` comes from `--file` or `figma-index.json`.
+The page turns these fields into plain language for people who do not read code: what the property does (`description`), who is affected (`callers`, `storyCallers`, `onByDefault`, `jsxName`), a link to the Figma node (`figmaFileKey` + `figmaNode`), and what each choice means. `figmaFileKey` comes from `--file` or `figma-index.json`. "Open in Storybook" is `storybookUrl` (`figma-tokens.config.json`, the deployed Storybook) + `storyId` (`figma-index.json`, the component's story id): it opens the component's docs page (`?path=/docs/<storyId>--docs`), which is also the fallback when a property has no live preview.
 
 `status` is derived: `pending` while a removal has no answer, `answered` when all have one, `applied` after `/applied`. Errors are `{ "error": "..." }`:
 `400` bad input, `401` no or wrong secret, `403` a reviewer called a tool-only route, `404`, `409` stale version or already applied, `502` the store failed, `503` not configured.

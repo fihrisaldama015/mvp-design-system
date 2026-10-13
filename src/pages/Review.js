@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ExternalLink, ListChecks } from "lucide-react";
+import { BookOpen, ExternalLink, ListChecks } from "lucide-react";
 import { Alert } from "components/alert";
 import { Badge } from "components/badge";
 import { Button } from "components/button";
@@ -32,6 +32,8 @@ const when = (iso) => (iso ? new Date(iso).toLocaleString() : "");
 const isRemoval = (i) => i.kind.startsWith("removed");
 const slugOf = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const figmaUrl = (doc) => (doc.figmaFileKey && doc.figmaNode ? `https://www.figma.com/design/${doc.figmaFileKey}?node-id=${doc.figmaNode.replace(":", "-")}` : null);
+// The component's documentation page in Storybook (all its stories, with Controls to switch a property on and off).
+const storybookLink = (doc) => (doc.storybookUrl && doc.storyId ? `${doc.storybookUrl.replace(/\/$/, "")}/?path=/docs/${doc.storyId}--docs` : null);
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 async function call(password, method, path = "", body) {
@@ -71,6 +73,7 @@ function Preview({ preview, prop }) {
 
 function Decision({ doc, item, choice, saved, onChoice, readOnly }) {
   const preview = useMemo(() => previewFor(doc, item), [doc, item]);
+  const story = storybookLink(doc);
   const chosen = CHOICES.find((c) => c.value === choice);
   const where = [item.callers ? plural(item.callers, "app file", "app files") : null, item.storyCallers ? plural(item.storyCallers, "Storybook example", "Storybook examples") : null].filter(Boolean).join(" and ");
   return (
@@ -88,6 +91,12 @@ function Decision({ doc, item, choice, saved, onChoice, readOnly }) {
         </p>
       </div>
       {preview && <Preview preview={preview} prop={item.prop} />}
+      {!preview && (
+        <p className="text-caption typo-regular-text-sm">
+          There is no live preview for this one yet.{" "}
+          {story ? <a href={story} target="_blank" rel="noreferrer" className="text-primary underline">Try the component in Storybook</a> : "Ask the developer to show it to you."}
+        </p>
+      )}
       <div className="flex flex-col gap-2">
         <div className="w-96"><Select label="What should we do with it?" options={CHOICES} value={choice ?? ""} placeholder="Choose what to do" disabled={readOnly} onChange={onChoice} /></div>
         {chosen && <p className="text-default typo-regular-text-sm">If you choose this: {chosen.effect}</p>}
@@ -116,6 +125,7 @@ function ReviewCard({ doc, password, reviewer, onChanged, onMissingName }) {
   const changes = Object.fromEntries(needs.filter((i) => draft[i.id] && draft[i.id] !== doc.answers[i.id]).map((i) => [i.id, draft[i.id]]));
   const lastDecision = [...doc.audit].reverse().find((a) => a.action === "decided");
   const link = figmaUrl(doc);
+  const story = storybookLink(doc);
 
   const save = async () => {
     if (!reviewer.trim()) return onMissingName();
@@ -136,6 +146,7 @@ function ReviewCard({ doc, password, reviewer, onChanged, onMissingName }) {
       action={
         <div className="flex items-center gap-3">
           <Badge tone={STATUS[doc.status].tone}>{STATUS[doc.status].label}</Badge>
+          {story && <Button as="a" href={story} target="_blank" rel="noreferrer" kind="outlined" size="sm" prefixIcon={<BookOpen />}>Open in Storybook</Button>}
           {link && <Button as="a" href={link} target="_blank" rel="noreferrer" kind="outlined" size="sm" suffixIcon={<ExternalLink />}>Open in Figma</Button>}
         </div>
       }

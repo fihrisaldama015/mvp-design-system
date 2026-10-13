@@ -95,7 +95,7 @@ async function route({ method, path: p = "", body, headers = {} }, { store, env 
       if (!b.component || slug(b.component) !== s) return bad(400, "component must be set and its slug must equal the URL.");
       if (!Array.isArray(b.items) || !b.sourceHash) return bad(400, "items (array) and sourceHash are required.");
       const t = now();
-      const base = { component: b.component, jsxName: b.jsxName ?? null, figmaFileKey: b.figmaFileKey ?? null, figmaNode: b.figmaNode ?? null, figmaPage: b.figmaPage ?? null, code: b.code ?? null, readAt: b.readAt ?? null, sourceHash: b.sourceHash, items: b.items };
+      const base = { component: b.component, jsxName: b.jsxName ?? null, storybookUrl: b.storybookUrl ?? null, storyId: b.storyId ?? null, figmaFileKey: b.figmaFileKey ?? null, figmaNode: b.figmaNode ?? null, figmaPage: b.figmaPage ?? null, code: b.code ?? null, readAt: b.readAt ?? null, sourceHash: b.sourceHash, items: b.items };
       let next;
       if (doc && doc.sourceHash === b.sourceHash && doc.status !== "applied") {
         next = { ...doc, ...base, updatedAt: t, audit: [...doc.audit, { at: t, by: "tool", action: "republished (same Figma state, answers kept)" }] };
