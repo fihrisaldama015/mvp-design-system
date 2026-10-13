@@ -1,0 +1,103 @@
+import { useState } from "react";
+import { Alert } from "components/alert";
+import { Badge } from "components/badge";
+import { Button } from "components/button";
+import { Select } from "components/select";
+import review from "./sync-review.json";
+
+const RECEIVER = "http://localhost:9232/save?name=review-decisions.json";
+
+const CHOICES = [
+  { value: "follow-figma", label: "Remove it, follow Figma" },
+  { value: "keep-deprecated", label: "Keep it as deprecated" },
+  { value: "keep", label: "Keep it, ask the designer to add it to Figma" },
+];
+
+const KIND_LABEL = {
+  "added-prop": "New prop",
+  "added-option": "New option",
+  "default-changed": "Default changes",
+  "removed-prop": "Gone from Figma",
+  "removed-option": "Gone from Figma",
+};
+
+/**
+ * Sync review: the page the dev answers before a component that already exists is
+ * synced from Figma. Additions are safe and go in. A prop or option that Figma no
+ * longer has needs an answer: remove it, keep it as deprecated (callers keep
+ * working, new pages get it off by default), or keep it and ask the designer. The
+ * answers are saved as `review-decisions.json` next to the Figma dump.
+ */
+export default {
+  title: "Guide/Sync review",
+  parameters: { layout: "padded", docs: { page: null } },
+};
+
+function Item({ item, choice, onChoice }) {
+  const needs = item.kind.startsWith("removed");
+  return (
+    <li className="flex flex-col gap-2 border-b border-default py-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge tone={needs ? "warning" : item.kind === "default-changed" ? "info" : "success"}>{KIND_LABEL[item.kind]}</Badge>
+        <code className="typo-semi-bold-text-sm">{item.prop}{item.option ? `="${item.option}"` : ""}</code>
+        {item.callers !== undefined && <span className="text-caption typo-regular-text-sm">{item.callers} caller files use it</span>}
+        {item.deprecated && <Badge tone="neutral">already deprecated</Badge>}
+      </div>
+      <p className="text-caption typo-regular-text-sm">{item.detail}</p>
+      {needs && (
+        <div className="w-96">
+          <Select options={CHOICES} value={choice ?? ""} placeholder="Choose what to do" onChange={onChoice} />
+        </div>
+      )}
+    </li>
+  );
+}
+
+function Review() {
+  const names = Object.keys(review.components);
+  const [answers, setAnswers] = useState({});
+  const [status, setStatus] = useState(null);
+  if (!names.length) return <Alert status="info" title="Nothing to review">Run scripts/figma/reviewSync.mjs for a component first.</Alert>;
+
+  const open = names.flatMap((n) => review.components[n].items.filter((i) => i.kind.startsWith("removed")).map((i) => `${n}/${i.id}`));
+  const missing = open.filter((k) => !answers[k]);
+  const payload = () => JSON.stringify({ decidedAt: new Date().toISOString(), decisions: answers }, null, 2);
+
+  const save = async () => {
+    try {
+      const res = await fetch(RECEIVER, { method: "POST", body: payload() });
+      setStatus(res.ok ? { ok: true } : { ok: false, text: `Receiver answered ${res.status}.` });
+    } catch {
+      setStatus({ ok: false, text: "The receiver on port 9232 is not running. Copy the answers below instead." });
+    }
+  };
+
+  return (
+    <div className="flex max-w-3xl flex-col gap-8">
+      {names.map((n) => {
+        const c = review.components[n];
+        const safe = c.items.filter((i) => !i.kind.startsWith("removed"));
+        const needs = c.items.filter((i) => i.kind.startsWith("removed"));
+        return (
+          <section key={n} className="flex flex-col gap-2">
+            <h2 className="typo-semi-bold-text-lg">{n}</h2>
+            <p className="text-caption typo-regular-text-sm">Figma {c.figmaPage} · node {c.figmaNode} · code {c.code}</p>
+            <ul>
+              {needs.map((i) => <Item key={i.id} item={i} choice={answers[`${n}/${i.id}`]} onChoice={(v) => setAnswers((a) => ({ ...a, [`${n}/${i.id}`]: v }))} />)}
+              {safe.map((i) => <Item key={i.id} item={i} />)}
+            </ul>
+          </section>
+        );
+      })}
+      <div className="flex items-center gap-3">
+        <Button status="primary" disabled={missing.length > 0} onClick={save}>Save answers</Button>
+        <span className="text-caption typo-regular-text-sm">{missing.length ? `${missing.length} removal(s) still need an answer` : "All removals answered"}</span>
+      </div>
+      {status?.ok && <Alert status="success" title="Saved">review-decisions.json is in the Figma dump folder. Tell the agent to continue.</Alert>}
+      {status && !status.ok && <Alert status="danger" title="Not saved">{status.text}</Alert>}
+      {status && !status.ok && <pre className="overflow-auto rounded-default bg-default-default p-3 typo-regular-text-sm">{payload()}</pre>}
+    </div>
+  );
+}
+
+export const Overview = { render: () => <Review /> };
