@@ -13,6 +13,7 @@ install it first (Windows `winget install OpenJS.NodeJS.LTS`, macOS `brew instal
 them: in Figma Desktop import the Desktop Bridge plugin from `~/.figma-console-mcp/plugin/manifest.json`
 (Plugins > Development > Import plugin from manifest) and run it, and approve the project MCP servers when Claude Code asks.
 The skill `building-storybook-from-figma` lives in `.claude/skills/` (nothing to install). Start the receiver with `npm run figma:receiver`.
+The skill's scripts (`.claude/skills/.../scripts/`) are the source; `scripts/figma/` is the copy the project runs. After editing the skill run `npm run sync-skill` (`doctor` warns when they differ).
 
 ## Build pages from Storybook
 

@@ -12,6 +12,7 @@
     "build-storybook": "node .storybook/run.mjs build -o storybook-static",
     "tokens:build": "node scripts/figma/toBruecke.mjs .figma-dump src/tokens/design_token.json && node scripts/figma/buildTokens.mjs && node scripts/figma/buildTokenDocs.mjs",
     "doctor": "node scripts/figma/doctor.mjs",
+    "sync-skill": "node scripts/figma/syncSkill.mjs",
     "figma:receiver": "node scripts/figma/receiver.mjs 9232 .figma-dump"
   },
   "dependencies": {
