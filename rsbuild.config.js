@@ -16,6 +16,11 @@ export default defineConfig({
   },
   html: { title: "Equipment Loan Tracker" },
   output: { distPath: { root: "build" } },
-  // /api/review: the sync-review API. On Vercel it is api/review.mjs; locally `npm run review:api` serves it.
-  server: { port: 5002, proxy: { "/api/review": "http://127.0.0.1:9233" } },
+  // /api/review: the sync-review API. On Vercel it is api/review.mjs. Locally it goes to `npm run review:api`
+  // (port 9233, password "local-password"), or to the deployed one when REVIEW_API_TARGET is set, e.g.
+  //   REVIEW_API_TARGET=https://your-app.vercel.app npm run dev   (then use the real REVIEW_PASSWORD on the page)
+  server: {
+    port: 5002,
+    proxy: { "/api/review": { target: process.env.REVIEW_API_TARGET ?? "http://127.0.0.1:9233", changeOrigin: true } },
+  },
 });

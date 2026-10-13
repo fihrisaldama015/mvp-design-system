@@ -50,6 +50,20 @@ The logic is one file, `scripts/figma/reviewCore.mjs` (`handle(request, { store,
 | **MVP on Vercel** | `api/review.mjs` (a Vercel function), `vercel.json` rewrite | **KV** (Redis over REST) |
 | **swt-fe, later** | routes in a backend (below) | MongoDB |
 
+### Which password, which store (a common 401)
+
+`/api/review` answers `401` when the password or key is wrong, so check which API the page is talking to:
+
+| You run | The page talks to | Password on the page |
+|---|---|---|
+| `npm run dev` only | nothing (the API is not running: the proxy fails) | - |
+| `npm run dev` + `npm run review:api` | the local store `.figma-dump/review-store` | `local-password` (or the `REVIEW_PASSWORD` you started `review:api` with) |
+| `REVIEW_API_TARGET=https://<your-app>.vercel.app npm run dev` | the deployed API and its KV store | the real `REVIEW_PASSWORD` from Vercel |
+| the deployed page | the deployed API | the real `REVIEW_PASSWORD` |
+
+The tool (`reviewSync`, `reviewState`) goes to the API in `.figma-dump/review-api.json` when that file exists, otherwise to the local store. So with that file present, a page started
+with plain `npm run dev` + `review:api` shows an **empty** local store, not what the tool published: use `REVIEW_API_TARGET` (or the deployed page) to see it.
+
 ### MVP on Vercel (what you set up)
 
 1. Create a KV store (Redis) for the Vercel project: Vercel dashboard > Storage / Marketplace > Upstash Redis (or Vercel KV if it is offered),
