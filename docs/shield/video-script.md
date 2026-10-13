@@ -1,6 +1,6 @@
-# Video script: Figma → Storybook skill (for the PM)
+# Video script: Figma → Storybook skill
 
-Audience: the PM who proposed the idea (ex-Android, full-stack, designer). Technical, so no
+Audience: the person who proposed the idea (ex-Android, full-stack, designer). Technical, so no
 design-system 101. Language: English. Target: about 6:45 (a 5:30 cut is at the bottom).
 Style: motion graphics in Remotion, real screenshots for results. No screen recording.
 

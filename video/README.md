@@ -1,4 +1,4 @@
-# PM video (Remotion)
+# Video (Remotion)
 
 ```bash
 npm install
