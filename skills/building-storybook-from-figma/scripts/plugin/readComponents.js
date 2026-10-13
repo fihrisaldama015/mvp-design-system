@@ -72,7 +72,9 @@ async function spec(node, depth = 0) {
   }
   const fills = await paints(node.fills, bv.fills); if (fills) s.fills = fills;
   const strokes = await paints(node.strokes, bv.strokes);
-  if (strokes) { s.strokes = strokes; s.strokeAlign = node.strokeAlign; s.strokeWeight = round(node.strokeWeight === figma.mixed ? node.strokeTopWeight : node.strokeWeight); s.strokeVar = await varName(bv.strokeWeight || bv.strokeTopWeight); s.dash = node.dashPattern && node.dashPattern.length ? node.dashPattern : undefined; }
+  if (strokes) { s.strokes = strokes; s.strokeAlign = node.strokeAlign; s.strokeWeight = round(node.strokeWeight === figma.mixed ? node.strokeTopWeight : node.strokeWeight); s.strokeVar = await varName(bv.strokeWeight || bv.strokeTopWeight); s.dash = node.dashPattern && node.dashPattern.length ? node.dashPattern : undefined;
+    // per-side stroke weights (a bottom-only border has top 0): keep them when the sides differ
+    if (node.strokeWeight === figma.mixed) s.strokeSides = [node.strokeTopWeight, node.strokeRightWeight, node.strokeBottomWeight, node.strokeLeftWeight].map(round); }
   if (node.effectStyleId) s.effect = await styleName(node.effectStyleId);
   if (node.opacity !== undefined && node.opacity < 1) s.opacity = round(node.opacity);
   if (node.type === "TEXT") {

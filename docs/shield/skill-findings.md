@@ -131,3 +131,19 @@ Limits, so the video does not over-claim:
 - IDs are stable inside one Figma file. A duplicated file (our "(Copy)" files) gets new IDs, so the pointers must be rebuilt after a copy; `resolveIds` shows that.
 - The by-ID read skips `loadAllPagesAsync`, which is what timed out on the first inventory call of a cold file. That saving was not measured: the pages were already loaded in the test.
 - An update still re-reads the foundation file (one read, seconds). The IDs remove the scan for components and the guesswork about where a token came from; they do not remove that read.
+
+
+## Existing-component test: Alert (2026-10-13)
+
+The repo already had `Alert` (`tone`, `title`, `children`, `action`); SHIELD describes it with `Kind`, `Status`, `Size`, `Invert`.
+Procedure written as `reference/existing-component.md`; the case is documented in `docs/shield/alert.md` and `docs/shield/changelog.md`.
+
+| # | Gap found | Fix |
+|---|---|---|
+| 14 | Per-side stroke weights were lost: `dashed` and `full page` are bottom-border-only, but the dump kept only the top weight and `variantClasses` printed "0px, not a token". | `readComponents.js` saves `strokeSides` when the sides differ; `variantClasses.mjs` prints `border-b (sides 0/0/1/0px)` |
+| 15 | No written rule for a component that already exists with another API. | `reference/existing-component.md`: compare (mapped / only Figma / only code / defaults), decide A or C by callers, never `V2`, write the migration table |
+| 16 | `exportVariants.js` scanned the whole file: the call timed out at 30 s and kept the plugin busy, so the next calls timed out too. | takes `ARGS.ID` (node ID): 15 exports in 0.94 s |
+| 17 | `interact.mjs` always used a 1400×1000 viewport, so tall matrix stories were cut off (silently blank below). | `--size WxH` |
+
+Not exercised: option C (compatibility layer), because no component with many callers has been synced yet. Candidates with callers:
+components used by other components (Modal by ConfirmDialog, Spinner by Button).

@@ -19,7 +19,7 @@ Needs Phase 1 done: classes come from `src/tokens/tokens.index.json`.
    → per variant, per layer: `bg-* border-* text-* h-* px-* py-* gap-* rounded-* typo-*`.
    `?Collection/name` = token without a class (fix the token mapping, never hardcode);
    `~class` = guessed by swapping the utility, may not exist (check it);
-   `border(1px, not a token)` = unbound stroke weight; `[stroke OUTSIDE]` = outside stroke (a ring).
+   `border(1px, not a token)` = unbound stroke weight; `border-b (sides 0/0/1/0px)` = a border on some sides only; `[stroke OUTSIDE]` = outside stroke (a ring).
 5. **Write the component** (`src/components/<kebab>/index.js`) from those tables.
 6. **Stories** (`<Name>.stories.js`): one per meaningful state + one matrix story of the
    main axes for the visual check.
@@ -103,6 +103,11 @@ When the Figma component carries its own label and caption (SHIELD Input does), 
 component those props **and** keep the wrapper working: move label / caption into shared
 parts both use, let the component read the wrapper's context (id, error → status, caption
 id), and render bare inside the wrapper. Every existing caller must keep rendering.
+
+## The component already exists with another API
+
+Compare, decide (change in place, or a compatibility layer when callers are many), and write the migration table down:
+`existing-component.md`. Never a `ButtonV2`.
 
 ## Common mistakes
 

@@ -39,7 +39,12 @@ function lines(node, path, out) {
     const textNode = node.type === "TEXT" || node.type === "VECTOR";
     for (const f of node.fills || []) if (f.var) parts.push(cls(f.var, textNode ? "text" : "bg"));
     for (const s of node.strokes || []) if (s.var) parts.push(cls(s.var, "border"));
-    if (node.strokeVar) parts.push(cls(node.strokeVar, "border"));
+    if (node.strokeSides) {
+      // sides differ: border-t / -r / -b / -l for the sides that have a weight (width token class when bound, else px)
+      const SIDE = ["t", "r", "b", "l"];
+      const on = node.strokeSides.map((w, i) => (w ? SIDE[i] : null)).filter(Boolean);
+      parts.push(on.length ? on.map((x) => `border-${x}`).join(" ") + ` (sides ${node.strokeSides.join("/")}px)` : "border(no side)");
+    } else if (node.strokeVar) parts.push(cls(node.strokeVar, "border"));
     else if (node.strokes) parts.push(`border(${node.strokeWeight}px, not a token)`);
     if (node.strokes && node.strokeAlign && node.strokeAlign !== "INSIDE") parts.push(`[stroke ${node.strokeAlign}]`);
     if (node.hVar) parts.push(cls(node.hVar, "h"));

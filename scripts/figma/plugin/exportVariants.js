@@ -4,12 +4,14 @@
 // fig-<set>-<each value>.png, for a side-by-side check against Storybook.
 const _A = typeof ARGS !== "undefined" ? ARGS : {};
 const SET = _A.SET || "Button";
+const ID = _A.ID; // node ID of the set (figma-index.json / inventory): skips the whole-file search
 const WHERE = _A.WHERE || { State: "default", Size: "md*", Disabled: "false", Loading: "false" };
 const EACH = _A.EACH || ["Kind", "Status"]; // one image per combination of these properties
 const PORT = _A.PORT || 9232;
 
-await figma.loadAllPagesAsync();
-const set = figma.root.findOne((n) => n.type === "COMPONENT_SET" && n.name === SET);
+let set = null;
+if (ID) set = await figma.getNodeByIdAsync(ID);
+if (!set) { await figma.loadAllPagesAsync(); set = figma.root.findOne((n) => n.type === "COMPONENT_SET" && n.name === SET); }
 const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const saved = [];
 for (const v of set.children) {

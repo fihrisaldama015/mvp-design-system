@@ -21,7 +21,7 @@ the variants found in the app and kept one. This is the decision log.
 | Modal | centred `rounded-xl`, centred `rounded-2xl`, drawer, bottom sheet | **Modal** for short tasks, **Drawer** for create/edit, **ConfirmDialog** for yes/no | Three jobs, three components. Bottom sheet dropped (no mobile layout yet). |
 | Confirm / delete | `window.confirm`, "Keep it / Yes, delete" dialog | ConfirmDialog, red confirm button that names the action | Native dialogs cannot be styled or tested. |
 | Toast | dark top-right, emerald bottom-centre, black bottom-left with Undo | White card, top right, 4 seconds, via `useToast()` | Top right matches where users already look; one API. |
-| Inline message | amber box, red left border, yellow box, green "Saved!" box, rose flash | **Alert** with four tones | Same idea, same component. |
+| Inline message | amber box, red left border, yellow box, green "Saved!" box, rose flash | **Alert** with a `status` (info, success, warning, danger) and a `kind` | Same idea, same component. |
 | Tooltip | custom, native `title` | Dark small label on hover and focus | Visible on keyboard focus too. |
 | Row menu | vertical kebab, horizontal `...` | Horizontal `⋯`, destructive item last in red | Common pattern; the order protects against misclicks. |
 | Tabs | cyan, filled, none | Underline tabs with an optional count | Fits both pages and sections. |
