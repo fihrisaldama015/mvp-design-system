@@ -37,10 +37,20 @@ if (process.argv[2] === "--done") {
   if (!doc.components[name]) { console.error(`No review stored for "${name}".`); process.exit(2); }
   delete doc.components[name];
   fs.writeFileSync(OUT0, JSON.stringify(doc, null, 2) + "\n");
+  // Only this component's answers leave the file; the answers of other pending reviews stay.
   const d = `${DUMP}/review-decisions.json`;
   const kept = `${DUMP}/review-decisions.${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.applied.json`;
-  if (fs.existsSync(d)) { fs.renameSync(d, kept); console.log(`Closed the review of ${name}; answers kept in ${kept}.`); }
-  else console.log(`Closed the review of ${name} (there was no decisions file).`);
+  if (fs.existsSync(d)) {
+    const file = JSON.parse(fs.readFileSync(d, "utf8"));
+    // "Input - Single Select" is a prefix of "Input - Single Select/Base/...": match the name exactly, then the id ("removed-prop:x").
+    const isMine = (k) => k.startsWith(`${name}/`) && /^[a-z]+(-[a-z]+)?:/.test(k.slice(name.length + 1));
+    const mine = Object.fromEntries(Object.entries(file.decisions ?? {}).filter(([k]) => isMine(k)));
+    const rest = Object.fromEntries(Object.entries(file.decisions ?? {}).filter(([k]) => !isMine(k)));
+    if (Object.keys(mine).length) fs.writeFileSync(kept, JSON.stringify({ ...file, decisions: mine }, null, 2) + "\n");
+    if (Object.keys(rest).length) fs.writeFileSync(d, JSON.stringify({ ...file, decisions: rest }, null, 2) + "\n");
+    else fs.unlinkSync(d);
+    console.log(`Closed the review of ${name}; ${Object.keys(mine).length} answer(s) kept in ${kept}${Object.keys(rest).length ? `, ${Object.keys(rest).length} answer(s) of other components stay in ${d}` : ""}.`);
+  } else console.log(`Closed the review of ${name} (there was no decisions file).`);
   process.exit(0);
 }
 

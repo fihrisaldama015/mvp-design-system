@@ -29,7 +29,7 @@ const when = (iso) => (iso ? new Date(iso).toLocaleString() : "");
  * synced from Figma. Additions are safe and go in. A prop or option that Figma no
  * longer has needs an answer: remove it, keep it as deprecated (callers keep
  * working, new pages get it off by default), or keep it and ask the designer. The
- * answers are saved as `review-decisions.json` next to the Figma dump, and the page
+ * answers are saved as `review-decisions.json` (you can save some now and answer the rest later, e.g. while waiting for someone) next to the Figma dump, and the page
  * shows what is saved there when it opens, so a refresh does not lose them.
  */
 export default {
@@ -116,12 +116,13 @@ function Review() {
         );
       })}
       <div className="flex items-center gap-3">
-        <Button status="primary" disabled={!loaded || missing.length > 0 || unchanged} onClick={save}>{unchanged ? "Saved" : "Save answers"}</Button>
+        <Button status="primary" disabled={!loaded || Object.keys(current).length === 0 || unchanged} onClick={save}>{unchanged ? "Saved" : "Save answers"}</Button>
         <span className="text-caption typo-regular-text-sm">
-          {missing.length ? `${missing.length} removal(s) still need an answer` : unchanged ? `Saved ${when(saved.at)}` : saved ? "You changed an answer: save again" : "All removals answered, not saved yet"}
+          {unchanged ? `Saved ${when(saved.at)}` : saved ? "You changed an answer: save again" : Object.keys(current).length ? "Not saved yet" : "Answer at least one removal to save"}
+          {missing.length ? `${unchanged || saved ? " · " : " · "}${missing.length} still waiting for an answer (they stay pending; the agent will not touch them)` : ""}
         </span>
       </div>
-      {unchanged && <Alert status="success" title="Saved">review-decisions.json is in the Figma dump folder. Tell the agent to continue; nothing is applied until you do.</Alert>}
+      {unchanged && <Alert status="success" title="Saved">review-decisions.json is in the Figma dump folder. Tell the agent to continue; nothing is applied until you do.{missing.length ? " Items without an answer stay pending, you can answer them later." : ""}</Alert>}
       {error && <Alert status="danger" title="Not saved">{error}</Alert>}
       {error && <pre className="overflow-auto rounded-default bg-default-default p-3 typo-regular-text-sm">{payload()}</pre>}
     </div>
