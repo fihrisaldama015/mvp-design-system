@@ -34,6 +34,10 @@ Additions from Figma are safe: they go in without asking. A prop or option that 
 2. The dev opens Storybook > **Guide/Sync review** and answers every removal, then **Save answers**
    (needs `dumpServer.py` running; without it the page shows the JSON to copy into `.figma-dump/review-decisions.json`).
 3. The agent reads `review-decisions.json` and applies it. Nothing is removed before this file exists.
+   **The agent never answers for the dev**: it does not click the page, write or edit `review-decisions.json`, or pick a default.
+   After `reviewSync` it tells the dev where the page is (Storybook running, `/?path=/story/guide-sync-review--overview`), what each removal
+   means (callers, on by default or not), and stops until the file exists. Missing file = no removal, no deprecation, no default flip.
+   Testing the flow with a stand-in answer is fine only on a scratch copy and must be said out loud.
 
 | Answer | What the agent does |
 |---|---|
