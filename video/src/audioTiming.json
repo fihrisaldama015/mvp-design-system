@@ -1,1 +1,129 @@
-{}
+{
+  "scene1": {
+    "audio": "audio/scene1.wav",
+    "audioStart": 15,
+    "durationFrames": 718,
+    "starts": [
+      15,
+      329,
+      405
+    ],
+    "how": "transcript (54 words), 2/2 snapped to a pause",
+    "sure": true
+  },
+  "scene10": {
+    "audio": "audio/scene10.wav",
+    "audioStart": 15,
+    "durationFrames": 667,
+    "starts": [
+      15,
+      108,
+      399,
+      532
+    ],
+    "how": "transcript (59 words), 3/3 snapped to a pause",
+    "sure": true
+  },
+  "scene2": {
+    "audio": "audio/scene2.wav",
+    "audioStart": 15,
+    "durationFrames": 681,
+    "starts": [
+      15,
+      123,
+      293,
+      557
+    ],
+    "how": "transcript (54 words), 3/3 snapped to a pause",
+    "sure": true
+  },
+  "scene3": {
+    "audio": "audio/scene3.wav",
+    "audioStart": 15,
+    "durationFrames": 1802,
+    "starts": [
+      15,
+      170,
+      368,
+      442,
+      596,
+      845,
+      1069,
+      1245,
+      1567
+    ],
+    "how": "transcript (135 words), 8/8 snapped to a pause",
+    "sure": true
+  },
+  "scene4": {
+    "audio": "audio/scene4.wav",
+    "audioStart": 15,
+    "durationFrames": 1201,
+    "starts": [
+      15,
+      95,
+      409,
+      661,
+      770,
+      915
+    ],
+    "how": "transcript (108 words), 5/5 snapped to a pause",
+    "sure": true
+  },
+  "scene5": {
+    "audio": "audio/scene5.wav",
+    "audioStart": 15,
+    "durationFrames": 662,
+    "starts": [
+      15,
+      283
+    ],
+    "how": "transcript (49 words), 1/1 snapped to a pause",
+    "sure": true
+  },
+  "scene6": {
+    "audio": "audio/scene6.wav",
+    "audioStart": 15,
+    "durationFrames": 1296,
+    "starts": [
+      15,
+      128,
+      192,
+      349,
+      451,
+      556,
+      861,
+      959,
+      1170
+    ],
+    "how": "transcript (97 words), 8/8 snapped to a pause",
+    "sure": true
+  },
+  "scene8": {
+    "audio": "audio/scene8.wav",
+    "audioStart": 15,
+    "durationFrames": 636,
+    "starts": [
+      15,
+      89,
+      274,
+      545
+    ],
+    "how": "transcript (60 words), 3/3 snapped to a pause",
+    "sure": true
+  },
+  "scene9": {
+    "audio": "audio/scene9.wav",
+    "audioStart": 15,
+    "durationFrames": 784,
+    "starts": [
+      15,
+      64,
+      277,
+      434,
+      598
+    ],
+    "how": "transcript (62 words), 4/4 snapped to a pause",
+    "sure": true
+  }
+}
