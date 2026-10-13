@@ -3882,23 +3882,6 @@
               }
             }
           },
-          "loading": {
-            "$type": "color",
-            "$value": "{Color.rose.950}",
-            "$description": "",
-            "scopes": [
-              "FRAME_FILL",
-              "SHAPE_FILL",
-              "STROKE_COLOR",
-              "EFFECT_COLOR"
-            ],
-            "$extensions": {
-              "mode": {
-                "Light": "{Color.rose.950}",
-                "Dark": "{Color.rose.100}"
-              }
-            }
-          },
           "invert": {
             "soft": {
               "$type": "color",
@@ -4000,6 +3983,23 @@
                   "Light": "{.Brand.primary.300}",
                   "Dark": "{.Brand.primary.700}"
                 }
+              }
+            }
+          },
+          "loading": {
+            "$type": "color",
+            "$value": "{Color.rose.950}",
+            "$description": "",
+            "scopes": [
+              "FRAME_FILL",
+              "SHAPE_FILL",
+              "STROKE_COLOR",
+              "EFFECT_COLOR"
+            ],
+            "$extensions": {
+              "mode": {
+                "Light": "{Color.rose.950}",
+                "Dark": "{Color.rose.100}"
               }
             }
           }
@@ -13153,7 +13153,10 @@
               "unit": "px"
             }
           }
-        ]
+        ],
+        "$extensions": {
+          "styleId": "S:5bc28813ff1f84dfc17fb11ada409e3d036907ce,"
+        }
       },
       "shadow": {
         "$type": "shadow",
@@ -13198,7 +13201,10 @@
               "unit": "px"
             }
           }
-        ]
+        ],
+        "$extensions": {
+          "styleId": "S:7f6e84a58b40bcd88936830b29a463d5ba0e317c,"
+        }
       },
       "shadow-md": {
         "$type": "shadow",
@@ -13243,7 +13249,10 @@
               "unit": "px"
             }
           }
-        ]
+        ],
+        "$extensions": {
+          "styleId": "S:978dfa78e56a86fc2f16490436038e7c380e5aaf,"
+        }
       },
       "shadow-lg": {
         "$type": "shadow",
@@ -13288,7 +13297,10 @@
               "unit": "px"
             }
           }
-        ]
+        ],
+        "$extensions": {
+          "styleId": "S:7c46bfa267d794d4b16a89c9ea5a9cfc9b5e1077,"
+        }
       },
       "shadow-xl": {
         "$type": "shadow",
@@ -13333,7 +13345,10 @@
               "unit": "px"
             }
           }
-        ]
+        ],
+        "$extensions": {
+          "styleId": "S:6a5b5923066f6d0020bf8f621dae00731da10007,"
+        }
       },
       "shadow-2xl": {
         "$type": "shadow",
@@ -13358,7 +13373,10 @@
               "unit": "px"
             }
           }
-        ]
+        ],
+        "$extensions": {
+          "styleId": "S:79372fb438372981293cff1807fbb26d8f13fc6f,"
+        }
       },
       "shadow-inner": {
         "$type": "shadow",
@@ -13383,7 +13401,10 @@
               "unit": "px"
             }
           }
-        ]
+        ],
+        "$extensions": {
+          "styleId": "S:acb49fb3a3367d23e787023ae87435003f251a9d,"
+        }
       }
     },
     "Blur": {
@@ -13395,6 +13416,9 @@
             "value": 0,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:7174003822b99ff11e2530c2317f3e7fdad9c481,"
         }
       },
       "blur-sm": {
@@ -13405,6 +13429,9 @@
             "value": 4,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:0bd1fc62d6e1bbb9d0d40ab9d64488c3e8adc6b5,"
         }
       },
       "blur": {
@@ -13415,6 +13442,9 @@
             "value": 8,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:5328ab2d44ed61d28fc50c0b61fdf584436908af,"
         }
       },
       "blur-md": {
@@ -13425,6 +13455,9 @@
             "value": 12,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:da34b013413e805111e3756baa4a5f065902d644,"
         }
       },
       "blur-lg": {
@@ -13435,6 +13468,9 @@
             "value": 16,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:61253c46d7d9548262ff03119abf554b5a24dc4f,"
         }
       },
       "blur-xl": {
@@ -13445,6 +13481,9 @@
             "value": 24,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:ab0bebd2d994a40f32df00295597b80bc79b6c2d,"
         }
       },
       "blur-2xl": {
@@ -13455,6 +13494,9 @@
             "value": 40,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:cede1340d6d2e879fe9aa008f67dd86adec8c692,"
         }
       },
       "blur-3xl": {
@@ -13465,6 +13507,9 @@
             "value": 64,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:822cc426fda3d4dc3be1caad18c35206c3b94015,"
         }
       }
     },
@@ -13477,6 +13522,9 @@
             "value": 0,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:ee55e4e8995832f15034326d7cd9247077f41c7d,"
         }
       },
       "background-blur-sm": {
@@ -13487,6 +13535,9 @@
             "value": 4,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:e7f1896500c03e60d69554d3484234f1f98d216b,"
         }
       },
       "background-blur": {
@@ -13497,6 +13548,9 @@
             "value": 8,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:9d1a7dc068499c6276fc56d8617d757cbaef1bfd,"
         }
       },
       "background-blur-md": {
@@ -13507,6 +13561,9 @@
             "value": 12,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:89b64177bef6c811f3fcd4072e444ab32638e5e2,"
         }
       },
       "background-blur-lg": {
@@ -13517,6 +13574,9 @@
             "value": 16,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:4cce2896a2bbd05124612ff0de200e1e1d7d36ef,"
         }
       },
       "background-blur-xl": {
@@ -13527,6 +13587,9 @@
             "value": 24,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:75bc89888f3dd6f7d29ab3320b4570acfd142d83,"
         }
       },
       "background-blur-2xl": {
@@ -13537,6 +13600,9 @@
             "value": 40,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:39a52449cb77f602c49bff80f79eff4eb3a25285,"
         }
       },
       "background-blur-3xl": {
@@ -13547,6 +13613,9 @@
             "value": 64,
             "unit": "px"
           }
+        },
+        "$extensions": {
+          "styleId": "S:3fba5eaa930600075a7ade3e36ad2545b54f3ab3,"
         }
       }
     }
@@ -13569,7 +13638,7 @@
         "Sizing",
         "Annotation"
       ],
-      "createdAt": "2026-10-12T02:52:58.534Z",
+      "createdAt": "2026-10-13T04:35:02.143Z",
       "generator": "figma-console-mcp 1.40.9 + scripts/figma/toBruecke.mjs",
       "figmaFileKey": "NNnczhcUg4rupfJCp1kvcj"
     }

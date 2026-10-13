@@ -51,6 +51,7 @@ if (process.argv[2] === "--done") {
     else fs.unlinkSync(d);
     console.log(`Closed the review of ${name}; ${Object.keys(mine).length} answer(s) kept in ${kept}${Object.keys(rest).length ? `, ${Object.keys(rest).length} answer(s) of other components stay in ${d}` : ""}.`);
   } else console.log(`Closed the review of ${name} (there was no decisions file).`);
+  console.log(`Last step of a synced component: node scripts/figma/indexComponent.mjs "${name}" --file <figmaFileKey> --story <story id> --code <dir>  (writes figma-index.json; commit it).`);
   process.exit(0);
 }
 

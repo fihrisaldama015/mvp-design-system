@@ -1,0 +1,122 @@
+{
+  "$comment": "Where each built component lives in Figma. Read by ID: readComponents.js ARGS.IDS; verify with plugin/resolveIds.js.",
+  "components": {
+    "Button": {
+      "figmaFileKey": "o4wdbN7PjV2ugCKDcc2pXd",
+      "fileName": "SHIELD - Base Component (Copy)",
+      "nodeId": "7:21282",
+      "page": {
+        "name": "Button",
+        "id": "7:18915"
+      },
+      "variants": 360,
+      "props": [
+        "🔄 Prefix Icon ",
+        "🔄 Suffix Icon ",
+        "Prefix Icon",
+        "Suffix Icon",
+        "Label",
+        "Label Text",
+        "Kind",
+        "Status",
+        "State",
+        "Size",
+        "Disabled",
+        "Loading"
+      ],
+      "readAt": "2026-10-13T04:35:38.464Z",
+      "story": "actions-button",
+      "code": "src/components/button"
+    },
+    "Input": {
+      "figmaFileKey": "o4wdbN7PjV2ugCKDcc2pXd",
+      "fileName": "SHIELD - Base Component (Copy)",
+      "nodeId": "7:61640",
+      "page": {
+        "name": "Input",
+        "id": "7:59948"
+      },
+      "variants": 84,
+      "props": [
+        "Value Text",
+        "Info Icon",
+        "Label",
+        "Placeholder",
+        "Caption",
+        "Caption Text",
+        "Label Text",
+        "Suffix Icon",
+        "Prefix Icon",
+        "Placeholder Text",
+        "Clearable Icon",
+        "Required",
+        "Label Elements",
+        "State",
+        "Size",
+        "Disabled",
+        "Read-only",
+        "Status"
+      ],
+      "readAt": "2026-10-13T04:35:52.367Z",
+      "story": "forms-input",
+      "code": "src/components/input"
+    },
+    "Alert": {
+      "figmaFileKey": "o4wdbN7PjV2ugCKDcc2pXd",
+      "fileName": "SHIELD - Base Component (Copy)",
+      "nodeId": "6:13250",
+      "page": {
+        "name": "Alert",
+        "id": "6:12503"
+      },
+      "variants": 60,
+      "props": [
+        "🔄 Prefix Icon",
+        "Prefix Icon",
+        "Dismiss",
+        "Description",
+        "Message",
+        "Kind",
+        "Status",
+        "Size",
+        "Invert"
+      ],
+      "readAt": "2026-10-13T01:36:56.956Z",
+      "story": "feedback-alert",
+      "code": "src/components/alert"
+    },
+    "Input - Single Select/Base": {
+      "figmaFileKey": "o4wdbN7PjV2ugCKDcc2pXd",
+      "fileName": "SHIELD - Base Component (Copy)",
+      "nodeId": "7:94371",
+      "page": {
+        "name": "Input-Single Select",
+        "id": "7:91441"
+      },
+      "variants": 30,
+      "props": [
+        "Value Text",
+        "Prefix Icon2",
+        "Label",
+        "Placeholder",
+        "Caption",
+        "Caption Text",
+        "Label Text",
+        "Suffix Icon",
+        "Prefix Icon",
+        "Placeholder Text",
+        "Clearable Icon",
+        "Required",
+        "Label Elements",
+        "State",
+        "Size",
+        "Disabled",
+        "Read-only",
+        "Status"
+      ],
+      "readAt": "2026-10-13T04:03:36.585Z",
+      "story": "forms-select",
+      "code": "src/components/select"
+    }
+  }
+}

@@ -714,7 +714,6 @@ export const extend = {
       "hovered": "rgb(var(--theme-color-background-primary-hovered) / <alpha-value>)",
       "pressed": "rgb(var(--theme-color-background-primary-pressed) / <alpha-value>)",
       "focused": "rgb(var(--theme-color-background-primary-focused) / <alpha-value>)",
-      "loading": "rgb(var(--theme-color-background-primary-loading) / <alpha-value>)",
       "invert": {
         "soft": "rgb(var(--theme-color-background-primary-invert-soft) / <alpha-value>)",
         "default": "rgb(var(--theme-color-background-primary-invert-default) / <alpha-value>)",
@@ -722,7 +721,8 @@ export const extend = {
         "pressed": "rgb(var(--theme-color-background-primary-invert-pressed) / <alpha-value>)",
         "focused": "rgb(var(--theme-color-background-primary-invert-focused) / <alpha-value>)",
         "loading": "rgb(var(--theme-color-background-primary-invert-loading) / <alpha-value>)"
-      }
+      },
+      "loading": "rgb(var(--theme-color-background-primary-loading) / <alpha-value>)"
     },
     "main-background": "rgb(var(--theme-color-background-main-background) / <alpha-value>)",
     "surface": "rgb(var(--theme-color-background-surface) / <alpha-value>)",

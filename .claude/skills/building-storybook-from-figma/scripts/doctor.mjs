@@ -86,6 +86,15 @@ const skillDirs = [path.join(os.homedir(), ".claude", "skills", "building-storyb
 skillDirs.some((d) => fs.existsSync(d)) ? add("skill", "OK", "Skill is installed") : add("skill", "WARN", "Skill building-storybook-from-figma not found in ~/.claude/skills or .claude/skills", pick({ win32: "xcopy /E /I skills\\building-storybook-from-figma %USERPROFILE%\\.claude\\skills\\building-storybook-from-figma", darwin: "cp -R .claude/skills/building-storybook-from-figma ~/.claude/skills/", linux: "cp -R .claude/skills/building-storybook-from-figma ~/.claude/skills/" }));
 step("pending sync review");
 for (const c of reviewState()) add("sync-review", "WARN", `${c.name}: ${c.state === "waiting-for-dev" ? `${c.unanswered.length} removal(s) wait for the dev's answer` : "answered, not applied yet"} (Figma read ${c.readAt})`, c.state === "waiting-for-dev" ? "Do not apply anything. Dev: open Storybook > Guide/Sync review and Save. Details: node scripts/figma/reviewState.mjs" : "Re-read the node, reviewSync.mjs --verify, apply, reviewSync.mjs --done. Details: node scripts/figma/reviewState.mjs");
+// Pointers back into Figma: tokens built before the Figma IDs existed, or components never indexed, force a scan on the next update.
+step("Figma pointers");
+{
+  const text = (f) => { try { return fs.readFileSync(f, "utf8"); } catch { return ""; } };
+  const ti = text("src/tokens/tokens.index.json");
+  if (ti && (!/"id":/.test(ti) || !fs.existsSync("src/tokens/figma-ids.json"))) add("figma-ids", "WARN", "Tokens were built without Figma IDs (no ids in tokens.index.json or no figma-ids.json)", "Re-run the Foundation steps (reference/foundation.md, steps 2 to 4); the token values stay the same, IDs are added.");
+  const hasComponents = fs.existsSync("src/components") && fs.readdirSync("src/components").length > 0;
+  if (ti && hasComponents && !fs.existsSync("figma-index.json")) add("figma-index", "WARN", "No component is indexed (figma-index.json is missing)", "After syncing a component: node scripts/figma/indexComponent.mjs <Name> --file <figmaFileKey> --story <id> --code <dir>, and commit figma-index.json.");
+}
 const drift = diffScripts();
 if (drift?.length) add("scripts-copy", "WARN", `scripts/figma differs from the skill in ${drift.length} file(s): ${drift.slice(0, 4).join(", ")}${drift.length > 4 ? ", ..." : ""}`, "npm run sync-skill   (the skill's scripts are the source; edit there, not in scripts/figma)");
 fs.existsSync("package.json") ? add("project", "OK", "package.json found in this folder") : add("project", "WARN", "No package.json here; run doctor from the project root", "cd to the project (or the empty folder for the starter template).");
