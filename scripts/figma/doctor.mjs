@@ -10,6 +10,7 @@ import { spawnSync } from "node:child_process";
 import { findChrome, chromeHelp } from "./findChrome.mjs";
 import { diffScripts } from "./syncSkill.mjs";
 import { reviewState } from "./reviewState.mjs";
+import { foundationAge, ASK } from "./foundationAge.mjs";
 
 const args = process.argv.slice(2);
 const PORT = args.includes("--port") ? args[args.indexOf("--port") + 1] : "9232";
@@ -87,6 +88,11 @@ skillDirs.some((d) => fs.existsSync(d)) ? add("skill", "OK", "Skill is installed
 step("pending sync review");
 for (const c of reviewState()) add("sync-review", "WARN", `${c.name}: ${c.state === "waiting-for-dev" ? `${c.unanswered.length} removal(s) wait for the dev's answer` : "answered, not applied yet"} (Figma read ${c.readAt})`, c.state === "waiting-for-dev" ? "Do not apply anything. Dev: open Storybook > Guide/Sync review and Save. Details: node scripts/figma/reviewState.mjs" : "Re-read the node, reviewSync.mjs --verify, apply, reviewSync.mjs --done. Details: node scripts/figma/reviewState.mjs");
 // Pointers back into Figma: tokens built before the Figma IDs existed, or components never indexed, force a scan on the next update.
+step("age of the tokens");
+{
+  const a = foundationAge();
+  if (a) add("tokens-age", a.stale ? "WARN" : "OK", `Tokens exported ${a.exportedAt}${a.checkedAt ? `, checked ${a.checkedAt}` : ""}: ${a.days.toFixed(1)} days ago (check after ${a.staleAfterDays})`, a.stale ? ASK : "");
+}
 step("Figma pointers");
 {
   const text = (f) => { try { return fs.readFileSync(f, "utf8"); } catch { return ""; } };

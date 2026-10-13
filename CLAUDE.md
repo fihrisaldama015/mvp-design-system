@@ -23,6 +23,12 @@ Storybook > Guide/Sync review, `/?path=/story/guide-sync-review--overview`, and 
 from Figma, `reviewSync.mjs --verify <file>`: unchanged -> apply, then `reviewSync.mjs --done "<Name>"`; changed -> run reviewSync
 again and have the dev answer again). Never fill in `review-decisions.json` yourself. Procedure: `reference/existing-component.md`.
 
+## Are the tokens still current?
+
+The SessionStart hook (or `node scripts/figma/foundationAge.mjs`) says when the Foundation was last exported or checked. After 7 days
+(`staleAfterDays` in `figma-tokens.config.json`) it asks you to **ask the dev first**: checking needs Figma Desktop, the Desktop Bridge
+plugin and the receiver running. Never start it on your own. If the dev agrees: `reference/foundation.md`, "Checking for changes".
+
 ## Build pages from Storybook
 
 - Storybook is the source of truth for the UI. **Before building or changing a

@@ -22,6 +22,18 @@ a Brücke export (e.g. swt-fe's `scripts/syncDesignTokens.js`) keep working.
    - `npm run build-storybook && bash scripts/figma/renderCheck.sh`, then look at the
      Foundations pages in Light and Dark (toolbar Theme).
 
+## Checking for changes (no rebuild)
+
+`node scripts/figma/foundationAge.mjs` says how old the tokens are (export or last check); `doctor` shows it, and the SessionStart hook speaks up
+after `staleAfterDays` (`figma-tokens.config.json`, default 7). **Ask the dev before checking**: it needs Figma Desktop with the foundation file
+open, the Desktop Bridge plugin running and the receiver (`npm run figma:receiver`). If the dev says yes:
+
+1. Steps 1 to 3 above (navigate, `figma_export_tokens`, `readFoundation.js`): a fresh read into `.figma-dump`. Nothing in `src/` changes.
+2. `node scripts/figma/checkFoundation.mjs` builds a fresh file from the dump and compares it per collection with `src/tokens/design_token.json`
+   (it refuses a dump older than 30 minutes). Exit 0 = no change; 1 = which collections changed.
+3. No change: `node scripts/figma/checkFoundation.mjs --record` stamps `source.checkedAt` (tokens.index.json, figma-ids.json), so the age restarts; commit those two.
+   Changed: step 4 (`npm run tokens:build`), review the diff, then step 5.
+
 ## Outputs
 
 | File | Content |

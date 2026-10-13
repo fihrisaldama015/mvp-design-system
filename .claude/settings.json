@@ -3,7 +3,14 @@
     "SessionStart": [
       {
         "hooks": [
-          { "type": "command", "command": "node scripts/figma/reviewState.mjs --quiet" }
+          {
+            "type": "command",
+            "command": "node scripts/figma/reviewState.mjs --quiet"
+          },
+          {
+            "type": "command",
+            "command": "node scripts/figma/foundationAge.mjs --quiet"
+          }
         ]
       }
     ]
