@@ -28,6 +28,12 @@ function SelectStory(args) {
 
 export const Default = { render: SelectStory };
 
+/** The menu has a search box that filters the options (the default). */
+export const Searchable = { args: { searchable: true }, render: SelectStory };
+
+/** `searchable: false` gives the plain list. */
+export const NotSearchable = { args: { searchable: false }, render: SelectStory };
+
 export const WithValue = { args: { value: "laptop" }, render: SelectStory };
 
 export const Error = { args: { error: true }, render: SelectStory };

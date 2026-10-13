@@ -12,7 +12,7 @@ import { cn } from "utils/cn";
  * Enter to choose, Escape to close. Pass `options` as `{ value, label }`; the
  * component is controlled (`value` and `onChange`).
  */
-export function Select({ options, value, onChange, placeholder = "Select...", error: errorProp, disabled, id: idProp, className }) {
+export function Select({ options, value, onChange, placeholder = "Select...", searchable = true, error: errorProp, disabled, id: idProp, className }) {
   const field = useFieldControl();
   const id = idProp ?? field.id;
   const error = errorProp ?? field.invalid;
@@ -21,15 +21,19 @@ export function Select({ options, value, onChange, placeholder = "Select...", er
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const [rect, setRect] = useState(null);
+  const [query, setQuery] = useState("");
+  const searchRef = useRef(null);
   const triggerRef = useRef(null);
   const menuRef = useRef(null);
 
-  const selectedIndex = useMemo(() => options.findIndex((o) => o.value === value), [options, value]);
-  const selected = options[selectedIndex];
+  const selected = options.find((o) => o.value === value);
+  const shown = useMemo(() => (searchable && query ? options.filter((o) => o.label.toLowerCase().includes(query.toLowerCase())) : options), [options, searchable, query]);
+  const selectedIndex = shown.findIndex((o) => o.value === value);
 
   const openMenu = () => {
     if (disabled) return;
-    setActive(selectedIndex >= 0 ? selectedIndex : options.findIndex((o) => !o.disabled));
+    setQuery("");
+    setActive(selectedIndex >= 0 ? selectedIndex : shown.findIndex((o) => !o.disabled));
     setOpen(true);
   };
 
@@ -64,9 +68,9 @@ export function Select({ options, value, onChange, placeholder = "Select...", er
 
   const move = (dir) => {
     let i = active;
-    for (let n = 0; n < options.length; n += 1) {
-      i = (i + dir + options.length) % options.length;
-      if (!options[i].disabled) {
+    for (let n = 0; n < shown.length; n += 1) {
+      i = (i + dir + shown.length) % shown.length;
+      if (!shown[i].disabled) {
         setActive(i);
         return;
       }
@@ -83,14 +87,19 @@ export function Select({ options, value, onChange, placeholder = "Select...", er
     }
     if (e.key === "ArrowDown") e.preventDefault(), move(1);
     else if (e.key === "ArrowUp") e.preventDefault(), move(-1);
-    else if (e.key === "Enter" || e.key === " ") e.preventDefault(), options[active] && choose(options[active]);
+    else if (e.key === "Enter" || (e.key === " " && e.target === triggerRef.current)) e.preventDefault(), shown[active] && choose(shown[active]);
     else if (e.key === "Escape") e.preventDefault(), setOpen(false);
     else if (e.key === "Tab") setOpen(false);
   };
 
+  // Focus the search box when the menu opens.
+  useEffect(() => {
+    if (open && rect && searchable) searchRef.current?.focus();
+  }, [open, rect, searchable]);
+
   const MENU_MAX = 240;
   const below = rect ? window.innerHeight - rect.bottom : 0;
-  const flip = rect && below < Math.min(MENU_MAX, options.length * 36 + 8) && rect.top > below;
+  const flip = rect && below < Math.min(MENU_MAX, shown.length * 36 + (searchable ? 52 : 8)) && rect.top > below;
 
   return (
     <>
@@ -135,7 +144,22 @@ export function Select({ options, value, onChange, placeholder = "Select...", er
             }}
             className="z-[70] overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
           >
-            {options.map((opt, i) => (
+            {searchable && (
+              <li role="presentation" className="px-2 pb-1">
+                <input
+                  ref={searchRef}
+                  type="text"
+                  value={query}
+                  placeholder="Search..."
+                  aria-label="Search options"
+                  onChange={(e) => { setQuery(e.target.value); setActive(0); }}
+                  onKeyDown={onKeyDown}
+                  className="h-8 w-full rounded-md border border-slate-300 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </li>
+            )}
+            {shown.length === 0 && <li role="presentation" className="px-3 py-2 text-sm text-slate-500">No results</li>}
+            {shown.map((opt, i) => (
               <li
                 key={opt.value}
                 id={`${autoId}-opt-${i}`}
@@ -174,6 +198,8 @@ Select.propTypes = {
   onChange: PropTypes.func,
   /** Grey text shown while nothing is chosen. */
   placeholder: PropTypes.string,
+  /** Shows a search box at the top of the menu that filters the options by label. On by default. */
+  searchable: PropTypes.bool,
   /** Red border when true. Inside a Field it follows the Field's `error`. */
   error: PropTypes.bool,
   /** Disables the control. */
