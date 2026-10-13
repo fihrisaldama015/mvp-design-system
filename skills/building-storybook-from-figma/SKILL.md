@@ -32,6 +32,9 @@ check) and there is no template for it yet. `--force` still adds Storybook and `
 
 ## Setup (once per machine / project)
 
+**Run `node scripts/figma/doctor.mjs` first** (Linux, macOS, Windows). It lists what is missing with the fix for this OS; if the user's
+machine fails a check, fix it with them (ask before installing anything) and run doctor again. Per-OS steps: `reference/setup.md`.
+
 1. Figma Desktop (Linux: IliyaBrook/figma-linux AppImage) + **Desktop Bridge** plugin
    (Plugins → Development → Import plugin from manifest).
 2. figma-console MCP in **local** mode: `claude mcp add figma-console -s user -- npx -y figma-console-mcp@latest`.

@@ -8,6 +8,7 @@
 //         node scripts/figma/interact.mjs forms-input--all-statuses "#storybook-root" --shot sb.png
 import { spawn } from "node:child_process";
 import fs from "node:fs";
+import { findChrome, chromeHelp } from "./findChrome.mjs";
 
 const args = process.argv.slice(2);
 const opt = (name, def) => (args.includes(name) ? args.splice(args.indexOf(name), 2)[1] : def);
@@ -18,7 +19,8 @@ const size = opt("--size", "1400x1000"); // window, e.g. 1400x2200 for a tall ma
 const [storyId, rawSelector, ...steps] = args;
 // Scope to the story: a bare `button` would match elements Storybook injects around it.
 const selector = /^(#storybook-root|body|html)/.test(rawSelector) ? rawSelector : `#storybook-root ${rawSelector}`;
-const CHROME = ["google-chrome", "chromium", "chromium-browser"].find((c) => { try { return spawn("which", [c]).pid; } catch { return false; } });
+const CHROME = findChrome();
+if (!CHROME) { console.error(`interact: no Chrome found. ${chromeHelp()}`); process.exit(1); }
 
 const chrome = spawn(CHROME, ["--headless=new", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--remote-debugging-port=9399", `--window-size=${size.replace("x", ",")}`, "about:blank"], { stdio: "ignore" });
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
