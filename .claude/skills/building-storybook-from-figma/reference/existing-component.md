@@ -42,6 +42,11 @@ Additions from Figma are safe: they go in without asking. A prop or option that 
    (`readComponents.js`, `ARGS.IDS = ["<nodeId>"]`, one second) and run `node scripts/figma/reviewSync.mjs --verify .figma-dump/components.<Name>.json`.
    *unchanged* (it ignores the read time) -> apply; *CHANGED* -> run `reviewSync.mjs` again and have the dev answer again.
    Only prop and variant changes are guaranteed to show; it hashes everything the read contains, so a changed fill or token also shows.
+   **A waiting review does not block other work.** The dev may say "sync X first" (e.g. while a PM or tech lead decides). Keep syncing other
+   components: `reviewSync` adds each to `sync-review.json`, the page lists all of them, answers can be saved partially (the rest stay
+   pending), and `--done "<Name>"` only closes its own component. Before touching a component that shares code with a pending one
+   (Select and Input share `components/field/control`), say so to the dev. When the dev comes back, start with `reviewState.mjs`, then
+   re-read and `--verify` that component, since Figma may have moved on.
 5. **After applying and proving:** `node scripts/figma/reviewSync.mjs --done "<Name>"` closes the review (the answers stay as `*.applied.json`).
    **A new session finds the state in files**, not in memory: `node scripts/figma/reviewState.mjs` says *waiting for the dev*, *answered, not applied*, or nothing.
 
