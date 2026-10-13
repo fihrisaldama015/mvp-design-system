@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert } from "components/alert";
 import { Badge } from "components/badge";
 import { Button } from "components/button";
 import { Select } from "components/select";
 import review from "./sync-review.json";
 
-const RECEIVER = "http://localhost:9232/save?name=review-decisions.json";
+const RECEIVER = "http://localhost:9232";
+const FILE = "review-decisions.json";
 
 const CHOICES = [
   { value: "follow-figma", label: "Remove it, follow Figma" },
@@ -21,12 +22,15 @@ const KIND_LABEL = {
   "removed-option": "Gone from Figma",
 };
 
+const when = (iso) => (iso ? new Date(iso).toLocaleString() : "");
+
 /**
  * Sync review: the page the dev answers before a component that already exists is
  * synced from Figma. Additions are safe and go in. A prop or option that Figma no
  * longer has needs an answer: remove it, keep it as deprecated (callers keep
  * working, new pages get it off by default), or keep it and ask the designer. The
- * answers are saved as `review-decisions.json` next to the Figma dump.
+ * answers are saved as `review-decisions.json` next to the Figma dump, and the page
+ * shows what is saved there when it opens, so a refresh does not lose them.
  */
 export default {
   title: "Guide/Sync review",
@@ -56,19 +60,41 @@ function Item({ item, choice, onChoice }) {
 function Review() {
   const names = Object.keys(review.components);
   const [answers, setAnswers] = useState({});
-  const [status, setStatus] = useState(null);
+  const [saved, setSaved] = useState(null); // { at, answers } as stored in the file, or null
+  const [error, setError] = useState(null);
+  const [loaded, setLoaded] = useState(false);
+
+  // What the file already holds is the truth: show it instead of an empty form.
+  useEffect(() => {
+    fetch(`${RECEIVER}/load?name=${FILE}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((file) => {
+        if (file?.decisions) {
+          setAnswers(file.decisions);
+          setSaved({ at: file.decidedAt, answers: file.decisions });
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true));
+  }, []);
+
   if (!names.length) return <Alert status="info" title="Nothing to review">Run scripts/figma/reviewSync.mjs for a component first.</Alert>;
 
   const open = names.flatMap((n) => review.components[n].items.filter((i) => i.kind.startsWith("removed")).map((i) => `${n}/${i.id}`));
   const missing = open.filter((k) => !answers[k]);
-  const payload = () => JSON.stringify({ decidedAt: new Date().toISOString(), decisions: answers }, null, 2);
+  const current = Object.fromEntries(open.filter((k) => answers[k]).map((k) => [k, answers[k]]));
+  const unchanged = saved && JSON.stringify(current) === JSON.stringify(Object.fromEntries(open.filter((k) => saved.answers[k]).map((k) => [k, saved.answers[k]])));
+  const payload = () => JSON.stringify({ decidedAt: new Date().toISOString(), decisions: current }, null, 2);
 
   const save = async () => {
+    setError(null);
     try {
-      const res = await fetch(RECEIVER, { method: "POST", body: payload() });
-      setStatus(res.ok ? { ok: true } : { ok: false, text: `Receiver answered ${res.status}.` });
-    } catch {
-      setStatus({ ok: false, text: "The receiver on port 9232 is not running. Copy the answers below instead." });
+      const body = payload();
+      const res = await fetch(`${RECEIVER}/save?name=${FILE}`, { method: "POST", body });
+      if (!res.ok) throw new Error(`Receiver answered ${res.status}.`);
+      setSaved({ at: JSON.parse(body).decidedAt, answers: current });
+    } catch (e) {
+      setError(e.message.startsWith("Receiver") ? e.message : "The receiver on port 9232 is not running. Copy the answers below instead.");
     }
   };
 
@@ -90,12 +116,14 @@ function Review() {
         );
       })}
       <div className="flex items-center gap-3">
-        <Button status="primary" disabled={missing.length > 0} onClick={save}>Save answers</Button>
-        <span className="text-caption typo-regular-text-sm">{missing.length ? `${missing.length} removal(s) still need an answer` : "All removals answered"}</span>
+        <Button status="primary" disabled={!loaded || missing.length > 0 || unchanged} onClick={save}>{unchanged ? "Saved" : "Save answers"}</Button>
+        <span className="text-caption typo-regular-text-sm">
+          {missing.length ? `${missing.length} removal(s) still need an answer` : unchanged ? `Saved ${when(saved.at)}` : saved ? "You changed an answer: save again" : "All removals answered, not saved yet"}
+        </span>
       </div>
-      {status?.ok && <Alert status="success" title="Saved">review-decisions.json is in the Figma dump folder. Tell the agent to continue.</Alert>}
-      {status && !status.ok && <Alert status="danger" title="Not saved">{status.text}</Alert>}
-      {status && !status.ok && <pre className="overflow-auto rounded-default bg-default-default p-3 typo-regular-text-sm">{payload()}</pre>}
+      {unchanged && <Alert status="success" title="Saved">review-decisions.json is in the Figma dump folder. Tell the agent to continue; nothing is applied until you do.</Alert>}
+      {error && <Alert status="danger" title="Not saved">{error}</Alert>}
+      {error && <pre className="overflow-auto rounded-default bg-default-default p-3 typo-regular-text-sm">{payload()}</pre>}
     </div>
   );
 }
