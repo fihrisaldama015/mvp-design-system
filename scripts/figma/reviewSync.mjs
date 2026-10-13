@@ -1,58 +1,52 @@
-// Review step before a component that already exists is synced from Figma: what is
-// added (safe), what is gone from Figma but still in code (needs a human decision),
-// and which defaults change. Writes .figma-dump/sync-review.json, which the Storybook
-// page "Guide/Sync review" shows; the dev's answers come back as review-decisions.json.
+// Review step before a component that already exists is synced from Figma: what is added (safe), what is gone
+// from Figma but still in code (needs a human decision), and which defaults change. The review is published to the
+// review store (reviewClient.mjs): the shared API when configured, otherwise a local store. Designers and product owners
+// answer on the page /review; the answers live in the store; the sync flow reads them (--answers).
 //   node scripts/figma/reviewSync.mjs --verify <components.Name.json>   after RE-READING the node from Figma: is it still what the review was made from?
-//   node scripts/figma/reviewSync.mjs --done "<Name>"                    after applying the answers: close the review (decisions file is kept as *.applied.json)
+//   node scripts/figma/reviewSync.mjs --answers "<Name>"                 print the answers and who gave them
+//   node scripts/figma/reviewSync.mjs --done "<Name>"                    after applying the answers: mark the review as applied
 // Usage: node scripts/figma/reviewSync.mjs <components.Name.json> <src/components/x/index.js>
 //          [--map '{"Dismiss":"onDismiss"}']   Figma property -> code prop (default: camelCase)
 //          [--legacy tone=status,...]          old code prop that Figma replaced (not "removed")
 //          [--behavior value,onChange,...]     code-only props that are data or behaviour, not looks (never flagged as removed)
 //          [--also src/components/field/index.js]  a wrapper whose props count as this component's API (label, hint, required in Field)
 //          [--ignore "State,Label"]           Figma properties that are not props (CSS state, show/hide switches for text that already has a prop)
-//          [--out .figma-dump/sync-review.json] [--src src]
+//          [--src src]
 import fs from "node:fs";
 import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
+import { reviewApi, reviewPage } from "./reviewClient.mjs";
 
 const [, , figmaFile, codeFile, ...rest] = process.argv;
 const flag = (n, d) => (rest.includes(n) ? rest[rest.indexOf(n) + 1] : d);
-const OUT0 = flag("--out", ".figma-dump/sync-review.json");
-const DUMP = flag("--dump", ".figma-dump");
 // Same data, ignoring the read time: if this changed, Figma changed (or the read was different).
 const hashOf = (d) => { const { readAt, ...rest } = d; return crypto.createHash("sha1").update(JSON.stringify(rest)).digest("hex").slice(0, 12); };
-const load = () => (fs.existsSync(OUT0) ? JSON.parse(fs.readFileSync(OUT0, "utf8")) : { components: {} });
+const fail = (m, code = 2) => { console.error(m); process.exit(code); };
 
-if (process.argv[2] === "--verify") {
-  const fresh = JSON.parse(fs.readFileSync(process.argv[3], "utf8"));
-  const entry = load().components[fresh.name];
-  if (!entry) { console.error(`No review stored for "${fresh.name}" in ${OUT0}.`); process.exit(2); }
-  if (entry.sourceHash === hashOf(fresh)) { console.log(`${fresh.name}: Figma node ${fresh.nodeId} is unchanged since the review (read ${entry.readAt}). Safe to apply.`); process.exit(0); }
-  console.log(`${fresh.name}: Figma node ${fresh.nodeId} CHANGED since the review (read ${entry.readAt}). Run reviewSync again and have the dev answer again; do not apply the old answers.`);
-  process.exit(1);
-}
-if (process.argv[2] === "--done") {
-  const name = process.argv[3];
-  const doc = load();
-  if (!doc.components[name]) { console.error(`No review stored for "${name}".`); process.exit(2); }
-  delete doc.components[name];
-  fs.writeFileSync(OUT0, JSON.stringify(doc, null, 2) + "\n");
-  // Only this component's answers leave the file; the answers of other pending reviews stay.
-  const d = `${DUMP}/review-decisions.json`;
-  const kept = `${DUMP}/review-decisions.${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.applied.json`;
-  if (fs.existsSync(d)) {
-    const file = JSON.parse(fs.readFileSync(d, "utf8"));
-    // "Input - Single Select" is a prefix of "Input - Single Select/Base/...": match the name exactly, then the id ("removed-prop:x").
-    const isMine = (k) => k.startsWith(`${name}/`) && /^[a-z]+(-[a-z]+)?:/.test(k.slice(name.length + 1));
-    const mine = Object.fromEntries(Object.entries(file.decisions ?? {}).filter(([k]) => isMine(k)));
-    const rest = Object.fromEntries(Object.entries(file.decisions ?? {}).filter(([k]) => !isMine(k)));
-    if (Object.keys(mine).length) fs.writeFileSync(kept, JSON.stringify({ ...file, decisions: mine }, null, 2) + "\n");
-    if (Object.keys(rest).length) fs.writeFileSync(d, JSON.stringify({ ...file, decisions: rest }, null, 2) + "\n");
-    else fs.unlinkSync(d);
-    console.log(`Closed the review of ${name}; ${Object.keys(mine).length} answer(s) kept in ${kept}${Object.keys(rest).length ? `, ${Object.keys(rest).length} answer(s) of other components stay in ${d}` : ""}.`);
-  } else console.log(`Closed the review of ${name} (there was no decisions file).`);
-  console.log(`Last step of a synced component: node scripts/figma/indexComponent.mjs "${name}" --file <figmaFileKey> --story <story id> --code <dir>  (writes figma-index.json; commit it).`);
-  process.exit(0);
+if (["--verify", "--answers", "--done"].includes(process.argv[2])) {
+  const api = reviewApi();
+  const mode = process.argv[2];
+  try {
+    if (mode === "--verify") {
+      const fresh = JSON.parse(fs.readFileSync(process.argv[3], "utf8"));
+      const entry = await api.get(fresh.name);
+      if (!entry) fail(`No review stored for "${fresh.name}" (${api.url}).`);
+      if (entry.sourceHash === hashOf(fresh)) { console.log(`${fresh.name}: Figma node ${fresh.nodeId} is unchanged since the review (read ${entry.readAt}). Safe to apply.`); process.exit(0); }
+      console.log(`${fresh.name}: Figma node ${fresh.nodeId} CHANGED since the review (read ${entry.readAt}). Run reviewSync again and have the reviewers answer again; do not apply the old answers.`);
+      process.exit(1);
+    }
+    const name = process.argv[3];
+    const d = await api.get(name);
+    if (!d) fail(`No review "${name}" (${api.url}).`);
+    if (mode === "--answers") {
+      console.log(JSON.stringify({ component: d.component, status: d.status, version: d.version, sourceHash: d.sourceHash, answers: d.answers, decidedBy: d.audit.filter((a) => a.action === "decided").map((a) => ({ by: a.by, at: a.at })) }, null, 2));
+      process.exit(0);
+    }
+    if (d.status === "pending") fail(`"${name}" still has unanswered removals: do not apply or close it.`);
+    await api.applied(name);
+    console.log(`Marked "${name}" as applied (${api.url}).\nLast step of a synced component: node scripts/figma/indexComponent.mjs "${name}" --file <figmaFileKey> --story <story id> --code <dir>  (writes figma-index.json; commit it).`);
+    process.exit(0);
+  } catch (e) { fail(e.message); }
 }
 
 const MAP = JSON.parse(flag("--map", "{}"));
@@ -60,7 +54,6 @@ const LEGACY = Object.fromEntries((flag("--legacy", "") || "").split(",").filter
 const BEHAVIOR = new Set(["id", "name", "ref", "className", "style", "children", "value", "defaultValue", "onChange", "onClick", "onBlur", "onFocus", ...flag("--behavior", "").split(",").filter(Boolean)]);
 const IGNORE = new Set((flag("--ignore", "") || "").split(",").filter(Boolean));
 const ALSO = (flag("--also", "") || "").split(",").filter(Boolean);
-const OUT = flag("--out", ".figma-dump/sync-review.json");
 const SRC = flag("--src", "src");
 if (!figmaFile || !codeFile) {
   console.error("Usage: node scripts/figma/reviewSync.mjs <components.Name.json> <src/components/x/index.js> [--map JSON] [--legacy a=b] [--out file]");
@@ -141,12 +134,12 @@ for (const [p, c] of Object.entries(cProps)) {
     for (const o of c.options.filter((o) => !fProps[p].options.some((x) => x.toLowerCase() === o.toLowerCase()))) add({ kind: "removed-option", prop: p, option: o, ...(() => { const k = callers(p, o); return { callers: k.app, storyCallers: k.stories }; })(), detail: `Code has ${p}="${o}" but Figma does not.` });
 }
 
-const doc = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, "utf8")) : { components: {} };
-doc.components[figma.name] = { figmaNode: figma.nodeId, figmaPage: figma.page?.name ?? figma.page, code: codeFile, readAt: figma.readAt, sourceHash: hashOf(figma), items };
-fs.mkdirSync(OUT.replace(/\/[^/]*$/, "") || ".", { recursive: true });
-fs.writeFileSync(OUT, JSON.stringify(doc, null, 2) + "\n");
+const api = reviewApi();
+try {
+  await api.publish({ component: figma.name, figmaNode: figma.nodeId, figmaPage: figma.page?.name ?? figma.page, code: codeFile, readAt: figma.readAt, sourceHash: hashOf(figma), items });
+} catch (e) { fail(`Could not publish the review: ${e.message}`); }
 
 const count = (k) => items.filter((i) => i.kind === k).length;
 console.log(`${figma.name}: ${count("added-prop") + count("added-option")} additions (safe), ${count("default-changed")} default changes, ${count("removed-prop") + count("removed-option")} removals (need a decision)`);
 for (const i of items) console.log(`  ${i.kind.padEnd(15)} ${i.prop}${i.option ? `="${i.option}"` : ""}${i.callers !== undefined ? `  (${i.callers} app + ${i.storyCallers} story files${i.onByDefault ? ", ON by default: all of them get it" : ""})` : ""}${i.deprecated ? "  [already deprecated]" : ""}`);
-console.log(`Wrote ${OUT}. Open Storybook > Guide/Sync review, answer the removals, save; the answers land in review-decisions.json.`);
+console.log(`Published to ${api.url}. Reviewers answer at ${reviewPage()}; the removals wait there. Tell the dev; do not apply anything until the review shows "answered".`);

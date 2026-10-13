@@ -30,28 +30,29 @@ Additions from Figma are safe: they go in without asking. A prop or option that 
 (a `searchable` on Select, a `size="xl"`) must never disappear silently.
 
 1. `node scripts/figma/reviewSync.mjs .figma-dump/components.<Name>.json src/components/<x>/index.js [--map '{"Dismiss":"onDismiss"}'] [--legacy tone=status]`
-   lists *additions*, *default changes* and *removals* (with how many caller files use each) and writes .figma-dump/sync-review.json.
-**The review lives on the machine that ran the sync and nowhere else**: `.figma-dump/` (the Figma reads, `sync-review.json`, `review-decisions.json`)
-   is not in git. Another dev's clone has no review and does not need yours; their own syncs get their own. What travels is the *outcome*:
-   the code, the component doc and the commit message. Record the decision there (who decided, what, why: `docs/<ds>/<component>.md`).
-2. The dev opens Storybook > **Guide/Sync review** and answers every removal, then **Save answers**
-   (needs `dumpServer.py` running; without it the page shows the JSON to copy into `.figma-dump/review-decisions.json`).
-3. The agent reads `review-decisions.json` and applies it. Nothing is removed before this file exists.
-   **The agent never answers for the dev**: it does not click the page, write or edit `review-decisions.json`, or pick a default.
-   After `reviewSync` it tells the dev where the page is (Storybook running, `/?path=/story/guide-sync-review--overview`), what each removal
-   means (callers, on by default or not), and stops until the file exists. Missing file = no removal, no deprecation, no default flip.
-   Testing the flow with a stand-in answer is fine only on a scratch copy and must be said out loud.
+   lists *additions*, *default changes* and *removals* (with how many caller files use each) and **publishes the review to the review store**
+   (`reference/review-service.md`): the shared API when `REVIEW_API_URL` + `REVIEW_API_KEY` (or `.figma-dump/review-api.json`) are set, so
+   designers and product owners see it on the page **/review** of the deployed app; otherwise a local store (`npm run review:api` + `npm run dev`).
+   The review and the answers live in the store, **not in git and not on one machine** (with the shared API). The Figma reads stay local (`.figma-dump/`).
+   What travels in git is the *outcome*: the code, the component doc and the commit message. Record the decision there (who decided, what, why:
+   `docs/<ds>/<component>.md`; the store keeps who and when in `audit`).
+2. The reviewers open `/review`, enter the shared password and their name, answer the removals and **Save answers**. They can answer some now and
+   the rest later; a second save by someone else is refused (409) until they reload, so nobody overwrites an answer unseen.
+3. The agent reads the answers with `node scripts/figma/reviewSync.mjs --answers "<Name>"` and applies them. Nothing is removed before the review is *answered*.
+   **The agent never answers for the reviewers**: it does not use the page, call the decision route, or pick a default.
+   After `reviewSync` it tells the dev where the page is, what each removal means (callers, on by default or not), and stops until `reviewState` says
+   *answered*. Pending = no removal, no deprecation, no default flip. Testing the flow with a stand-in answer is fine only on a scratch store and must be said out loud.
 4. **Before applying: is the review still true?** The review was made from a Figma read at a certain time (`readAt`). Re-read the node
    (`readComponents.js`, `ARGS.IDS = ["<nodeId>"]`, one second) and run `node scripts/figma/reviewSync.mjs --verify .figma-dump/components.<Name>.json`.
-   *unchanged* (it ignores the read time) -> apply; *CHANGED* -> run `reviewSync.mjs` again and have the dev answer again.
-   Only prop and variant changes are guaranteed to show; it hashes everything the read contains, so a changed fill or token also shows.
-   **A waiting review does not block other work.** The dev may say "sync X first" (e.g. while a PM or tech lead decides). Keep syncing other
-   components: `reviewSync` adds each to .figma-dump/sync-review.json, the page lists all of them, answers can be saved partially (the rest stay
-   pending), and `--done "<Name>"` only closes its own component. Before touching a component that shares code with a pending one
-   (Select and Input share `components/field/control`), say so to the dev. When the dev comes back, start with `reviewState.mjs`, then
-   re-read and `--verify` that component, since Figma may have moved on.
-5. **After applying and proving:** `node scripts/figma/reviewSync.mjs --done "<Name>"` closes the review (the answers stay as `*.applied.json`).
-   **A new session finds the state in files**, not in memory: `node scripts/figma/reviewState.mjs` says *waiting for the dev*, *answered, not applied*, or nothing.
+   *unchanged* (it ignores the read time) -> apply; *CHANGED* -> run `reviewSync.mjs` again (publishing a changed Figma state drops the old answers, the
+   audit says so) and have the reviewers answer again. It hashes everything the read contains, so a changed fill or token also shows.
+   **A waiting review does not block other work.** The dev may say "sync X first" (e.g. while a product owner or tech lead decides). Keep syncing other
+   components: each is its own review in the store, the page lists all of them, and `--done "<Name>"` only closes its own. Before touching a component
+   that shares code with a pending one (Select and Input share `components/field/control`), say so to the dev. When the dev comes back, start with
+   `reviewState.mjs`, then re-read and `--verify` that component, since Figma may have moved on.
+5. **After applying and proving:** `node scripts/figma/reviewSync.mjs --done "<Name>"` marks the review *applied* (refused while removals are unanswered).
+   **A new session finds the state in the store**, not in memory: `node scripts/figma/reviewState.mjs` says *waiting for the reviewers*, *answered, not applied*,
+   or nothing; if the store cannot be reached it says so and must not be read as "nothing pending".
 
 | Answer | What the agent does |
 |---|---|

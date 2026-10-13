@@ -10,6 +10,7 @@ import { spawnSync } from "node:child_process";
 import { findChrome, chromeHelp } from "./findChrome.mjs";
 import { diffScripts } from "./syncSkill.mjs";
 import { reviewState } from "./reviewState.mjs";
+import { reviewPage } from "./reviewClient.mjs";
 import { foundationAge, ASK } from "./foundationAge.mjs";
 
 const args = process.argv.slice(2);
@@ -86,8 +87,11 @@ step("skill and project");
 const skillDirs = [path.join(os.homedir(), ".claude", "skills", "building-storybook-from-figma"), path.join(process.cwd(), ".claude", "skills", "building-storybook-from-figma")];
 skillDirs.some((d) => fs.existsSync(d)) ? add("skill", "OK", "Skill is installed") : add("skill", "WARN", "Skill building-storybook-from-figma not found in ~/.claude/skills or .claude/skills", pick({ win32: "xcopy /E /I skills\\building-storybook-from-figma %USERPROFILE%\\.claude\\skills\\building-storybook-from-figma", darwin: "cp -R .claude/skills/building-storybook-from-figma ~/.claude/skills/", linux: "cp -R .claude/skills/building-storybook-from-figma ~/.claude/skills/" }));
 step("pending sync review");
-for (const c of reviewState()) add("sync-review", "WARN", `${c.name}: ${c.state === "waiting-for-dev" ? `${c.unanswered.length} removal(s) wait for the dev's answer` : "answered, not applied yet"} (Figma read ${c.readAt})`, c.state === "waiting-for-dev" ? "Do not apply anything. Dev: open Storybook > Guide/Sync review and Save. Details: node scripts/figma/reviewState.mjs" : "Re-read the node, reviewSync.mjs --verify, apply, reviewSync.mjs --done. Details: node scripts/figma/reviewState.mjs");
-// Pointers back into Figma: tokens built before the Figma IDs existed, or components never indexed, force a scan on the next update.
+try {
+  for (const c of await reviewState(process.cwd(), { timeoutMs: 4000 })) add("sync-review", "WARN", `${c.name}: ${c.state === "waiting-for-dev" ? `${c.unanswered.length} removal(s) wait for the reviewers' answer` : "answered, not applied yet"} (Figma read ${c.readAt})`, c.state === "waiting-for-dev" ? `Do not apply anything. Reviewers answer at ${reviewPage()}. Details: node scripts/figma/reviewState.mjs` : "Get the answers (reviewSync.mjs --answers), re-read the node, reviewSync.mjs --verify, apply, reviewSync.mjs --done. Details: node scripts/figma/reviewState.mjs");
+} catch (e) {
+  add("sync-review", "WARN", `Cannot read the review store: ${e.message}`, "Check REVIEW_API_URL / REVIEW_API_KEY or .figma-dump/review-api.json, and that the app is deployed or `npm run review:api` runs. Do not assume nothing is pending.");
+}
 step("age of the tokens");
 {
   const a = foundationAge();

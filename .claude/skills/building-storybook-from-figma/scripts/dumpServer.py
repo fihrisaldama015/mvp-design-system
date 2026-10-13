@@ -1,7 +1,6 @@
 # Tiny local receiver for the Figma plugin (127.0.0.1 only).
 #   POST /save?name=x.json   writes the body to <dir>/x.json   (big reads skip the chat)
 #   GET  /script?name=x.js   serves scripts/figma/plugin/x.js  (plugin scripts skip the chat)
-#   GET  /load?name=x.json   returns <dir>/x.json (404 when absent), so a page can show what was saved
 #   GET  /ping               {"dir": "<absolute dir>"}          (shows where data lands)
 # Usage: python3 scripts/figma/dumpServer.py <port> <dir>
 import http.server, json, os, sys, urllib.parse
@@ -29,11 +28,6 @@ class H(http.server.BaseHTTPRequestHandler):
         route = urllib.parse.urlparse(self.path).path
         if route == "/ping":
             return self.reply(200, json.dumps({"dir": OUT}).encode())
-        if route == "/load":
-            f = os.path.join(OUT, arg(self.path, "name"))
-            if os.path.isfile(f):
-                return self.reply(200, open(f, "rb").read())
-            return self.reply(404)
         if route == "/script":
             f = os.path.join(PLUGIN, arg(self.path, "name"))
             if os.path.isfile(f):

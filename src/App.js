@@ -13,6 +13,7 @@ import NotFound from "pages/NotFound";
 import Maintenance from "pages/Maintenance";
 import TicketDetail from "pages/TicketDetail";
 import ImportCsv from "pages/ImportCsv";
+import Review from "pages/Review";
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/import" element={<ImportCsv />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/review" element={<Review />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

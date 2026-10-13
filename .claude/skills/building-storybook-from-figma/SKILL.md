@@ -75,7 +75,7 @@ A timeout on the first call of a big file is a cold page load: call it again.
 |---|---|---|
 | 0. Look | `inventory.js` (saves `inventory.json`), then `node scripts/figma/listSets.mjs [filter]` | the set you need, with variant count |
 | 1. Foundation | `reference/foundation.md` | `checkConfig.mjs` roles ok; diff vs last Brücke export identical for unchanged collections; `checkUtilities.mjs`; Foundations pages render |
-| 2. Components | `reference/components.md` (Button is the worked example); the component already exists in the project: `reference/existing-component.md` | Figma export vs Storybook sheet; hover/press values equal tokens |
+| 2. Components | `reference/components.md` (Button is the worked example); the component already exists in the project: `reference/existing-component.md` (its review is answered by designers / product owners on the page `/review`; the service: `reference/review-service.md`) | Figma export vs Storybook sheet; hover/press values equal tokens |
 | 3. Storybook | case A and C: `reference/storybook-setup.md` | `bash scripts/figma/renderCheck.sh` → 0 errors; manifest has props |
 
 Phase 3 comes before the Foundations pages can be seen; do it right after the tokens build

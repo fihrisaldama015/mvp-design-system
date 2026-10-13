@@ -11,7 +11,7 @@ Properties: `Size` sm/md*/lg, `Status` Default/Danger, `Disabled`, `Read-only`, 
 pressed...), booleans for label, caption, prefix and suffix icon, `Clearable Icon`, `Required`. **There is no menu**
 (`Expanded` only turns the chevron up) **and no search.** The menu in code is ours; it uses the same tokens.
 
-## Review (`reviewSync.mjs`, then Storybook > Guide/Sync review)
+## Review (`reviewSync.mjs`, answered on the page /review)
 
 ```
 node scripts/figma/reviewSync.mjs .figma-dump/components.Input-Single-Select-Base.json src/components/select/index.js \
@@ -26,7 +26,7 @@ node scripts/figma/reviewSync.mjs .figma-dump/components.Input-Single-Select-Bas
 | Default changes | none (Figma md is the default, as in code) |
 | **Gone from Figma** | **`searchable`**: 0 app callers, 2 story files, **on by default, so every caller gets it** |
 
-**Decision (the dev, on the Sync review page, saved 2026-10-13 11:11 and again 11:14 WIB): keep it as deprecated.**
+**Decision (the dev, on the review page, saved 2026-10-13 11:11 and again 11:14 WIB): keep it as deprecated.**
 How it happened, for the record: the agent first applied this outcome itself in a test run, *before* the dev had answered (a mistake: the
 agent must never answer for the dev; the rule is now in the skill). The dev then answered on the page with the same choice, the agent re-read
 the Figma node (unchanged, hash `460b1f89d95c`) and confirmed the code matches the saved answer; the review was closed with `--done`.

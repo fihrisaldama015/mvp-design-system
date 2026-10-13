@@ -16,5 +16,6 @@ export default defineConfig({
   },
   html: { title: "Equipment Loan Tracker" },
   output: { distPath: { root: "build" } },
-  server: { port: 5002 },
+  // /api/review: the sync-review API. On Vercel it is api/review.mjs; locally `npm run review:api` serves it.
+  server: { port: 5002, proxy: { "/api/review": "http://127.0.0.1:9233" } },
 });

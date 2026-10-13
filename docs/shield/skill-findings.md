@@ -147,3 +147,17 @@ Procedure written as `reference/existing-component.md`; the case is documented i
 
 Not exercised: option C (compatibility layer), because no component with many callers has been synced yet. Candidates with callers:
 components used by other components (Modal by ConfirmDialog, Spinner by Button).
+
+## Shared review store (designers and product owners answer, not the dev)
+
+The review of a removal moved from a Storybook page on the dev's machine to a page `/review` of the deployed app, backed by a store (KV on the
+MVP, Mongo in swt): `reference/review-service.md`. The five-route API is one file (`reviewCore.mjs`), tested with a local server (20 cases: auth,
+conflict 409, republish keeps / drops answers, applied, new cycle), a stand-in KV server, and the page in headless Chrome (11 checks: wrong password,
+partial save, conflict reload). Not run on Vercel or against a real KV store.
+
+| # | Gap found | Fix |
+|---|---|---|
+| 18 | Review state was per machine (`.figma-dump`), so another dev or a designer could not see or answer it, and a text file on the server would vanish at each deploy. | the store + API; `reviewSync` publishes, `reviewState` / `--answers` / `--verify` / `--done` read it; the same code runs in-process for a local store |
+| 19 | A store failure surfaced as a raw error; an unreachable store looked like "nothing pending". | `502` with the reason; `reviewState` says "state unknown, do not assume nothing is pending" and exits 1 |
+| 20 | `--done` closed a review that still had unanswered removals. | refused while `pending` |
+| 21 | Two reviewers could overwrite each other. | `version` on every save, `409` with the current document; the page reloads it |
