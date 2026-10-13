@@ -43,7 +43,7 @@ machine fails a check, fix it with them (ask before installing anything) and run
    A copy is a snapshot (and gets new style IDs).
 4. Copy `scripts/` of this skill to the project's `scripts/figma/`, and
    `templates/figma-tokens.config.json` to the project root.
-5. Start the receiver in the background: `python3 scripts/figma/dumpServer.py 9232 .figma-dump`.
+5. Start the receiver in the background: `npm run figma:receiver` (or `node scripts/figma/receiver.mjs 9232 .figma-dump`; it picks python3, python or py).
    It exits with a message if the port is taken (`kill $(lsof -ti :9232)`, then start again).
    `curl localhost:9232/ping` shows where data lands. It receives data (`POST /save`) and serves
    the plugin scripts (`GET /script`). The plugin may only call `localhost:9223-9232`.

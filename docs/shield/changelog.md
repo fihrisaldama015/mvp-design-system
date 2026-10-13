@@ -1,7 +1,7 @@
 # Changelog: components synced from SHIELD
 
 One entry per component synced from Figma into the code: what the API was, what it is now, how to migrate, and how many
-callers were touched. Newest first. The method is `skills/building-storybook-from-figma/reference/existing-component.md`.
+callers were touched. Newest first. The method is `.claude/skills/building-storybook-from-figma/reference/existing-component.md`.
 
 ## 2026-10-13 · Alert (existing component, callers 0)
 

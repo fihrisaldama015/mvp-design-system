@@ -3,6 +3,13 @@
     "storybook": {
       "type": "http",
       "url": "http://localhost:6006/mcp"
+    },
+    "figma-console": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "figma-console-mcp@latest"
+      ]
     }
   }
 }

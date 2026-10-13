@@ -4,6 +4,16 @@ Equipment Loan Tracker: a dummy app used to test a design-system workflow
 (tokens in Figma, components in Storybook, AI consumers). Same stack as swt-fe:
 React 18, rsbuild, Tailwind 3, formik + yup, react-router-dom 6.
 
+## First time on this machine (set up before anything else)
+
+If the user says "setup", or `node` / the Figma tools are missing: run `node scripts/figma/doctor.mjs` (add `--json` if easier to read).
+Fix each `FAIL` line with the user's approval (install Node, Python, Chrome, ...), then run it again until it is clean. Per-OS steps and
+known differences (Windows, macOS): `.claude/skills/building-storybook-from-figma/reference/setup.md`. If `node` itself is missing,
+install it first (Windows `winget install OpenJS.NodeJS.LTS`, macOS `brew install node`). Two steps stay manual and you can only guide
+them: in Figma Desktop import the Desktop Bridge plugin from `~/.figma-console-mcp/plugin/manifest.json`
+(Plugins > Development > Import plugin from manifest) and run it, and approve the project MCP servers when Claude Code asks.
+The skill `building-storybook-from-figma` lives in `.claude/skills/` (nothing to install). Start the receiver with `npm run figma:receiver`.
+
 ## Build pages from Storybook
 
 - Storybook is the source of truth for the UI. **Before building or changing a

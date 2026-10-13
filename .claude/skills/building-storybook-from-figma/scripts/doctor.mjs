@@ -64,7 +64,7 @@ mcp === null ? add("mcp", "WARN", "Could not run `claude mcp list` (Claude Code 
 
 // Skill + project
 const skillDirs = [path.join(os.homedir(), ".claude", "skills", "building-storybook-from-figma"), path.join(process.cwd(), ".claude", "skills", "building-storybook-from-figma")];
-skillDirs.some((d) => fs.existsSync(d)) ? add("skill", "OK", "Skill is installed") : add("skill", "WARN", "Skill building-storybook-from-figma not found in ~/.claude/skills or .claude/skills", pick({ win32: "xcopy /E /I skills\\building-storybook-from-figma %USERPROFILE%\\.claude\\skills\\building-storybook-from-figma", darwin: "cp -R skills/building-storybook-from-figma ~/.claude/skills/", linux: "cp -R skills/building-storybook-from-figma ~/.claude/skills/" }));
+skillDirs.some((d) => fs.existsSync(d)) ? add("skill", "OK", "Skill is installed") : add("skill", "WARN", "Skill building-storybook-from-figma not found in ~/.claude/skills or .claude/skills", pick({ win32: "xcopy /E /I skills\\building-storybook-from-figma %USERPROFILE%\\.claude\\skills\\building-storybook-from-figma", darwin: "cp -R .claude/skills/building-storybook-from-figma ~/.claude/skills/", linux: "cp -R .claude/skills/building-storybook-from-figma ~/.claude/skills/" }));
 fs.existsSync("package.json") ? add("project", "OK", "package.json found in this folder") : add("project", "WARN", "No package.json here; run doctor from the project root", "cd to the project (or the empty folder for the starter template).");
 
 const mark = { OK: "OK  ", WARN: "WARN", FAIL: "FAIL" };
