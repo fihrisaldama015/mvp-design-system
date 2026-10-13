@@ -57,7 +57,7 @@ function Item({ item, choice, onChoice, readOnly }) {
   );
 }
 
-function ReviewCard({ doc, password, reviewer, onChanged }) {
+function ReviewCard({ doc, password, reviewer, onChanged, onMissingName }) {
   const [draft, setDraft] = useState(doc.answers);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -71,6 +71,7 @@ function ReviewCard({ doc, password, reviewer, onChanged }) {
   const lastDecision = [...doc.audit].reverse().find((a) => a.action === "decided");
 
   const save = async () => {
+    if (!reviewer.trim()) return onMissingName();
     setBusy(true);
     setError(null);
     const r = await call(password, "POST", `/${slugOf(doc.component)}/decision`, { reviewer, answers: changes, version: doc.version }).catch(() => null);
@@ -93,9 +94,9 @@ function ReviewCard({ doc, password, reviewer, onChanged }) {
       </ul>
       {!applied && (
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <Button status="primary" loading={busy} disabled={!reviewer.trim() || Object.keys(changes).length === 0} onClick={save}>Save answers</Button>
+          <Button status="primary" loading={busy} disabled={Object.keys(changes).length === 0} onClick={save}>Save answers</Button>
           <span className="text-caption typo-regular-text-sm">
-            {!reviewer.trim() ? "Enter your name above to save" : Object.keys(changes).length ? `${Object.keys(changes).length} change(s) not saved` : waiting ? `${waiting} removal(s) still waiting for an answer (you can come back later)` : "All answered"}
+            {Object.keys(changes).length ? `${Object.keys(changes).length} change(s) not saved` : waiting ? `${waiting} removal(s) still waiting for an answer (you can come back later)` : "All answered"}
           </span>
         </div>
       )}
@@ -113,6 +114,7 @@ export default function Review() {
   const [reviewer, setReviewer] = useState(() => store.get("reviewerName"));
   const [docs, setDocs] = useState(null); // null: not loaded; { [component]: doc }
   const [problem, setProblem] = useState(null);
+  const [nameError, setNameError] = useState(false);
 
   const load = useCallback(async (pw) => {
     setProblem(null);
@@ -128,7 +130,14 @@ export default function Review() {
   useEffect(() => { if (password) load(password); }, [password, load]);
 
   const enter = () => { store.set("reviewPassword", typed); setPassword(typed); };
-  const setName = (e) => { setReviewer(e.target.value); store.set("reviewerName", e.target.value); };
+  const setName = (e) => { setReviewer(e.target.value); store.set("reviewerName", e.target.value); if (e.target.value.trim()) setNameError(false); };
+  // Saving without a name: bring the reviewer to the field instead of leaving a dead button.
+  const missingName = () => {
+    setNameError(true);
+    const field = document.getElementById("reviewer-name");
+    field?.scrollIntoView({ behavior: "smooth", block: "center" });
+    field?.focus({ preventScroll: true });
+  };
   const replace = (doc) => setDocs((d) => ({ ...d, [doc.component]: doc }));
 
   const list = useMemo(() => Object.values(docs ?? {}).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)), [docs]);
@@ -154,13 +163,15 @@ export default function Review() {
         description={docs ? `${pending} waiting for an answer, ${open.length - pending} answered and waiting for the developer, ${applied.length} applied.` : "Loading..."}
       />
       {problem && <Alert status="danger" title="Something went wrong">{problem}</Alert>}
-      <div className="w-72"><Input label="Your name" value={reviewer} onChange={setName} caption="Recorded with your answers." /></div>
+      <div className="w-72">
+        <Input id="reviewer-name" label="Your name" required value={reviewer} onChange={setName} status={nameError ? "danger" : "default"} caption={nameError ? "Enter your name so we know who answered." : "Recorded with your answers."} />
+      </div>
       {docs && !list.length && <EmptyState title="Nothing to review" description="Reviews appear here when the developer syncs a component that already exists from Figma." />}
-      {open.map((d) => <ReviewCard key={d.component} doc={d} password={password} reviewer={reviewer} onChanged={replace} />)}
+      {open.map((d) => <ReviewCard key={d.component} doc={d} password={password} reviewer={reviewer} onChanged={replace} onMissingName={missingName} />)}
       {applied.length > 0 && (
         <>
           <h2 className="typo-semi-bold-text-lg">Applied</h2>
-          {applied.map((d) => <ReviewCard key={d.component} doc={d} password={password} reviewer={reviewer} onChanged={replace} />)}
+          {applied.map((d) => <ReviewCard key={d.component} doc={d} password={password} reviewer={reviewer} onChanged={replace} onMissingName={missingName} />)}
         </>
       )}
     </div>
