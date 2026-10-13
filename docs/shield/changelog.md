@@ -3,6 +3,14 @@
 One entry per component synced from Figma into the code: what the API was, what it is now, how to migrate, and how many
 callers were touched. Newest first. The method is `.claude/skills/building-storybook-from-figma/reference/existing-component.md`.
 
+## Select synced from SHIELD (feature dropped by Figma)
+
+Figma `Input - Single Select/Base` (`7:94371`). Control restyled with Graphene tokens (shared with Input); new props `size`,
+`status` (`default`/`danger`), `readOnly`, `clearable`, `prefixIcon`, `suffixIcon`, `label`, `required`, `caption`.
+**`searchable` is deprecated**: Figma has no menu search. It still works, is off by default now (it was on), warns in development.
+Callers that relied on the default: 2 story files (follow the new default), 0 app files. Details and checks: `docs/shield/select.md`.
+Migration: none for app code. To keep search anywhere: pass `searchable` (deprecated, to be removed when no caller passes it).
+
 ## 2026-10-13 · Alert (existing component, callers 0)
 
 Figma: `Alert`, node `6:13250`, 60 variants. Details and checks: `docs/shield/alert.md`.

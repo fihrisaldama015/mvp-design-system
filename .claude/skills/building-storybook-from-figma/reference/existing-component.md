@@ -43,7 +43,14 @@ Additions from Figma are safe: they go in without asking. A prop or option that 
 
 Deprecated is not option C: C maps an old *name* to a new one while callers move; deprecated keeps a *feature* that Figma dropped.
 Re-running `reviewSync.mjs` lists a deprecated prop again with `[already deprecated]`, so it is removed once the callers are gone.
-*Tried on a synthetic Select (`searchable`, `size="xl"` missing from Figma) and on the old Alert from git; applying "keep as deprecated" to a real component is not exercised yet.*
+Details that matter (found on SHIELD Select, `docs/shield/select.md`):
+- A prop that is **on by default reaches every caller**: count callers of the component, not only those that pass the prop (`reviewSync` does).
+  When the default flips to off, a *product* caller that relied on it gets the prop explicitly in the same change; stories follow the new default.
+- Pass `--behavior` (data), `--ignore` (Figma properties that are not props), `--also <wrapper>` (props the wrapper supplies), `--map` / `--legacy`
+  so the list only holds real design differences. Handlers (`on*`) and `value`, `id`, `className`, `children` are never "gone from Figma".
+- Do not extend a component with options Figma lacks by copying a sibling (Select got Input's five statuses; Figma's has two): re-run `reviewSync`
+  after the sync, it must converge to the deprecated items only.
+*Tried on SHIELD Select (a real removal, "keep as deprecated") and on the old Alert from git. Option C is still not exercised.*
 
 ## Worked examples
 

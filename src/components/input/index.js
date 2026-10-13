@@ -1,41 +1,16 @@
-import { cloneElement, forwardRef, isValidElement, useCallback, useId, useRef, useState } from "react";
+import { forwardRef, useCallback, useId, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { X } from "lucide-react";
 import { useFieldControl } from "components/field";
+import { BORDER, FOCUS_RING, ICON_PX, SIZE, sized } from "components/field/control";
 import { FIELD_GAP, FieldCaption, FieldLabel } from "components/field/parts";
 import { cn } from "utils/cn";
 
 // Built from SHIELD "Input" (Figma): State x Size x Status, Disabled and Read-only.
 // State hovered -> hover:, pressed (caret shown) -> focus-within:, filled -> the
 // input has a value (clear button shows). Every class is a Graphene token;
-// docs/shield/input.md has the Figma -> code table.
-const SIZE = {
-  sm: { box: "h-component-sm px-3 gap-2 rounded-form-sm", text: "typo-regular-text-sm", radius: "rounded-form-sm" },
-  md: { box: "h-component-md px-3 gap-2.5 rounded-form-md", text: "typo-regular-text-sm", radius: "rounded-form-md" },
-  lg: { box: "h-component-lg px-4 gap-3 rounded-form-lg", text: "typo-regular-text-base", radius: "rounded-form-lg" },
-};
-// Figma uses 22px icons in every size.
-const ICON_PX = 22;
-
-// Border per status. Only `default` turns primary on hover and focus; the other
-// statuses keep their colour in every state.
-const BORDER = {
-  default: "border-invert-default group-hover/control:border-primary group-focus-within/control:border-primary",
-  info: "border-info",
-  success: "border-success",
-  warning: "border-warning",
-  danger: "border-danger",
-};
-// Focus ring (Figma "Focus Area", 3px outside stroke).
-const FOCUS_RING = {
-  default: "bg-primary-invert-focused",
-  info: "bg-info-invert-focused",
-  success: "bg-success-invert-focused",
-  warning: "bg-warning-invert-focused",
-  danger: "bg-danger-invert-focused",
-};
-
-const sized = (icon) => (isValidElement(icon) ? cloneElement(icon, { size: ICON_PX, "aria-hidden": true }) : icon);
+// docs/shield/input.md has the Figma -> code table. The size / border / focus-ring
+// maps are shared with Select (components/field/control).
 
 // Clears the native value and fires React's onChange, for controlled and uncontrolled inputs.
 function clearNative(input) {

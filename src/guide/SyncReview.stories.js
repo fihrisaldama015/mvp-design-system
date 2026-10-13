@@ -40,7 +40,7 @@ function Item({ item, choice, onChoice }) {
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone={needs ? "warning" : item.kind === "default-changed" ? "info" : "success"}>{KIND_LABEL[item.kind]}</Badge>
         <code className="typo-semi-bold-text-sm">{item.prop}{item.option ? `="${item.option}"` : ""}</code>
-        {item.callers !== undefined && <span className="text-caption typo-regular-text-sm">{item.callers} caller files use it</span>}
+        {item.callers !== undefined && <span className="text-caption typo-regular-text-sm">{item.callers} app + {item.storyCallers ?? 0} story files{item.onByDefault ? ", on by default: every caller gets it" : " use it"}</span>}
         {item.deprecated && <Badge tone="neutral">already deprecated</Badge>}
       </div>
       <p className="text-caption typo-regular-text-sm">{item.detail}</p>
