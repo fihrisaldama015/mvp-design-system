@@ -14,6 +14,7 @@ import Maintenance from "pages/Maintenance";
 import TicketDetail from "pages/TicketDetail";
 import ImportCsv from "pages/ImportCsv";
 import Review from "pages/Review";
+import Reservations from "pages/Reservations";
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/people/:id" element={<PersonProfile />} />
         <Route path="/maintenance" element={<Maintenance />} />
         <Route path="/maintenance/:id" element={<TicketDetail />} />
+        <Route path="/reservations" element={<Reservations />} />
         <Route path="/import" element={<ImportCsv />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/settings" element={<Settings />} />
