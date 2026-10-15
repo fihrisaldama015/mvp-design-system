@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { BarChart3, ClipboardList, LayoutDashboard, Package, PlusCircle, Search, Settings as Cog, Upload, Wrench } from "lucide-react";
+import { BarChart3, CalendarClock, ClipboardList, LayoutDashboard, Package, PlusCircle, Search, Settings as Cog, Upload, Wrench } from "lucide-react";
 import CommandPalette from "app/CommandPalette";
 import Notifications from "app/Notifications";
 
@@ -9,6 +9,7 @@ const LINKS = [
   { to: "/equipment", label: "Equipment", icon: Package },
   { to: "/loans", label: "Loan log", icon: ClipboardList, end: true },
   { to: "/loans/new", label: "New loan", icon: PlusCircle },
+  { to: "/reservations", label: "Reservations", icon: CalendarClock },
   { to: "/maintenance", label: "Maintenance", icon: Wrench },
   { to: "/import", label: "Import", icon: Upload },
   { to: "/reports", label: "Reports", icon: BarChart3 },
