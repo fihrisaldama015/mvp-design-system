@@ -10,5 +10,6 @@ The dev repo owns the components, tokens and Storybook. This repo holds a genera
 - `npm run pull-ui` copies the design system and writes `ui-lock.json`; `npm run ui-check` and the session hook warn when the copy was edited by hand
   or the dev repo moved on. New components go in `src/proposed/`.
 - Contract with the dev repo's `design-system-slice` skill: `ui-lock.json` is `{ source: { path, commit, dirty }, pulledAt, files: { [relPath]: sha1 } }`;
-  the dev side reads `source.commit` to tell whether this copy is current.
+  `source.path` is relative to the vibe repo root (never absolute; `check` falls back to `UI_SOURCE`, then `../mvp-dev`). The dev side reads only `source.commit`
+  to tell whether this copy is current; "behind" counts only commits that touch the design system paths.
 - Spec: `docs/superpowers/specs/2026-10-15-vibe-to-dev-slice-design.md`.

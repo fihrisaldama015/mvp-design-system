@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { checkLock, designSystemFiles, pullUi } from "../pullUi.mjs";
+import { checkLock, designSystemFiles, pullUi, toPosix } from "../pullUi.mjs";
 
 const CHECK = fileURLToPath(new URL("../check.mjs", import.meta.url));
 
@@ -76,4 +76,52 @@ test("check.mjs is silent when the copy is fresh and speaks when a file was edit
   assert.equal(run(), "");
   fs.writeFileSync(path.join(target, "src/components/button/index.js"), "edited by hand");
   assert.match(run(), /changed by hand/);
+});
+
+test("toPosix turns backslash paths into forward-slash paths", () => {
+  assert.equal(toPosix("src\\components\\button\\index.js", "\\"), "src/components/button/index.js");
+});
+
+test("a CRLF copy hashes like the LF original; a binary file is hashed as it is", () => {
+  const a = mk({ ...SRC }), b = mk({ ...SRC, "src/components/button/index.js": "button v1" });
+  fs.writeFileSync(path.join(b, "src/components/button/index.js"), "line1\r\nline2\r\n");
+  fs.writeFileSync(path.join(a, "src/components/button/index.js"), "line1\nline2\n");
+  const bin = Buffer.from([1, 0, 13, 10, 2]), bin2 = Buffer.from([1, 0, 10, 2]);
+  fs.writeFileSync(path.join(a, "src/tokens/x.bin"), bin); fs.writeFileSync(path.join(b, "src/tokens/x.bin"), bin2);
+  const la = pullUi({ source: a, target: mk({}) }), lb = pullUi({ source: b, target: mk({}) });
+  assert.equal(la.files["src/components/button/index.js"], lb.files["src/components/button/index.js"]);
+  assert.notEqual(la.files["src/tokens/x.bin"], lb.files["src/tokens/x.bin"]);
+});
+
+test("pull refuses an empty source before deleting anything", () => {
+  const source = mk({ "README.md": "nothing here" }), target = mk({});
+  pullUi({ source: mk(SRC), target });
+  assert.throws(() => pullUi({ source, target }), /no design system files/i);
+  assert.ok(fs.existsSync(path.join(target, "src/components/button/index.js")));
+});
+
+test("the lock and GENERATED.md hold a relative source path, and checkLock still computes behind through it", () => {
+  const source = mk(SRC), target = mk({});
+  git(source, "init", "-q"); git(source, "add", "-A"); git(source, "commit", "-q", "-m", "one");
+  const lock = pullUi({ source, target });
+  assert.ok(!path.isAbsolute(lock.source.path));
+  assert.ok(!lock.source.path.includes("\\"));
+  assert.equal(path.resolve(target, lock.source.path), source);
+  assert.ok(!fs.readFileSync(path.join(target, "src/components/GENERATED.md"), "utf8").includes(source));
+  fs.writeFileSync(path.join(source, "src/components/button/index.js"), "button v2");
+  git(source, "commit", "-qam", "two");
+  assert.equal(checkLock(target).behind.commits, 1);
+});
+
+test("a dev commit that touches no design system file is not behind; a component commit is", () => {
+  const source = mk(SRC), target = mk({});
+  git(source, "init", "-q"); git(source, "add", "-A"); git(source, "commit", "-q", "-m", "one");
+  pullUi({ source, target });
+  fs.mkdirSync(path.join(source, "docs"), { recursive: true });
+  fs.writeFileSync(path.join(source, "docs/x.md"), "docs");
+  git(source, "add", "-A"); git(source, "commit", "-qm", "docs");
+  assert.equal(checkLock(target).behind.commits, 0);
+  fs.writeFileSync(path.join(source, "src/components/button/index.js"), "button v2");
+  git(source, "commit", "-qam", "component");
+  assert.equal(checkLock(target).behind.commits, 1);
 });
