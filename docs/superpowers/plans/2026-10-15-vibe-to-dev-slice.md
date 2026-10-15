@@ -14,7 +14,7 @@
 
 - Commits: no `Co-Authored-By` line and not the word "PM" in a message. Do not push, and do not create a remote repository, without asking.
 - Generated files are never hand-edited: `src/tokens/*`, `src/foundations/*.mdx`, and (after Task 2) everything `pull-ui` copies.
-- The handoff scripts (`pull-ui`, the slice scanner, `check`) are a **second skill**, `.claude/skills/design-system-handoff`, separate from `building-storybook-from-figma`. It is edited in this (vibe) repo and copied to `mvp-dev` at the end of Task 3; it runs in place (no `scripts/` copy, no `sync-skill`). The Figma skill is not touched.
+- The handoff tooling is **two small skills, one per role**: `design-system-pull` (vibe repo: `pullUi`, `check`, the session hook) and `design-system-slice` (dev repo: `sliceScan`, `sliceVibe`, `/slice-vibe`). Neither is copied to the other repo; the only contract between them is the format of `ui-lock.json` (written by one, read by the other, documented in both `SKILL.md` files). They run in place (no `scripts/` copy, no `sync-skill`). The Figma skill is not touched.
 - Semantic Tailwind classes only (no hex, no arbitrary values); icons `lucide-react` only; text in plain English.
 - Build pages from Storybook components; never hand-write a button, input, badge, table, modal, drawer, toast, tabs or tooltip.
 
@@ -112,7 +112,7 @@ git add -A && git commit -q -m "chore: dev codebase for the vibe-to-dev demo, sp
 ### Task 2: `pull-ui`, the lock, and the vibe repo's side
 
 **Files (in `mvp-design-system`):**
-- Create: `.claude/skills/design-system-handoff/SKILL.md`, `scripts/pullUi.mjs`, `scripts/check.mjs`, `scripts/__tests__/pullUi.test.mjs` (all under the skill folder)
+- Create: `.claude/skills/design-system-pull/SKILL.md`, `scripts/pullUi.mjs`, `scripts/check.mjs`, `scripts/__tests__/pullUi.test.mjs` (all under the skill folder)
 - Modify: `.claude/settings.json` (session hook), `package.json`, `rsbuild.config.js`, `src/App.js`, `CLAUDE.md`
 - Move: `src/components/{Layout,Notifications,CommandPalette}.js` to `src/app/`
 - Create: `src/proposed/.gitkeep`
@@ -207,14 +207,14 @@ test("check.mjs is silent when the copy is fresh and speaks when a file was edit
 
 - [ ] **Step 2: Run, expect FAIL**
 
-Run: `node --test '.claude/skills/design-system-handoff/scripts/__tests__/*.test.mjs'`
+Run: `node --test '.claude/skills/design-system-pull/scripts/__tests__/*.test.mjs'`
 Expected: FAIL (`Cannot find module '../pullUi.mjs'`).
 
 - [ ] **Step 3: Write `pullUi.mjs`**
 
 ```js
 // Copies the design system from the dev repo into this (vibe) repo and records ui-lock.json.
-// Usage: node .claude/skills/design-system-handoff/scripts/pullUi.mjs [--source ../mvp-dev]      (env UI_SOURCE also works)
+// Usage: node .claude/skills/design-system-pull/scripts/pullUi.mjs [--source ../mvp-dev]      (env UI_SOURCE also works)
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -288,12 +288,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 
 - [ ] **Step 4: Run, expect PASS**
 
-Run: `node --test '.claude/skills/design-system-handoff/scripts/__tests__/*.test.mjs'`
+Run: `node --test '.claude/skills/design-system-pull/scripts/__tests__/*.test.mjs'`
 Expected: 6 tests pass.
 
 - [ ] **Step 5: The check, the skill file, the hook, scripts, and the app-level move**
 
-Create `.claude/skills/design-system-handoff/scripts/check.mjs`:
+Create `.claude/skills/design-system-pull/scripts/check.mjs`:
 
 ```js
 // Is the copy of the design system in this repo still the dev repo's? Used by the SessionStart hook (--quiet) and `npm run ui-check`.
@@ -309,28 +309,28 @@ if (lines.length) { console.log(lines.join("\n")); process.exit(quiet ? 0 : 1); 
 if (!quiet) console.log(`Design system copy matches ${r.lock.source.commit?.slice(0, 7) ?? "the source"}.`);
 ```
 
-Create `.claude/skills/design-system-handoff/SKILL.md`:
+Create `.claude/skills/design-system-pull/SKILL.md`:
 
 ```markdown
 ---
-name: design-system-handoff
-description: Use when a prototype repo (vibe coding) and a dev codebase must share one design system, to copy the dev repo's components into the prototype (pull-ui, ui-lock.json), check the copy, or slice a finished prototype page into the dev repo (/slice-vibe).
+name: design-system-pull
+description: Use in a prototype (vibe coding) repo that must share the dev repo's design system, to copy the dev repo's components, tokens and stories into it (pull-ui, ui-lock.json) and to check that the copy was not edited by hand or left behind.
 ---
 
-# Design system handoff (vibe repo and dev repo)
+# Design system pull (vibe repo side)
 
-The dev repo owns the components, tokens and Storybook. The vibe repo holds a generated copy.
+The dev repo owns the components, tokens and Storybook. This repo holds a generated copy.
 
-- In the vibe repo: `npm run pull-ui` copies the design system and writes `ui-lock.json`; `npm run ui-check` and the session hook warn when the copy was
-  edited by hand or the dev repo moved on. New components go in `src/proposed/`.
-- In the dev repo: `/slice-vibe <PageName>` runs `scripts/sliceVibe.mjs` (copy the page, scan it against the dev components, add the route, build, write
-  `docs/slices/<PageName>.md`).
+- `npm run pull-ui` copies the design system and writes `ui-lock.json`; `npm run ui-check` and the session hook warn when the copy was edited by hand
+  or the dev repo moved on. New components go in `src/proposed/`.
+- Contract with the dev repo's `design-system-slice` skill: `ui-lock.json` is `{ source: { path, commit, dirty }, pulledAt, files: { [relPath]: sha1 } }`;
+  the dev side reads `source.commit` to tell whether this copy is current.
 - Spec: `docs/superpowers/specs/2026-10-15-vibe-to-dev-slice-design.md`.
 ```
 
-Add to `.claude/settings.json`, in the `SessionStart` hooks list, `{ "type": "command", "command": "node .claude/skills/design-system-handoff/scripts/check.mjs --quiet" }`.
+Add to `.claude/settings.json`, in the `SessionStart` hooks list, `{ "type": "command", "command": "node .claude/skills/design-system-pull/scripts/check.mjs --quiet" }`.
 
-Edit `package.json` scripts: add `"pull-ui": "node .claude/skills/design-system-handoff/scripts/pullUi.mjs"`, `"ui-check": "node .claude/skills/design-system-handoff/scripts/check.mjs"` and `"test": "node --test '.claude/skills/design-system-handoff/scripts/__tests__/*.test.mjs'"`. Then:
+Edit `package.json` scripts: add `"pull-ui": "node .claude/skills/design-system-pull/scripts/pullUi.mjs"`, `"ui-check": "node .claude/skills/design-system-pull/scripts/check.mjs"` and `"test": "node --test '.claude/skills/design-system-pull/scripts/__tests__/*.test.mjs'"`. Then:
 
 ```bash
 mkdir -p src/app src/proposed && touch src/proposed/.gitkeep
@@ -355,23 +355,23 @@ Run: `npm run pull-ui -- --source ../mvp-dev && npm test && npm run build && npm
 Expected: pull reports the file count; 6 tests pass; builds OK; `errors: 0`; `Design system copy matches ...`.
 
 ```bash
-git add -A && git commit -q -m "feat: design-system-handoff skill with pull-ui, ui-lock and its check; app-level files move to src/app"
+git add -A && git commit -q -m "feat: design-system-pull skill with pull-ui, ui-lock and its check; app-level files move to src/app"
 ```
 
 ---
 
-### Task 3: `/slice-vibe` (scanner, script, command): written in the skill, copied to `mvp-dev`
+### Task 3: `/slice-vibe` (scanner, script, command), in `mvp-dev`
 
-**Files:**
-- Create (in this repo, in the skill): `.claude/skills/design-system-handoff/scripts/sliceScan.mjs`, `sliceVibe.mjs`, `__tests__/sliceScan.test.mjs`
-- Create (in `mvp-dev`): a copy of the skill folder, `.claude/commands/slice-vibe.md`
-- Modify (in `mvp-dev`): `package.json` (script `test`, same glob as here)
+**Files (all in `../mvp-dev`; work there with `cd ../mvp-dev`):**
+- Create: `.claude/skills/design-system-slice/SKILL.md`, `scripts/sliceScan.mjs`, `scripts/sliceVibe.mjs`, `scripts/__tests__/sliceScan.test.mjs` (under the skill folder)
+- Create: `.claude/commands/slice-vibe.md`
+- Modify: `package.json` (script `test`)
 
 **Interfaces:**
 - Produces from `sliceScan.mjs`: `loadComponents(devRoot): { [Name]: { props: Set, deprecated: Set } }`; `jsxTags(code): { name, attrs, line }[]`; `attrNames(attrs): string[]`; `scanPage(code, file, components): { kind, file, line, detail }[]` (kinds: `unknown-prop`, `deprecated-prop`, `proposed-import`, `hand-written`, `hex-colour`, `arbitrary-value`); `collectPage(vibeRoot, entryAbs): { files: string[], broken: { file, spec }[] }`; `copyPageFiles(vibeRoot, devRoot, files): { copied: string[], conflicts: string[] }`.
 - `sliceVibe.mjs <vibeRepo> <PageName>` writes `docs/slices/<PageName>.md` and exits 0 when nothing blocks.
 
-- [ ] **Step 1: Write the failing tests** (`.claude/skills/design-system-handoff/scripts/__tests__/sliceScan.test.mjs`)
+- [ ] **Step 1: Write the failing tests** (`.claude/skills/design-system-slice/scripts/__tests__/sliceScan.test.mjs`, in `../mvp-dev`; add the `test` script first: `"test": "node --test '.claude/skills/design-system-slice/scripts/__tests__/*.test.mjs'"`)
 
 ```js
 import test from "node:test";
@@ -444,7 +444,7 @@ test("copyPageFiles copies new files and refuses to overwrite a different one", 
 
 - [ ] **Step 2: Run, expect FAIL**
 
-Run: `npm test`
+Run (in `../mvp-dev`): `npm test`
 Expected: FAIL (`Cannot find module '../sliceScan.mjs'`).
 
 - [ ] **Step 3: Write `sliceScan.mjs`**
@@ -572,22 +572,22 @@ export function copyPageFiles(vibeRoot, devRoot, files) {
 
 - [ ] **Step 4: Run, expect PASS**
 
-Run: `npm test`
-Expected: 12 tests pass (6 from Task 2, 6 new).
+Run (in `../mvp-dev`): `npm test`
+Expected: 6 tests pass.
 
 - [ ] **Step 5: Write `sliceVibe.mjs` and the command**
 
-`.claude/skills/design-system-handoff/scripts/sliceVibe.mjs`:
+`.claude/skills/design-system-slice/scripts/sliceVibe.mjs`:
 
 ```js
-// node .claude/skills/design-system-handoff/scripts/sliceVibe.mjs <vibeRepo> <PageName>   (page = <vibeRepo>/src/pages/<PageName>.js)
+// node .claude/skills/design-system-slice/scripts/sliceVibe.mjs <vibeRepo> <PageName>   (page = <vibeRepo>/src/pages/<PageName>.js)
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { collectPage, copyPageFiles, loadComponents, scanPage } from "./sliceScan.mjs";
 
 const [, , vibeArg, page] = process.argv;
-if (!vibeArg || !page) { console.error("Usage: node .claude/skills/design-system-handoff/scripts/sliceVibe.mjs <vibeRepo> <PageName>"); process.exit(1); }
+if (!vibeArg || !page) { console.error("Usage: node .claude/skills/design-system-slice/scripts/sliceVibe.mjs <vibeRepo> <PageName>"); process.exit(1); }
 const vibe = path.resolve(vibeArg), dev = process.cwd(), t0 = Date.now(), started = new Date().toISOString();
 const entry = path.join(vibe, "src/pages", `${page}.js`);
 if (!fs.existsSync(entry)) { console.error(`No page ${entry}`); process.exit(1); }
@@ -670,7 +670,7 @@ argument-hint: <PageName> [path to the vibe repo, default ../mvp-design-system]
 
 Slice the page `$ARGUMENTS` from the vibe repo into this repo.
 
-1. Run `node .claude/skills/design-system-handoff/scripts/sliceVibe.mjs <vibe repo> <PageName>` and read the report it prints (`docs/slices/<PageName>.md`).
+1. Run `node .claude/skills/design-system-slice/scripts/sliceVibe.mjs <vibe repo> <PageName>` and read the report it prints (`docs/slices/<PageName>.md`).
 2. If the design system copy is behind, say which components changed; do not stop.
 3. For every scan finding, fix it only when the fix is mechanical and safe (a renamed or deprecated property, a hand-written element that has a component), then run the script's checks again
    (`npm run build`). For a `proposed-import`, do not move the component: list it and ask the developer to promote it or replace it.
@@ -678,16 +678,28 @@ Slice the page `$ARGUMENTS` from the vibe repo into this repo.
 5. Finish with: files copied, findings fixed and findings left (with why), build result, and the report path.
 ```
 
-Create the command in `mvp-dev` (not here). It is committed in Step 6.
+Create the command as `.claude/commands/slice-vibe.md` and the skill file `.claude/skills/design-system-slice/SKILL.md`:
+
+```markdown
+---
+name: design-system-slice
+description: Use in the dev codebase when a finished prototype page from the vibe repo must be brought over (/slice-vibe): copy the page, scan it against the dev components, add the route, build, and write the slice report.
+---
+
+# Design system slice (dev repo side)
+
+`/slice-vibe <PageName> [vibe repo]` runs `scripts/sliceVibe.mjs`: version check against the vibe repo's `ui-lock.json` (`source.commit`), copy of the page and its data,
+a scan against this repo's components (`scripts/sliceScan.mjs`), the route, the build, and `docs/slices/<PageName>.md`.
+Contract with the vibe repo's `design-system-pull` skill: it reads `ui-lock.json` only; nothing else is shared.
+```
+
+The command is committed in Step 6.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add -A && git commit -q -m "feat: slice scanner and sliceVibe in the design-system-handoff skill"
-rsync -a .claude/skills/design-system-handoff/ ../mvp-dev/.claude/skills/design-system-handoff/
-cd ../mvp-dev && mkdir -p .claude/commands   # create .claude/commands/slice-vibe.md with the text above
-# in mvp-dev/package.json add: "test": "node --test '.claude/skills/design-system-handoff/scripts/__tests__/*.test.mjs'"
-npm test && git add -A && git commit -q -m "feat: /slice-vibe command and the design-system-handoff skill"
+# in ../mvp-dev
+npm test && git add -A && git commit -q -m "feat: design-system-slice skill and the /slice-vibe command"
 ```
 
 ---
@@ -725,7 +737,7 @@ cd ../mvp-design-system
 C=$(git log --format=%h -S'variant="' -- src/pages | tail -1)
 mkdir -p /tmp/vibe-old && git archive $C src | tar -x -C /tmp/vibe-old
 cd ../mvp-dev && git switch -c baseline-run
-node .claude/skills/design-system-handoff/scripts/sliceVibe.mjs /tmp/vibe-old Dashboard
+node .claude/skills/design-system-slice/scripts/sliceVibe.mjs /tmp/vibe-old Dashboard
 ```
 
 Expected: a report with the unknown-property, deprecated-property and hand-written counts. Copy it to `docs/slices/BASELINE.md`, then `git switch main` and delete the branch (`git branch -D baseline-run`).
