@@ -14,7 +14,10 @@
     "doctor": "node scripts/figma/doctor.mjs",
     "review:api": "node scripts/figma/reviewApi.mjs 9233",
     "sync-skill": "node scripts/figma/syncSkill.mjs",
-    "figma:receiver": "node scripts/figma/receiver.mjs 9232 .figma-dump"
+    "figma:receiver": "node scripts/figma/receiver.mjs 9232 .figma-dump",
+    "pull-ui": "node .claude/skills/design-system-pull/scripts/pullUi.mjs",
+    "ui-check": "node .claude/skills/design-system-pull/scripts/check.mjs",
+    "test": "node --test '.claude/skills/design-system-pull/scripts/__tests__/*.test.mjs'"
   },
   "dependencies": {
     "clsx": "^2.1.1",

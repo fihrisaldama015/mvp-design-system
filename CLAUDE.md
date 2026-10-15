@@ -52,6 +52,11 @@ plugin and the receiver running. Never start it on your own. If the dev agrees: 
 - Icons: `lucide-react` only. Text in plain English, sentence case.
 
 - Story code is Storybook code: ignore `fn()` (from `storybook/test`), `useArgs()` and `updateArgs` in it. They only make the story interactive. Copy the JSX, not those helpers.
+- `src/components`, `src/tokens`, `src/foundations`, `src/guide`, `src/utils` and `.storybook` are a **generated copy** of the dev repo's design system
+  (`npm run pull-ui`). Never edit them; `npm run ui-check` (and the session hook) warn when they differ from `ui-lock.json`. A change to a component is made in the dev repo.
+- A component that does not exist yet: build it in `src/proposed/<kebab-name>/` (with a story) and use it freely in the prototype. The developer decides at
+  slice time whether it is promoted to the dev repo. Properties marked `@deprecated` in the manifest are not used in new pages.
+- App-specific helpers go in `src/app/`, not in `src/utils` or `src/guide`: those two folders are mirrored from the dev repo and a vibe-only file there is deleted by the next `pull-ui`.
 
 ## Adding a shared component
 

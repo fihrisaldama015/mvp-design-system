@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { BarChart3, ClipboardList, LayoutDashboard, Package, PlusCircle, Search, Settings as Cog, Upload, Wrench } from "lucide-react";
-import CommandPalette from "components/CommandPalette";
-import Notifications from "components/Notifications";
+import CommandPalette from "app/CommandPalette";
+import Notifications from "app/Notifications";
 
 const LINKS = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
