@@ -22,8 +22,8 @@ const at = (n, time) => `${daysFromNow(n)} ${time}`;
 
 export const RESERVATIONS = [
   {
-    id: "RS-1001", requester: person("Aisyah Rahman", "3 SIR"), items: [item("EQ-001")],
-    start: daysFromNow(-2), end: daysFromNow(2), status: "active", notes: "Radio check for the weekend exercise.", createdAt: daysFromNow(-9),
+    id: "RS-1001", requester: person("Aisyah Rahman", "3 SIR"), items: [item("EQ-015"), item("EQ-012")],
+    start: daysFromNow(-2), end: daysFromNow(3), status: "active", notes: "Recovery drill. Please include the strap set.", createdAt: daysFromNow(-9),
     activity: [{ at: at(-9, "10:12"), by: "Aisyah Rahman", text: "Requested the reservation" }, { at: at(-8, "09:00"), by: "Store keeper", text: "Approved" }, { at: at(-2, "08:30"), by: "Store keeper", text: "Picked up" }],
   },
   {
@@ -52,13 +52,13 @@ export const RESERVATIONS = [
     activity: [{ at: at(-6, "09:25"), by: "Chen Wei", text: "Requested the reservation" }, { at: at(-5, "10:00"), by: "Store keeper", text: "Approved" }, { at: at(-1, "08:05"), by: "Store keeper", text: "Picked up" }],
   },
   {
-    id: "RS-1007", requester: person("Aisyah Rahman", "3 SIR"), items: [item("EQ-015"), item("EQ-012")],
-    start: daysFromNow(5), end: daysFromNow(9), status: "upcoming", notes: "Recovery drill. Please include the strap set.", createdAt: daysFromNow(-2),
+    id: "RS-1007", requester: person("Aisyah Rahman", "3 SIR"), items: [item("EQ-015")],
+    start: daysFromNow(5), end: daysFromNow(9), status: "upcoming", notes: "Recovery drill, second week.", createdAt: daysFromNow(-2),
     activity: [{ at: at(-2, "12:00"), by: "Aisyah Rahman", text: "Requested the reservation" }, { at: at(-1, "09:30"), by: "Store keeper", text: "Approved" }],
   },
   {
     id: "RS-1008", requester: person("Daniel Tan", "40 SAR"), items: [item("EQ-012")],
-    start: daysFromNow(7), end: daysFromNow(8), status: "upcoming", notes: "Overlaps with RS-1007 on the same strap set.", createdAt: daysFromNow(-1),
+    start: daysFromNow(1), end: daysFromNow(2), status: "upcoming", notes: "Overlaps with RS-1001 on the same strap set.", createdAt: daysFromNow(-1),
     activity: [{ at: at(-1, "17:20"), by: "Daniel Tan", text: "Requested the reservation" }],
   },
   {
