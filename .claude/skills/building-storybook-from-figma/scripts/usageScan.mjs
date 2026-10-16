@@ -1,8 +1,13 @@
 // Where each design-system component is used: every capitalised JSX tag imported from components/* or proposed/*,
 // with its attributes and the routes whose pages render that file. Written to src/app/review/usage.json for the review page.
 //
-// Limits: a page loaded lazily (React.lazy, import()) is not followed, and a route table that is not plain
-// <Route path="..." element={<Page />} /> JSX is not understood. Both mean "no usage found", never an error.
+// Known limits (each means a use may be missed; none is an error):
+// - a page loaded lazily (React.lazy, import()) is not followed;
+// - a route table that is not plain <Route path="..." element={<Page />} /> JSX is not understood, and a route element
+//   that is not a plain imported component is skipped;
+// - member tags (<UI.Select>) and namespace/barrel imports (import * as UI, export * from) are not recorded;
+// - a path-ful parent route element that renders <Outlet /> does not add its files to its children (only pathless layouts do);
+// - comment stripping is textual: `//` counts as a comment only at the start of a line or after whitespace (not in "http://").
 //
 // jsxTags, attrNames, resolveImport and the import walk are copied from the dev repo's design-system-slice/scripts/sliceScan.mjs
 // (collectPage); routes are read as a tree so a pathless layout route reaches its children.
@@ -12,6 +17,13 @@ import { fileURLToPath } from "node:url";
 
 const ALIASES = { pages: "src/pages", data: "src/data", utils: "src/utils", components: "src/components", app: "src/app", proposed: "src/proposed" };
 const posix = (p) => p.split(path.sep).join("/");
+
+// Blanks JSX `{/* */}`, block and line comments, keeping newlines so line numbers hold. Not string-aware on purpose:
+// an apostrophe in JSX text ("Don't") would otherwise start a string and hide the tags after it.
+function stripComments(code) {
+  const blank = (m) => m.replace(/[^\n]/g, " ");
+  return code.replace(/\/\*[\s\S]*?\*\//g, blank).replace(/(^|\s)\/\/[^\n]*/g, (m, lead) => lead + blank(m.slice(lead.length)));
+}
 
 // Copied from sliceScan.mjs, plus the tag's start index. Braces and quotes are skipped so `onClick={() => a > b}` does not end the tag.
 function jsxTags(code) {
@@ -39,7 +51,7 @@ export function attrValues(attrs) {
   let i = 0;
   const s = attrs.replace(/\/\s*$/, "");
   while (i < s.length) {
-    if (s[i] === "{") { i = skipBraces(s, i); continue; } // {...props}
+    if (s[i] === "{") { if (/^\{\s*\.\.\./.test(s.slice(i))) out["..."] = "expr"; i = skipBraces(s, i); continue; } // {...props}
     const m = /^[A-Za-z_][\w-]*/.exec(s.slice(i));
     if (!m) { i++; continue; }
     const name = m[0];
@@ -99,21 +111,39 @@ function collectFiles(root, entry) {
   return [...seen];
 }
 
-// Local names imported from components/* or proposed/*: default `import X from`, named `import { A, B as C } from`.
-function designImports(code) {
-  const names = new Set();
-  for (const m of code.matchAll(/import\s+([^;]*?)\s+from\s+["'](?:components\/)?(?:components|proposed)\/[^"']*["']/g)) {
+// Component name of a default import from components/<folder> or proposed/<folder>: the name in the folder's
+// `export default function Name` / `export default Name` when index.js says so, else the folder's PascalCase name.
+function defaultName(root, spec) {
+  const [alias, folder] = spec.split("/");
+  try {
+    const code = fs.readFileSync(path.join(root, ALIASES[alias], folder, "index.js"), "utf8");
+    const hit = code.match(/export default (?:function\s+)?([A-Z]\w*)/);
+    if (hit) return hit[1];
+  } catch { /* no such folder file */ }
+  return folder.split(/[-_]/).map((w) => w[0]?.toUpperCase() + w.slice(1)).join("");
+}
+
+// Map local tag name -> component name, one import statement at a time (semicolons optional, lists may span lines).
+// Default import: the folder's component name. `{ A as B }`: B is recorded as A. Namespace imports are skipped.
+function designImports(code, root) {
+  const names = new Map();
+  for (const m of code.matchAll(/import\s+((?:[\w$]+\s*,?\s*)?(?:\{[^}]*\}|\*\s*as\s+[\w$]+)?)\s*from\s*["']([^"']+)["']/g)) {
+    const spec = m[2];
+    if (!/^(components|proposed)\//.test(spec)) continue;
     const clause = m[1], named = clause.match(/\{([^}]*)\}/)?.[1];
     const def = clause.replace(/\{[^}]*\}/, "").replace(/,/g, "").trim();
-    if (def && !def.startsWith("*")) names.add(def);
-    for (const spec of named?.split(",") ?? []) { const n = spec.trim().split(/\s+as\s+/).pop(); if (n) names.add(n); }
+    if (def && !def.startsWith("*")) names.set(def, defaultName(root, spec));
+    for (const part of named?.split(",") ?? []) {
+      const [imported, local] = part.trim().split(/\s+as\s+/);
+      if (imported) names.set(local ?? imported, imported);
+    }
   }
   return names;
 }
 
 // Routes with the files that render them: [{ path, files }]. A pathless <Route element={<Layout />}> adds its own files to each child route.
 function routeTable(root, app) {
-  const code = fs.readFileSync(app, "utf8");
+  const code = stripComments(fs.readFileSync(app, "utf8"));
   const imports = {}; // Name -> absolute file
   for (const m of code.matchAll(/import\s+(\w+)\s+from\s+["']([^"']+)["']/g)) { const r = resolveImport(root, app, m[2]); if (r) imports[m[1]] = r; }
   const events = [];
@@ -123,11 +153,12 @@ function routeTable(root, app) {
   const out = [], stack = [];
   for (const e of events) {
     if (!e.open) { stack.pop(); continue; }
+    const isIndex = attrValues(e.attrs).index === true;
     const pathAttr = e.attrs.match(/\bpath\s*=\s*["']([^"']*)["']/)?.[1];
     const elem = e.attrs.match(/\belement\s*=\s*\{\s*<(\w+)/)?.[1];
     const file = elem && imports[elem];
     const parentPath = [...stack].reverse().find((f) => f.path !== undefined)?.path ?? "";
-    const full = pathAttr === undefined ? undefined : pathAttr.startsWith("/") ? pathAttr : `${parentPath.replace(/\/$/, "")}/${pathAttr}`;
+    const full = isIndex ? parentPath || "/" : pathAttr === undefined ? undefined : pathAttr.startsWith("/") ? pathAttr : `${parentPath.replace(/\/$/, "")}/${pathAttr}`;
     const self = { path: full, file };
     if (full !== undefined && file) {
       out.push({ path: full, files: [...stack.flatMap((f) => (f.path === undefined && f.file ? [f.file] : [])), file] });
@@ -155,10 +186,10 @@ export function scanUsage(root, { app = "src/App.js", excludeRoutes = ["/review"
   for (const [file, rts] of fileRoutes) {
     if (!/^(src\/(pages|app|data)\/)/.test(posix(path.relative(root, file)))) continue; // design-system files are not usage
     try {
-      const code = fs.readFileSync(file, "utf8"), names = designImports(code);
+      const code = stripComments(fs.readFileSync(file, "utf8")), names = designImports(code, root);
       for (const t of jsxTags(code)) {
         if (!names.has(t.name)) continue;
-        (components[t.name] ??= []).push({ file: posix(path.relative(root, file)), line: t.line, attrs: attrValues(t.attrs), routes: rts });
+        (components[names.get(t.name)] ??= []).push({ file: posix(path.relative(root, file)), line: t.line, attrs: attrValues(t.attrs), routes: rts });
       }
     } catch (e) { warnings.push(`${file}: ${e.message}`); }
   }

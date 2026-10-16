@@ -64,3 +64,45 @@ test("usageFor: other kinds count every use; unknown component is empty", () => 
   assert.equal(usageFor(usage, "Select", { kind: "removed-component" }).count, 4);
   assert.deepEqual(usageFor(usage, "Nope", { kind: "x" }), { count: 0, routes: [], uses: [] });
 });
+
+// Second fixture: no semicolons, renamed imports, spreads, index routes, comments.
+const root2 = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures/app2");
+const sel = () => scanUsage(root2).components.Select ?? [];
+const nameOf = (x) => x.attrs.name;
+
+test("a default import under another name is recorded under the folder's component name", () => {
+  const u = scanUsage(root2);
+  assert.ok(!u.components.Sel);
+  assert.ok(sel().some((x) => nameOf(x) === "landing"));
+});
+test("a renamed named import is recorded under the imported name (multi-line list, no semicolons)", () => {
+  assert.ok(!scanUsage(root2).components.S);
+  assert.ok(sel().some((x) => nameOf(x) === "literal"));
+  assert.ok(scanUsage(root2).components.Button === undefined); // imported, never used
+});
+test("a spread is recorded as attrs['...'] = expr", () => {
+  assert.equal(sel().find((x) => nameOf(x) === "spread").attrs["..."], "expr");
+});
+test("usageFor: a spread is a possible use for removed-prop and removed-option", () => {
+  const u = { components: { Select: [{ file: "a", line: 1, attrs: { "...": "expr" }, routes: [{ path: "/a", url: "/a" }] }] } };
+  assert.equal(usageFor(u, "Select", { kind: "removed-prop", prop: "searchable" }).count, 1);
+  assert.equal(usageFor(u, "Select", { kind: "removed-option", prop: "variant", option: "old" }).count, 1);
+});
+test("usageFor: removed-option counts a non-literal value as a possible match", () => {
+  const u = { components: { Select: [
+    { file: "a", line: 1, attrs: { variant: "expr" }, routes: [] },
+    { file: "b", line: 1, attrs: { variant: "new" }, routes: [] },
+  ] } };
+  assert.equal(usageFor(u, "Select", { kind: "removed-option", prop: "variant", option: "old" }).count, 1);
+});
+test("index routes take the parent's path, or / at the top", () => {
+  const r = (n) => sel().find((x) => nameOf(x) === n).routes.map((x) => x.path);
+  assert.deepEqual(r("landing"), ["/"]);
+  assert.deepEqual(r("literal"), ["/shop"]);
+});
+test("tags inside JSX and JS comments are not counted; an apostrophe in text does not hide a tag", () => {
+  const names = sel().map(nameOf);
+  assert.ok(!names.includes("ghost-jsx") && !names.includes("ghost-line"));
+  assert.ok(names.includes("landing") && names.includes("after-comment"));
+  assert.equal(sel().find((x) => nameOf(x) === "after-comment").line, 14);
+});
