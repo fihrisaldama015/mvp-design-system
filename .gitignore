@@ -8,3 +8,6 @@ dist/
 .vercel
 storybook-static/
 .figma-dump
+demo/marks.log
+demo/.step
+demo/marks-*.log

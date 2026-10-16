@@ -1,0 +1,111 @@
+[
+  {
+    "id": "A0",
+    "label": "record start",
+    "hint": "Start the screen recording now. Vibe repo, branch demo/start, claude is open.",
+    "where": "nowhere: this terminal is not recorded"
+  },
+  {
+    "id": "A1",
+    "label": "no detail page yet",
+    "hint": "Browser: open localhost:5002/reservations and click the first row. Expect the 404 page.",
+    "where": "browser (recorded)"
+  },
+  {
+    "id": "A2",
+    "label": "ask for the page",
+    "hint": "Paste the prompt below and press Enter. Claude reads Storybook, then writes the page.",
+    "prompt": "Build the reservation detail page at /reservations/:id. Read Storybook first and use only its components.",
+    "where": "vibe Claude: paste"
+  },
+  {
+    "id": "A3",
+    "label": "the new page",
+    "hint": "When Claude is done: reload the browser and click the first row. Expect the detail page with the conflict banner.",
+    "where": "browser"
+  },
+  {
+    "id": "A4",
+    "label": "ui-check",
+    "hint": "Paste the command and press Enter. Then /exit, cd ../mvp-dev, start claude.",
+    "prompt": "! npm run ui-check",
+    "where": "vibe Claude: paste (the ! command)"
+  },
+  {
+    "id": "B0",
+    "label": "dev session start",
+    "hint": "Dev repo, branch demo/start, claude is open. The recording keeps running.",
+    "where": "dev Claude (open it first)"
+  },
+  {
+    "id": "B1",
+    "label": "no detail page in dev",
+    "hint": "Browser: open localhost:5003/reservations and click the first row. Expect the 404 page in dev too.",
+    "where": "browser"
+  },
+  {
+    "id": "B2",
+    "label": "slice, which page",
+    "hint": "Paste /slice-vibe and press Enter. When Claude asks which page, answer ReservationDetail.",
+    "prompt": "/slice-vibe",
+    "where": "dev Claude: paste, then answer the question"
+  },
+  {
+    "id": "B3",
+    "label": "slice report",
+    "hint": "Right after you answer. Claude runs the script and shows the report.",
+    "where": "dev Claude: wait for the report"
+  },
+  {
+    "id": "B4",
+    "label": "dev result",
+    "hint": "Browser: reload localhost:5003 and click the first row. Expect the same detail page, with the banner.",
+    "where": "browser"
+  },
+  {
+    "id": "B5",
+    "label": "report file",
+    "hint": "Open docs/slices/ReservationDetail.md in the editor.",
+    "where": "editor"
+  },
+  {
+    "id": "D0",
+    "label": "part D start",
+    "hint": "Part D, recorded right after B in the same dev state (the page is sliced, the Timeline was promoted, the report is on screen). Stay on the current branch. Start the screen recording now.",
+    "where": "nowhere: this terminal is not recorded"
+  },
+  {
+    "id": "D1",
+    "label": "the finding",
+    "hint": "Point at the Scan table of the latest slice report: the unknown-prop lines name the component and the property. The proposed-import was already handled by promoting Timeline.",
+    "where": "screen: the Scan table of the report"
+  },
+  {
+    "id": "D2",
+    "label": "fix the component",
+    "hint": "Dev session. The prompt is built from the first unknown-prop in the latest slice report. Paste it and press Enter.",
+    "promptFrom": "report",
+    "where": "dev Claude: paste"
+  },
+  {
+    "id": "D3",
+    "label": "pull-ui",
+    "hint": "Switch to a shell in the vibe repo. Paste the command and press Enter: the promoted Timeline and the fixed component come back into the vibe copy.",
+    "prompt": "! npm run pull-ui && npm run ui-check",
+    "where": "vibe Claude: paste (the ! command)"
+  },
+  {
+    "id": "D4",
+    "label": "vibe uses the promoted component",
+    "hint": "Vibe session (start claude in the vibe repo if it is closed). Paste the prompt and press Enter. The page now imports Timeline from components, and the proposed copy is gone.",
+    "prompt": "pull-ui brought in components that were promoted from src/proposed. For every page that imports from proposed/<name> where src/components/<name> now exists, import from components/<name> instead, then delete the proposed copy. Show what you changed.",
+    "where": "vibe Claude: paste"
+  },
+  {
+    "id": "D5",
+    "label": "slice again",
+    "hint": "Dev session. Expect Conflicts none, proposed-import 0 and unknown-prop 0, exit 0. If Claude asks for a sample, pass --sample /reservations/RS-1001.",
+    "prompt": "/slice-vibe ReservationDetail",
+    "where": "dev Claude: paste"
+  }
+]
