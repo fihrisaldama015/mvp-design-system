@@ -14,7 +14,8 @@ const trim = (u) => String(u).replace(/\/$/, "");
 
 // null only when nothing is configured at all; a partial or old-format config throws, so it is never mistaken for "no review".
 export function reviewConfig() {
-  const e = process.env, FILE = ".figma-dump/review-api.json";
+  const FILE = ".figma-dump/review-api.json";
+  const e = Object.fromEntries(["REVIEW_API_URL", "REVIEW_PROJECT", "REVIEW_API_KEY"].map((k) => [k, process.env[k]?.trim()])); // whitespace-only counts as not set
   const oldApi = (url) => { if (/\/api\/review\/?$/.test(url)) throw new Error(`The review URL ${url} is the old /api/review API, which is gone: the design review service lives at a url ending in /api/v1.`); };
   const finish = (url, project, token, reviewPage) => { oldApi(url); return { url: trim(url), project, token, ...(reviewPage ? { reviewPage } : {}) }; };
   if (e.REVIEW_API_URL || e.REVIEW_PROJECT || e.REVIEW_API_KEY) {

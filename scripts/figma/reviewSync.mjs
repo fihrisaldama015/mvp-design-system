@@ -26,11 +26,12 @@ const flag = (n, d) => (rest.includes(n) ? rest[rest.indexOf(n) + 1] : d);
 // Same data, ignoring the read time: if this changed, Figma changed (or the read was different).
 const hashOf = (d) => { const { readAt, ...rest } = d; return crypto.createHash("sha1").update(JSON.stringify(rest)).digest("hex").slice(0, 12); };
 const fail = (m, code = 2) => { console.error(m); process.exit(code); };
+const makeApi = () => { try { return reviewApi(); } catch (e) { return fail(e.message); } }; // a config error is a message, not a stack trace
 const readJson = (f) => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return {}; } };
 const scan = () => scanUsage(process.cwd(), { routeSamples: readJson("figma-tokens.config.json").review?.routeSamples ?? {} });
 
 if (["--verify", "--answers", "--done"].includes(process.argv[2])) {
-  const api = reviewApi();
+  const api = makeApi();
   const mode = process.argv[2];
   try {
     if (mode === "--verify") {
@@ -71,6 +72,7 @@ if (!figmaFile || !codeFile) {
   process.exit(1);
 }
 
+const api = makeApi(); // before any work: a broken review config stops the run early
 const figma = JSON.parse(fs.readFileSync(figmaFile, "utf8"));
 const code = fs.readFileSync(codeFile, "utf8");
 const camel = (s) => s.replace(/[^\w ]/g, "").trim().split(/\s+/).map((w, i) => (i ? w[0].toUpperCase() + w.slice(1) : w[0].toLowerCase() + w.slice(1))).join("");
@@ -139,7 +141,6 @@ for (const [p, c] of Object.entries(cProps)) {
 
 for (const i of items) if (i.kind.startsWith("removed")) Object.assign(i, callers(i));
 const usageByItem = Object.fromEntries(items.filter((i) => i.kind.startsWith("removed")).map((i) => [i.id, { count: i.callers, routes: i.callerRoutes }]));
-const api = reviewApi();
 try {
   const idx = (() => { try { return JSON.parse(fs.readFileSync("figma-index.json", "utf8")).components?.[figma.name]; } catch { return null; } })();
   const cfg = readJson("figma-tokens.config.json");

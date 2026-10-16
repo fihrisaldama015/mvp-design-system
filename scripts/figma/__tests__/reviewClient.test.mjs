@@ -4,6 +4,8 @@ import http from "node:http";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { reviewApi, reviewConfig } from "../reviewClient.mjs";
 import { doneGate } from "../reviewGate.mjs";
 
@@ -178,4 +180,26 @@ test("gate refuses a doc with no jsxName", () => {
 test("follow-figma refusal names files when no routed page is involved", () => {
   const g = doneGate(docOf("follow-figma"), scan([{ file: "src/pages/x.js", line: 12, attrs: { searchable: true }, routes: [] }]));
   assert.equal(g.reason, '"searchable" still used in 1 place(s) on 0 page(s) (not on a routed page: src/pages/x.js:12). Migrate them first.');
+});
+
+test("whitespace-only REVIEW_* env vars count as not set", () => {
+  inTmp({ REVIEW_API_URL: "  ", REVIEW_PROJECT: "", REVIEW_API_KEY: "\t" }, undefined, () => assert.equal(reviewConfig(), null));
+  inTmp({ REVIEW_API_URL: " https://s/api/v1 ", REVIEW_PROJECT: " p ", REVIEW_API_KEY: " t " }, undefined, () => assert.deepEqual(reviewConfig(), { url: "https://s/api/v1", project: "p", token: "t" }));
+});
+
+test("reviewSync in every mode prints only the config message, no stack, no key", () => {
+  const script = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "reviewSync.mjs");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "review-cli-"));
+  try {
+    fs.mkdirSync(path.join(dir, ".figma-dump"));
+    fs.writeFileSync(path.join(dir, ".figma-dump/review-api.json"), JSON.stringify({ url: "https://s.example/api/review", key: "SECRET-KEY-123" }));
+    const env = { ...process.env }; for (const k of ["REVIEW_API_URL", "REVIEW_PROJECT", "REVIEW_API_KEY"]) delete env[k];
+    for (const args of [["--verify", "x.json"], ["--answers", "Select"], ["--done", "Select"], ["f.json", "c.js"]]) {
+      const r = spawnSync(process.execPath, [script, ...args], { cwd: dir, env, encoding: "utf8" });
+      assert.notEqual(r.status, 0, args[0]);
+      assert.match(r.stderr, /no `project`/, args[0]);
+      assert.doesNotMatch(r.stderr, /\n\s+at /, args[0]);
+      assert.doesNotMatch(r.stderr + r.stdout, /SECRET-KEY-123/, args[0]);
+    }
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
