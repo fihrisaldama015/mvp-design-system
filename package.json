@@ -19,7 +19,7 @@
     "figma:receiver": "node scripts/figma/receiver.mjs 9232 .figma-dump",
     "pull-ui": "node .claude/skills/design-system-pull/scripts/pullUi.mjs",
     "ui-check": "node .claude/skills/design-system-pull/scripts/check.mjs",
-    "test": "node --test '.claude/skills/*/scripts/__tests__/*.test.mjs'"
+    "test": "node --test '.claude/skills/*/scripts/__tests__/*.test.mjs' 'src/app/review/__tests__/*.test.mjs'"
   },
   "dependencies": {
     "clsx": "^2.1.1",
