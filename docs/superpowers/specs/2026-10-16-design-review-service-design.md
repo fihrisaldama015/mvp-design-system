@@ -49,8 +49,8 @@ items, the usage scan, and rendering the real components. The service never need
 |---|---|---|
 | `projects` | `orgId, key, name, figmaFileKey, storybookUrl, reviewUrl, allowedOrigins[], hasPreviewBuilds, createdAt` | unique `{orgId, key}` |
 | `tokens` | `projectId, label, hash, createdAt, lastUsedAt, revokedAt` (the token itself is shown once, only its hash is kept) | unique `hash` |
-| `users` | `orgId, email, name, passwordHash, mustChangePassword, createdAt` | unique `{orgId, email}` |
-| `memberships` | `userId, projectId, role: reviewer \| admin` | unique `{userId, projectId}` |
+| `users` | `orgId, email, name, role: admin \| member, passwordHash, mustChangePassword, createdAt` (an admin manages everything and may review every project) | unique `{orgId, email}` |
+| `memberships` | `userId, projectId` (a member reviews only these projects) | unique `{userId, projectId}` |
 | `reviews` | the document of today (`component, jsxName, storyId, figmaNode, figmaPage, code, readAt, sourceHash, status, version, items, answers, audit`) plus `projectId` and `usage` | unique `{projectId, slug}` |
 
 `usage` on a review: `{ at, byItem: { "removed-prop:searchable": { count, routes: ["/loans/new", "/reservations/new"] } } }`, sent with each
@@ -72,7 +72,7 @@ publish. It is the evidence for a decision (what was affected when it was taken)
   `.figma-dump/review-api.json` / env, never in a committed file or a page bundle.
 - CORS: a project's `/review` page may call the service only from that project's `allowedOrigins`.
 - Errors and status codes as today (`400 401 403 404 409 502 503`). The logic stays `reviewCore.mjs` (`handle(request, { store, env })`)
-  with a `mongoStore` (Mongoose; `version` is `__v`, saved with `{ __v: expected }` in the filter, no match is `409`) added and a project
+  with a `mongoStore` (Mongoose; the document's own `version` is the lock: saved with `{ projectId, slug, version: expected }` in the filter, no match is `409`) added and a project
   scope around it. Express is a thin wrapper, as `api/review.mjs` is today.
 
 ## Decisions and what they mean
