@@ -48,7 +48,7 @@ Modal.propTypes = {
   title: PropTypes.string.isRequired,
   /** One line under the title. */
   description: PropTypes.string,
-  /** Buttons at the bottom right: Cancel (ghost) first, then the main action. */
+  /** Buttons at the bottom right: Cancel (`kind="text"`) first, then the main action. */
   footer: PropTypes.node,
   /** Width: sm 384px, md 512px, lg 672px. */
   size: PropTypes.oneOf(["sm", "md", "lg"]),

@@ -44,7 +44,7 @@ Drawer.propTypes = {
   title: PropTypes.string.isRequired,
   /** One line under the title. */
   description: PropTypes.string,
-  /** Buttons at the bottom right: Cancel (ghost) first, then the main action. */
+  /** Buttons at the bottom right: Cancel (`kind="text"`) first, then the main action. */
   footer: PropTypes.node,
   /** Panel body; scrolls when long. */
   children: PropTypes.node,
