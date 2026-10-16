@@ -10,7 +10,7 @@ cannot commit (a commit to a deploy branch triggers a deploy). So the documents 
 
 ## The contract
 
-Base `${url}/projects/${project}/reviews`, where `url` ends in `/api/v1`. Auth: `Authorization: Bearer <token>` (a project token for the tool, a
+Every path below is appended to `url` (the service API base, ending in `/api/v1`; the tool's `project` fills `:project`). Auth: `Authorization: Bearer <token>` (a project token for the tool, a
 session for a reviewer). `:slug` is the lowercase, dash-separated component name (`Input - Single Select/Base` is `input-single-select-base`).
 
 | Route | Auth | What |

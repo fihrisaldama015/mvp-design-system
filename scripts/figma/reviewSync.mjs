@@ -50,6 +50,7 @@ if (["--verify", "--answers", "--done"].includes(process.argv[2])) {
     }
     let usage;
     try { usage = scan(); } catch (e) { fail(`Cannot check what still uses "${name}": the usage scan failed (${e.message}). Not marking it applied.`); }
+    for (const w of usage.warnings ?? []) console.warn(`usage: skipped ${w}`);
     const gate = doneGate(d, usage);
     if (!gate.ok) fail(gate.reason);
     await api.applied(name);

@@ -100,7 +100,7 @@ const docOf = (answer, extra = {}) => ({ component: "Select", jsxName: "Select",
 test("gate refuses follow-figma with remaining uses, naming the paths", () => {
   const g = doneGate(docOf("follow-figma"), scan([use(["/loans/new"]), use(["/reservations/new"])]));
   assert.equal(g.ok, false);
-  assert.equal(g.reason, '"searchable" still used on 2 page(s): /loans/new, /reservations/new. Migrate them first.');
+  assert.equal(g.reason, '"searchable" still used in 2 place(s) on 2 page(s): /loans/new, /reservations/new. Migrate them first.');
 });
 
 test("gate refuses a keep answer with the Waiting for Figma text", () => {
@@ -127,4 +127,55 @@ test("gate refuses a pending doc", () => {
   const g = doneGate(docOf(undefined, { status: "pending", answers: {} }), scan([]));
   assert.equal(g.ok, false);
   assert.match(g.reason, /unanswered removals/);
+});
+
+// partial config fails loudly
+function inTmp(env, file, fn) {
+  const keep = { ...process.env }, cwd = process.cwd();
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "review-cfg-"));
+  try {
+    for (const k of ["REVIEW_API_URL", "REVIEW_PROJECT", "REVIEW_API_KEY"]) delete process.env[k];
+    Object.assign(process.env, env);
+    process.chdir(dir);
+    if (file !== undefined) { fs.mkdirSync(".figma-dump"); fs.writeFileSync(".figma-dump/review-api.json", typeof file === "string" ? file : JSON.stringify(file)); }
+    return fn();
+  } finally { process.chdir(cwd); process.env = keep; fs.rmSync(dir, { recursive: true, force: true }); }
+}
+
+test("only REVIEW_API_URL set throws naming project and key", () => {
+  inTmp({ REVIEW_API_URL: "https://s/api/v1" }, undefined, () => assert.throws(() => reviewConfig(), /REVIEW_PROJECT.*REVIEW_API_KEY/s));
+});
+test("url and project without key throws naming the token", () => {
+  inTmp({ REVIEW_API_URL: "https://s/api/v1", REVIEW_PROJECT: "p" }, undefined, () => assert.throws(() => reviewConfig(), /REVIEW_API_KEY/));
+  inTmp({}, { url: "https://s/api/v1", project: "p" }, () => assert.throws(() => reviewApi(), /token/));
+});
+test("old-format file with only url and key says the API moved", () => {
+  inTmp({}, { url: "https://s/api/review", key: "k" }, () => assert.throws(() => reviewConfig(), /no `project`.*design review service \(url ends in \/api\/v1\)/s));
+});
+test("a url ending in /api/review is flagged as the old API", () => {
+  inTmp({}, { url: "https://s/api/review", project: "p", token: "t" }, () => assert.throws(() => reviewConfig(), /old.*\/api\/review/s));
+});
+test("nothing configured at all falls back to local", () => {
+  inTmp({}, undefined, () => { assert.equal(reviewConfig(), null); assert.equal(reviewApi().shared, false); });
+});
+test("a connection failure reports the real reason", async () => {
+  const s = await stub(() => ({ status: 200 }));
+  const url = s.url;
+  await s.close(); // nothing listens there any more
+  const api = reviewApi({ url, project: "p", token: "t" });
+  await assert.rejects(api.list(), /ECONNREFUSED/);
+});
+
+test("gate refuses when the scan skipped files, even with zero uses", () => {
+  const g = doneGate(docOf("follow-figma"), { components: {}, warnings: ["src/pages/a.js: boom"] });
+  assert.equal(g.ok, false);
+  assert.match(g.reason, /^Cannot count usage: the scan skipped 1 file\(s\): src\/pages\/a\.js: boom/);
+});
+test("gate refuses a doc with no jsxName", () => {
+  const g = doneGate(docOf("follow-figma", { jsxName: null }), scan([]));
+  assert.equal(g.reason, "This review has no component name; publish it again.");
+});
+test("follow-figma refusal names files when no routed page is involved", () => {
+  const g = doneGate(docOf("follow-figma"), scan([{ file: "src/pages/x.js", line: 12, attrs: { searchable: true }, routes: [] }]));
+  assert.equal(g.reason, '"searchable" still used in 1 place(s) on 0 page(s) (not on a routed page: src/pages/x.js:12). Migrate them first.');
 });

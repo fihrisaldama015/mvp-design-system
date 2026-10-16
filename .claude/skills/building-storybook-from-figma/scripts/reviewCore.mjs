@@ -3,13 +3,14 @@
 // .figma-dump/review-store). The rules are in reviewLogic.mjs (pure); this file is auth + routing + the file store.
 // Nothing here imports Node HTTP; it is plain data in, data out.
 //
-// Routes (path is what follows /api/review):
+// Local fallback only: the real service is the design-review repo (reference/review-service.md); this file keeps the same rules for one machine.
+// Routes (path inside the local store, no URL prefix):
 //   GET    /                       reviewer | tool   list: summaries + counts
 //   GET    /:slug                  reviewer | tool   one review, with items, answers, audit
 //   PUT    /:slug                  tool              publish a review (reviewSync --publish); same sourceHash keeps the answers
 //   POST   /:slug/decision         reviewer | tool   { answers: {itemId: choice}, migrateBy, reviewer, version }; 409 when version is stale
 //   POST   /:slug/applied          tool              the agent applied the answers (reviewSync --done)
-// Auth: header x-review-password (shared password) or x-review-key (the tool), from env (REVIEW_PASSWORD, REVIEW_API_KEY).
+// Auth (local only): the in-process caller passes a fixed key header; nobody can answer in the local store.
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";

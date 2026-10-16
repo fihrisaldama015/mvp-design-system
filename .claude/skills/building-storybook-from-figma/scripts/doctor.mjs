@@ -90,7 +90,7 @@ step("pending sync review");
 try {
   for (const c of await reviewState(process.cwd(), { timeoutMs: 4000 })) add("sync-review", "WARN", `${c.name}: ${c.state === "waiting-for-dev" ? `${c.unanswered.length} removal(s) wait for the reviewers' answer` : c.state === "waiting-for-figma" ? "waiting for Figma (the reviewers kept every removal)" : "answered, not applied yet"} (Figma read ${c.readAt})`, c.state === "waiting-for-dev" ? `Do not apply anything. Reviewers answer at ${reviewPage()}. Details: node scripts/figma/reviewState.mjs` : c.state === "waiting-for-figma" ? "Do not apply anything: the design changes first. After Figma is updated, re-read the node and run reviewSync again. Details: node scripts/figma/reviewState.mjs" : "Get the answers (reviewSync.mjs --answers), re-read the node, reviewSync.mjs --verify, apply, reviewSync.mjs --done. Details: node scripts/figma/reviewState.mjs");
 } catch (e) {
-  add("sync-review", "WARN", `Cannot read the review store: ${e.message}`, "Check REVIEW_API_URL, REVIEW_PROJECT and REVIEW_API_KEY, or .figma-dump/review-api.json { url, project, token }. Do not assume nothing is pending.");
+  add("sync-review", "WARN", `Sync review state unknown: ${e.message}`, "Check REVIEW_API_URL, REVIEW_PROJECT and REVIEW_API_KEY, or .figma-dump/review-api.json { url, project, token }. Do not assume nothing is pending.");
 }
 step("age of the tokens");
 {

@@ -12,15 +12,25 @@ export const LOCAL_DIR = ".figma-dump/review-store";
 const LOCAL_ENV = { REVIEW_PASSWORD: "local-password", REVIEW_API_KEY: "local-key" };
 const trim = (u) => String(u).replace(/\/$/, "");
 
+// null only when nothing is configured at all; a partial or old-format config throws, so it is never mistaken for "no review".
 export function reviewConfig() {
-  const e = process.env;
-  if (e.REVIEW_API_URL && e.REVIEW_PROJECT && e.REVIEW_API_KEY) return { url: trim(e.REVIEW_API_URL), project: e.REVIEW_PROJECT, token: e.REVIEW_API_KEY };
-  try {
-    const j = JSON.parse(fs.readFileSync(".figma-dump/review-api.json", "utf8"));
-    const token = j.token ?? j.key;
-    if (j.url && j.project && token) return { url: trim(j.url), project: j.project, token, ...(j.reviewPage ? { reviewPage: j.reviewPage } : {}) };
-  } catch { /* not configured */ }
-  return null;
+  const e = process.env, FILE = ".figma-dump/review-api.json";
+  const oldApi = (url) => { if (/\/api\/review\/?$/.test(url)) throw new Error(`The review URL ${url} is the old /api/review API, which is gone: the design review service lives at a url ending in /api/v1.`); };
+  const finish = (url, project, token, reviewPage) => { oldApi(url); return { url: trim(url), project, token, ...(reviewPage ? { reviewPage } : {}) }; };
+  if (e.REVIEW_API_URL || e.REVIEW_PROJECT || e.REVIEW_API_KEY) {
+    const missing = [["REVIEW_API_URL", e.REVIEW_API_URL], ["REVIEW_PROJECT", e.REVIEW_PROJECT], ["REVIEW_API_KEY", e.REVIEW_API_KEY]].filter(([, v]) => !v).map(([k]) => k);
+    if (missing.length) throw new Error(`Review config is incomplete: ${missing.join(", ")} not set (all of REVIEW_API_URL, REVIEW_PROJECT, REVIEW_API_KEY are needed).`);
+    return finish(e.REVIEW_API_URL, e.REVIEW_PROJECT, e.REVIEW_API_KEY);
+  }
+  let text;
+  try { text = fs.readFileSync(FILE, "utf8"); } catch { return null; }
+  let j;
+  try { j = JSON.parse(text); } catch (err) { throw new Error(`${FILE} is not valid JSON (${err.message}).`); }
+  const token = j.token ?? j.key;
+  if (j.url && !j.project) throw new Error(`review-api.json has no \`project\`: the review API now lives at the design review service (url ends in /api/v1), with { url, project, token }.`);
+  const missing = [["url", j.url], ["project", j.project], ["token", token]].filter(([, v]) => !v).map(([k]) => `\`${k}\``);
+  if (missing.length) throw new Error(`review-api.json has no ${missing.join(", ")} (needs { url, project, token }).`);
+  return finish(j.url, j.project, token, j.reviewPage);
 }
 
 // The page where reviewers answer, for messages.
@@ -52,7 +62,7 @@ export function reviewApi(cfg = reviewConfig(), { timeoutMs = 8000, localDir = L
       try {
         // redirect: "manual": never follow a redirect, or the token would travel to wherever it points (a login page).
         r = await fetch(`${cfg.url}/projects/${encodeURIComponent(cfg.project)}/reviews${p}`, { method, redirect: "manual", headers: { Authorization: `Bearer ${cfg.token}`, "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(timeoutMs) });
-      } catch (e) { throw new Error(`Review API ${cfg.url} is not reachable (${e.cause?.code ?? e.message}).`); }
+      } catch (e) { throw new Error(`Review API ${cfg.url} is not reachable (${e.cause?.code ?? e.cause?.message ?? e.message}).`); }
       if (r.status >= 300 && r.status < 400) {
         const to = r.headers.get("location") ?? "";
         throw new Error(`Review API ${cfg.url} answered with a redirect to ${to.slice(0, 60)}...${/vercel\.com\/sso/.test(to) ? " The deployment is protected by Vercel Authentication, so tools and reviewers without a Vercel login cannot reach it: use the production domain or turn Deployment Protection off for this project (the service has its own accounts and project tokens)." : ""}`);
