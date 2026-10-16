@@ -1,8 +1,8 @@
 // How the scripts (reviewSync, reviewState) reach the review store. One interface, two backends, the same code (reviewCore.mjs):
 //   shared API   env REVIEW_API_URL + REVIEW_API_KEY, or the file .figma-dump/review-api.json { "url": "...", "key": "..." }
 //                (per machine, not in git). The URL ends in /api/review, e.g. https://mvp.example.com/api/review.
-//   local        nothing configured: the same logic runs in this process on files in .figma-dump/review-store/. Start
-//                the review page needs the review service (Task 8 of the plan).
+//   local        nothing configured: the same logic runs in this process on files in .figma-dump/review-store/.
+//                Nobody can answer there: reviewers need a configured review service.
 import fs from "node:fs";
 import { fileStore, handle, slug } from "./reviewCore.mjs";
 
@@ -19,7 +19,7 @@ export function reviewConfig() {
 }
 
 // The page where reviewers answer, for messages.
-export const reviewPage = (cfg = reviewConfig()) => (cfg ? `${cfg.url.replace(/\/api\/review$/, "")}/review` : "http://localhost:5002/review");
+export const reviewPage = (cfg = reviewConfig()) => (cfg ? `${cfg.url.replace(/\/api\/review$/, "")}/review` : "the app's /review page (reviewers can answer there once the review service is configured)");
 
 export function reviewApi(cfg = reviewConfig(), { timeoutMs = 8000 } = {}) {
   const verbs = (call) => ({

@@ -12,13 +12,14 @@ export const summary = (d) => ({ slug: slug(d.component), component: d.component
 const fail = (status, error, extra = {}) => ({ ok: false, status, error, ...extra });
 const done = (doc, status = 200) => ({ ok: true, status, doc });
 const HISTORY_MAX = 50;
+const PREVIEW = /^(https:\/\/\S|http:\/\/localhost(?:[:/?#]|$))/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export function publish(prev, body, at) {
   const b = body ?? {};
-  if (!b.component) return fail(400, "component must be set and its slug must equal the URL.");
+  if (!b.component) return fail(400, "component is required.");
   if (!Array.isArray(b.items) || !b.sourceHash) return fail(400, "items (array) and sourceHash are required.");
-  if (b.previewUrl != null && !(typeof b.previewUrl === "string" && (b.previewUrl.startsWith("https://") || b.previewUrl.startsWith("http://localhost")))) return fail(400, "previewUrl must start with https:// or http://localhost.");
+  if (b.previewUrl != null && !(typeof b.previewUrl === "string" && PREVIEW.test(b.previewUrl))) return fail(400, "previewUrl must start with https:// or http://localhost.");
   const base = { component: b.component, jsxName: b.jsxName ?? null, storybookUrl: b.storybookUrl ?? null, storyId: b.storyId ?? null, figmaFileKey: b.figmaFileKey ?? null, figmaNode: b.figmaNode ?? null, figmaPage: b.figmaPage ?? null, code: b.code ?? null, readAt: b.readAt ?? null, sourceHash: b.sourceHash, items: b.items, usage: b.usage ?? null, previewUrl: b.previewUrl ?? null };
   let usageHistory = prev?.usageHistory ?? [];
   if (b.usage?.byItem && typeof b.usage.byItem === "object") {
