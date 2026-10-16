@@ -8,8 +8,8 @@ import { fileURLToPath } from "node:url";
 
 export const ROOTS = ["src/tokens", "src/foundations", "src/guide", "src/utils", ".storybook"];
 export const toPosix = (p, sep = path.sep) => p.split(sep).join("/");
-// Paths that make up the design system; a dev commit outside them does not make this copy stale.
-export const DESIGN_SYSTEM_PATHS = ["src/components", "src/tokens", "src/foundations", "src/guide", "src/utils", ".storybook"];
+// Paths that make up the design system; a dev commit outside them does not make this copy stale. App-level files directly in src/components (Layout.js) have no story and are not copied.
+export const DESIGN_SYSTEM_PATHS = ["src/components", "src/tokens", "src/foundations", "src/guide", "src/utils", ".storybook", ":(exclude,glob)src/components/*.js"];
 // Line endings are normalised (CRLF to LF) before hashing, so a Windows checkout with autocrlf matches the lock; a binary file (NUL byte) is hashed as it is.
 const sha = (f) => {
   let buf = fs.readFileSync(f);
