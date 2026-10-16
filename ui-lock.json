@@ -1,10 +1,10 @@
 {
   "source": {
     "path": "../mvp-dev",
-    "commit": "ec89f7af0e9a89312931b4bc9f95df0130e0f503",
+    "commit": "16c380f4a1622cfc8dfff5db0011b5502caca2aa",
     "dirty": false
   },
-  "pulledAt": "2026-10-16T01:55:49.203Z",
+  "pulledAt": "2026-10-16T01:57:00.902Z",
   "files": {
     ".storybook/main.mjs": "2eeee65c534899df444152f02447823ff3eaa77c",
     ".storybook/preview.js": "e181ad1cd9d7ef95d462f330a98d32513b267931",
