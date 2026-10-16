@@ -23,7 +23,8 @@ This belongs to the dev workflow and is not to be started from the vibe repo wit
 
 You do not remember the earlier session; the review store does. At the start of any Figma sync work run `node scripts/figma/reviewState.mjs`
 (`doctor` shows the same as `sync-review`; the SessionStart hook runs it quietly). It says whether a review is **waiting for the reviewers**
-(do not apply anything; tell the dev they answer on the page `/review`; other components can be synced meanwhile) or **answered, not applied**
+(do not apply anything; tell the dev they answer on the project's `/review` page, served by the design review service; other components can be synced meanwhile), **waiting for Figma**
+(every removal was answered `keep`: the design changes first, do not apply) or **answered, not applied**
 (`reviewSync.mjs --answers "<Name>"`, re-read the node from Figma, `reviewSync.mjs --verify <file>`: unchanged -> apply, then
 `reviewSync.mjs --done "<Name>"`; changed -> run reviewSync again and have the reviewers answer again). If it says the store cannot be reached, do not
 assume nothing is pending. Never answer for the reviewers. Procedure: `reference/existing-component.md`; the store and its API: `reference/review-service.md`.

@@ -1,110 +1,84 @@
-# The review service (shared sync reviews)
+# The design review service (shared sync reviews)
 
 When a component that already exists is synced from Figma, `reviewSync.mjs` finds what Figma no longer has (`reference/existing-component.md`).
-Someone who is not the developer (a designer, a product owner) decides what to do with it, on a page, on the same domain as the app. This is
-the service behind that page: **one JSON document per component**, an API of five routes, and a store.
+Someone who is not the developer (a designer, a product owner) decides what to do with it, on the project's `/review` page. This is the
+service behind that page: **one JSON document per component and project**, an HTTP API, and a MongoDB database (`design_review`).
+The service is its own repo (`design-review`, Express + Mongoose); this skill is a client of it.
 
-Why not a file: the apps are deployed as static builds / Docker images, so a file written on the server disappears at the next deploy
-(`swt-fe`: `docker compose pull && up -d`; the MVP on Vercel has no writable disk). Why not git: a designer cannot commit, and a commit to a
-deploy branch triggers a deploy (swt's Bitbucket pipeline). So the documents live in a **store**, and the sync tool and the page talk to the same API.
+Why not a file or git: apps are static builds / Docker images, so a file written on the server disappears at the next deploy, and a designer
+cannot commit (a commit to a deploy branch triggers a deploy). So the documents live in a **database**, and the sync tool and the page talk to the same API.
 
 ## The contract
 
-Base path `/api/review`. Auth by header: `x-review-password` (the shared password: designers and product owners) or `x-review-key` (the sync tool).
-Both secrets come from the server's environment; with none configured the API answers `503` and refuses everything. `:slug` is the lowercase,
-dash-separated component name (`Input - Single Select/Base` is `input-single-select-base`).
+Base `${url}/projects/${project}/reviews`, where `url` ends in `/api/v1`. Auth: `Authorization: Bearer <token>` (a project token for the tool, a
+session for a reviewer). `:slug` is the lowercase, dash-separated component name (`Input - Single Select/Base` is `input-single-select-base`).
 
-| Route | Who | What |
+| Route | Auth | What |
 |---|---|---|
-| `GET /` | reviewer, tool | `{ reviews: [summary], counts: { pending, answered, applied } }` |
-| `GET /:slug` | reviewer, tool | the full document |
-| `PUT /:slug` | tool | publish: `{ component, figmaNode, figmaPage, code, readAt, sourceHash, items }`. Same `sourceHash` as the stored one keeps the answers; a different one (Figma changed) or an applied review starts a new cycle with no answers |
-| `POST /:slug/decision` | reviewer, tool | `{ reviewer, answers: { itemId: choice \| null }, version }`. `version` must equal the stored one, else `409` with the current document. Only removals take an answer; choices: `follow-figma`, `keep-deprecated`, `keep` |
-| `POST /:slug/applied` | tool | marks the review applied (`reviewSync.mjs --done`) |
+| `POST /auth/login` | email + password | session token (signed, short-lived, 8 h) |
+| `POST /auth/password` | session | change password (required when `mustChangePassword`) |
+| `GET /projects/:project/reviews` | session or project token | `{ reviews: [summary], counts }` |
+| `GET /projects/:project/reviews/:slug` | session or project token | the full document (404 when there is none) |
+| `PUT /projects/:project/reviews/:slug` | project token | publish (same `sourceHash` keeps the answers; `400` when the URL slug is not the slug of `component`, or `items` is malformed) |
+| `POST /projects/:project/reviews/:slug/decision` | session (reviewer of that project) | `{ answers, migrateBy, version }`; `by` comes from the session, not the body |
+| `POST /projects/:project/reviews/:slug/applied` | project token | marks the review applied (`409` while still pending or already applied) |
 
-Document (one per component, key `review:<slug>`):
+Errors are `{ "error": "..." }` with `400 401 403 404 409 502 503`. The tool uses `list`, `get`, `publish`, `applied`; the decision route is for reviewers only
+(the agent never answers for them).
+
+Document fields the skill reads or sends: `component, jsxName, storybookUrl, storyId, figmaFileKey, figmaNode, figmaPage, code, readAt, sourceHash, items`
+(each removal carries `callers` = number of uses and `callerRoutes` = their route paths), `usage` (`{ at, byItem: { itemId: { count, routes: [paths] } } }`,
+sent with every publish), `previewUrl` (from `--preview-url`), and from the service `status, version, answers, migrateBy, usageHistory, audit`.
+`usageHistory` is the burn-down: each publish appends `{ at, counts }` (last 50). `usage` never enters `sourceHash`, so a code change does not look like a Figma change.
+
+## Config (per machine, never in git)
+
+Environment `REVIEW_API_URL`, `REVIEW_PROJECT`, `REVIEW_API_KEY`, or the git-ignored file `.figma-dump/review-api.json`:
 
 ```json
-{ "component": "Input - Single Select/Base", "jsxName": "Select", "storybookUrl": "https://<storybook>", "storyId": "forms-select", "figmaFileKey": "o4wdbN7PjV2ugCKDcc2pXd", "figmaNode": "7:94371", "figmaPage": "...", "code": "src/components/select/index.js",
-  "readAt": "2026-10-13T04:48:49Z", "sourceHash": "460b1f89d95c",
-  "status": "pending | answered | applied", "version": 3,
-  "items": [ { "id": "removed-prop:searchable", "kind": "removed-prop", "prop": "searchable", "description": "Shows a search box ...", "default": "true", "detail": "...", "callers": 0, "storyCallers": 2, "onByDefault": true } ],
-  "answers": { "removed-prop:searchable": "keep-deprecated" },
-  "audit": [ { "at": "...", "by": "tool", "action": "published" }, { "at": "...", "by": "Dina", "action": "decided", "changes": { "removed-prop:searchable": "keep-deprecated" } } ],
-  "createdAt": "...", "updatedAt": "..." }
+{ "url": "https://<service>/api/v1", "project": "mvp", "token": "drp_...", "reviewPage": "https://<app>/review" }
 ```
 
-The page turns these fields into plain language for people who do not read code: what the property does (`description`), who is affected (`callers`, `storyCallers`, `onByDefault`, `jsxName`), a link to the Figma node (`figmaFileKey` + `figmaNode`), and what each choice means. `figmaFileKey` comes from `--file` or `figma-index.json`. "Open in Storybook" is `storybookUrl` (`figma-tokens.config.json`, the deployed Storybook) + `storyId` (`figma-index.json`, the component's story id): it opens the component's docs page (`?path=/docs/<storyId>--docs`), which is also the fallback when a property has no live preview.
+`key` is accepted as an alias of `token`; `reviewPage` only feeds the messages that tell the dev where reviewers answer.
 
-`status` is derived: `pending` while a removal has no answer, `answered` when all have one, `applied` after `/applied`. Errors are `{ "error": "..." }`:
-`400` bad input, `401` no or wrong secret, `403` a reviewer called a tool-only route, `404`, `409` stale version or already applied, `502` the store failed, `503` not configured.
+**Token handling.** The project token is shown once when an admin creates it in the service UI; the service keeps only its hash. Never commit it,
+never put it in a page bundle or a `VITE_`/`PUBLIC_` variable, never paste it in a chat. A revoked token is `401`; a token of another project is `403`.
+A redirect is never followed (the token would travel to wherever it points), and a Vercel Authentication wall is reported by name.
 
-The logic is one file, `scripts/figma/reviewCore.mjs` (`handle(request, { store, env })`), with two stores (`fileStore`, `kvStore`). Everything else is a thin wrapper.
+## The local fallback and its limits
 
-## Where it runs
+With nothing configured the same review rules run in this process on files in `.figma-dump/review-store/` (`reviewCore.mjs`). It is for trying the flow:
+nobody can answer there (there is no page and no accounts), the files live on this machine only, and nothing is project-scoped. Say so out loud when a
+review was published locally; it is not a review.
 
-| Place | Wrapper | Store |
+## Where it runs (phases)
+
+1. **Now: Vercel + MongoDB Atlas** (the demo). The service is a serverless function over Atlas; no Atlas-only features are used.
+2. **Later: a VPS** (two containers, `design-review-fe` and `design-review-be`, a fresh database). Only `url` in the config changes.
+3. swt gets its own project and token; its `/review` page is built into staging only.
+
+## Decisions and what "applied" means
+
+| Choice | Meaning | `--done` passes when |
 |---|---|---|
-| The tool on a dev machine, nothing configured | in-process (`reviewClient.mjs`) | files in `.figma-dump/review-store/` |
-| Local app (`npm run review:api` + `npm run dev`) | `scripts/figma/reviewApi.mjs`, port 9233, proxied by rsbuild | the same files |
-| **MVP on Vercel** | `api/review.mjs` (a Vercel function), `vercel.json` rewrite | **KV** (Redis over REST) |
-| **swt-fe, later** | routes in a backend (below) | MongoDB |
+| `follow-figma` | the property goes; every usage is migrated (codemod or AI, done by the dev) | the usage scan shows 0 uses left; otherwise `"<prop>" still used on <n> page(s): <paths>. Migrate them first.` |
+| `keep-deprecated` | `@deprecated` in code, new pages may not use it; needs a `migrateBy` date (`YYYY-MM-DD`) | the deprecation is in code; `--done` prints the burn-down (uses now vs at publish), tracked on each sync until 0 |
+| `keep` (Figma changes) | rare; a task for the designer | never: `Waiting for Figma: "<prop>" was kept, so the design changes first. Publish again after Figma is updated.` The review stays open until Figma changes and a new `sourceHash` is published |
 
-### Which password, which store (a common 401)
+`--done` also refuses while any removal is unanswered, and refuses (rather than passing) when the usage scan itself fails. Then it calls `applied`; the
+service's `409` text (still pending, already applied) is shown as the error. `reviewState` shows `waiting-for-figma` when every unapplied answer is `keep`.
 
-`/api/review` answers `401` when the password or key is wrong, so check which API the page is talking to:
+A decision is taken per component change, not per page; the usage list helps decide and then serves as the migration checklist.
 
-| You run | The page talks to | Password on the page |
-|---|---|---|
-| `npm run dev` only | nothing (the API is not running: the proxy fails) | - |
-| `npm run dev` + `npm run review:api` | the local store `.figma-dump/review-store` | `local-password` (or the `REVIEW_PASSWORD` you started `review:api` with) |
-| `REVIEW_API_TARGET=https://<your-app>.vercel.app npm run dev` | the deployed API and its KV store | the real `REVIEW_PASSWORD` from Vercel |
-| the deployed page | the deployed API | the real `REVIEW_PASSWORD` |
+## Usage scan and its limits
 
-The tool (`reviewSync`, `reviewState`) goes to the API in `.figma-dump/review-api.json` when that file exists, otherwise to the local store. So with that file present, a page started
-with plain `npm run dev` + `review:api` shows an **empty** local store, not what the tool published: use `REVIEW_API_TARGET` (or the deployed page) to see it.
+`callers`, `callerRoutes` and `usage` come from `usageScan.mjs` (routed pages that import design-system components), not from grep. It does not follow
+lazy pages, route tables that are not plain `<Route element={<Page />}>` JSX, member tags (`<UI.Select>`) or barrel imports; a route with parameters is
+previewed only when `review.routeSamples` in `figma-tokens.config.json` gives a concrete path. A missed use is possible, so read `--done` as "the scan sees none".
 
-### MVP on Vercel (what you set up)
+## Limits of page-level before/after
 
-1. Create a KV store (Redis) for the Vercel project: Vercel dashboard > Storage / Marketplace > Upstash Redis (or Vercel KV if it is offered),
-   connect it to the project. It adds `KV_REST_API_URL` + `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`; both are read).
-   Check the plan limits and the price in the dashboard first; this was not checked here.
-2. Add two environment variables: `REVIEW_PASSWORD` (give it to the designers / product owners) and `REVIEW_API_KEY` (a long random string, for the tool).
-3. Deploy. The page is `/review` of the deployed app; the function is `/api/review`.
-4. On each dev machine, once: `.figma-dump/review-api.json` = `{ "url": "https://<your-domain>/api/review", "key": "<REVIEW_API_KEY>" }`
-   (or the env vars `REVIEW_API_URL` / `REVIEW_API_KEY`). `reviewSync` then publishes there and `reviewState` reads from there, on every machine.
-
-*Written from the Upstash REST protocol and checked against a stand-in server and the local API, **not** run on Vercel or against a real KV store yet.*
-Check on the first deploy: the rewrite in `vercel.json` (`/api/review/:path*` to `/api/review?path=:path*`) reaches the function, and a publish then a decision round-trips.
-
-### swt (Express + Mongoose, later)
-
-All nine backends are Express + Mongoose. A natural home is `system-setting-be` (settings domain, same pipeline, `MONGO_URL` from vault), enabled by
-an env flag on stage only; or a small service of its own if the team wants dev tooling apart from a production service. The same five routes, the same JSON:
-
-```js
-// model: one document per component
-const ReviewSchema = new Schema({
-  slug: { type: String, unique: true, required: true },
-  component: String, figmaNode: String, figmaPage: String, code: String, readAt: String, sourceHash: String,
-  status: { type: String, enum: ["pending", "answered", "applied"] },
-  items: [Schema.Types.Mixed], answers: Schema.Types.Mixed,
-  audit: [{ at: Date, by: String, action: String, changes: Schema.Types.Mixed }],
-}, { timestamps: true });   // `version` = Mongoose's __v: save with { __v: expected } in the filter and treat "no match" as 409
-```
-
-Auth: reviewers sign in with the existing login (JWT from `user-be`) and a role instead of the shared password, and `by` comes from the token; the tool uses a service
-key from vault. The page (`pages/Review`, same component) and the skill do not change: only `REVIEW_API_URL` points at the backend. Build the page into
-stage only (a build flag) so end users never see it. The Figma reads (`.figma-dump`) stay on the dev machine.
-
-## Limits and risks (read before exposing it)
-
-- **One shared password.** Anyone with it can answer as any name; the name is typed, not proven. There is no lockout or rate limit. Fine for an internal trial,
-  not for sensitive data; in swt use the real login.
-- **The URL is public** unless the host protects it. What is exposed behind the password is component prop names and Figma node ids. Use HTTPS only.
-- **Not atomic on KV.** A decision reads the document, checks `version`, writes it back: two saves in the same few milliseconds can both pass. For a handful of
-  reviewers that is acceptable; Mongo's `__v` filter closes it in swt.
-- **The password is kept in the browser's session storage** until the tab closes.
-- **A deploy does not lose data** (the store is separate from the app), but nothing backs the KV store up. Treat it as working state: the outcome is
-  recorded in the component doc and the commit (`docs/<ds>/<component>.md`).
-- The store holds only reviews; no loan or user data of the app.
+The page shows a route twice (current app and `previewUrl`) only for projects with preview builds (the MVP on Vercel). swt has no preview builds: there the
+page shows the current page only, with component-level previews from the deployed Storybook; highlighting the affected component would need a `data-ds`
+attribute on the components (a dev-repo change). A preview behind Vercel Authentication shows a login, not the page: turn Deployment Protection off for previews
+(every frame has an "Open in a new tab" link).

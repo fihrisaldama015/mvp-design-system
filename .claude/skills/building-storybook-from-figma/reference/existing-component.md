@@ -30,10 +30,10 @@ Additions from Figma are safe: they go in without asking. A prop or option that 
 (a `searchable` on Select, a `size="xl"`) must never disappear silently.
 
 1. `node scripts/figma/reviewSync.mjs .figma-dump/components.<Name>.json src/components/<x>/index.js [--map '{"Dismiss":"onDismiss"}'] [--legacy tone=status]`
-   lists *additions*, *default changes* and *removals* (with how many caller files use each) and **publishes the review to the review store**
-   (`reference/review-service.md`): the shared API when `REVIEW_API_URL` + `REVIEW_API_KEY` (or `.figma-dump/review-api.json`) are set, so
-   designers and product owners see it on the page **/review** of the deployed app; otherwise a local store (`npm run review:api` + `npm run dev`).
-   The review and the answers live in the store, **not in git and not on one machine** (with the shared API). The Figma reads stay local (`.figma-dump/`).
+   lists *additions*, *default changes* and *removals* (with how many uses and pages each has, from the usage scan) and **publishes the review to the review service**
+   (`reference/review-service.md`): the service when `REVIEW_API_URL` + `REVIEW_PROJECT` + `REVIEW_API_KEY` (or `.figma-dump/review-api.json`) are set, so
+   designers and product owners see it on the page **/review** of the project's app; otherwise a local store that nobody can answer in.
+   The review and the answers live in the store, **not in git and not on one machine** (with the service). The Figma reads stay local (`.figma-dump/`).
    What travels in git is the *outcome*: the code, the component doc and the commit message. Record the decision there (who decided, what, why:
    `docs/<ds>/<component>.md`; the store keeps who and when in `audit`).
    **Make it understandable for people who do not read code.** The page explains each removal in plain words and, for a visual property, shows the
@@ -42,7 +42,7 @@ Additions from Figma are safe: they go in without asking. A prop or option that 
    (the real component, sample props, and for a property that is not an on/off switch the `with` / `without` props). Run `reviewSync` with `--file <figmaFileKey>`
    (or keep `figma-index.json` up to date) so the page can link "Open in Figma" to the node.
    The page also links "Open in Storybook" (`storybookUrl` in `figma-tokens.config.json` + the story id in `figma-index.json`): it is the fallback for a property without a live preview, so set both.
-2. The reviewers open `/review`, enter the shared password and their name, answer the removals and **Save answers**. They can answer some now and
+2. The reviewers open `/review`, log in with their own account, answer the removals and **Save answers**. They can answer some now and
    the rest later; a second save by someone else is refused (409) until they reload, so nobody overwrites an answer unseen.
 3. The agent reads the answers with `node scripts/figma/reviewSync.mjs --answers "<Name>"` and applies them. Nothing is removed before the review is *answered*.
    **The agent never answers for the reviewers**: it does not use the page, call the decision route, or pick a default.
