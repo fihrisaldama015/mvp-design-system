@@ -1,22 +1,22 @@
-// The sync-review API, as one function: handle(request, { store, env }) -> { status, body }.
-// The same logic runs in a Vercel function (api/review.mjs, KV store), in the local dev server
-// (reviewApi.mjs, file store) and is the contract a backend implements later (Express + Mongo in swt:
-// docs "review-service" in the skill's reference/). Nothing here imports Node HTTP; it is plain data in, data out.
+// The local review store, as one function: handle(request, { store, env }) -> { status, body }.
+// Used as the tool's fallback when no review service is configured (reviewClient.mjs, file store in
+// .figma-dump/review-store). The rules are in reviewLogic.mjs (pure); this file is auth + routing + the file store.
+// Nothing here imports Node HTTP; it is plain data in, data out.
 //
 // Routes (path is what follows /api/review):
 //   GET    /                       reviewer | tool   list: summaries + counts
 //   GET    /:slug                  reviewer | tool   one review, with items, answers, audit
 //   PUT    /:slug                  tool              publish a review (reviewSync --publish); same sourceHash keeps the answers
-//   POST   /:slug/decision         reviewer | tool   { answers: {itemId: choice}, reviewer, version }; 409 when version is stale
+//   POST   /:slug/decision         reviewer | tool   { answers: {itemId: choice}, migrateBy, reviewer, version }; 409 when version is stale
 //   POST   /:slug/applied          tool              the agent applied the answers (reviewSync --done)
-// Auth: header x-review-password (shared password, for designers / product owners) or x-review-key (the tool).
-// Both come from env (REVIEW_PASSWORD, REVIEW_API_KEY). Missing env = the API refuses everything (503), never open.
+// Auth: header x-review-password (shared password) or x-review-key (the tool), from env (REVIEW_PASSWORD, REVIEW_API_KEY).
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { decide, markApplied, publish, slug, summary } from "./reviewLogic.mjs";
 
-export const CHOICES = ["follow-figma", "keep-deprecated", "keep"];
-export const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+export { CHOICES, slug, summary } from "./reviewLogic.mjs";
+
 const KEY = (s) => `review:${s}`;
 const now = () => new Date().toISOString();
 const same = (a, b) => {
@@ -34,35 +34,10 @@ export function fileStore(dir) {
   };
 }
 
-// Upstash / Vercel KV (Redis over REST: POST the command as a JSON array to the base URL).
-export function kvStore({ url, token, fetchImpl = fetch }) {
-  const cmd = async (...c) => {
-    const r = await fetchImpl(url, { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify(c) });
-    const j = await r.json();
-    if (!r.ok || j.error) throw new Error(`KV ${c[0]} failed: ${j.error ?? r.status}`);
-    return j.result;
-  };
-  return {
-    async get(k) { const v = await cmd("GET", k); return v ? JSON.parse(v) : null; },
-    async set(k, v) { await cmd("SET", k, JSON.stringify(v)); },
-    async list() { const keys = await cmd("KEYS", "review:*"); return Promise.all(keys.map((k) => this.get(k))); },
-  };
-}
-
-export function storeFromEnv(env) {
-  const url = env.KV_REST_API_URL ?? env.UPSTASH_REDIS_REST_URL, token = env.KV_REST_API_TOKEN ?? env.UPSTASH_REDIS_REST_TOKEN;
-  return url && token ? kvStore({ url, token }) : null;
-}
-
-// ---- document helpers ----
-const removals = (d) => d.items.filter((i) => i.kind.startsWith("removed"));
-const unanswered = (d) => removals(d).filter((i) => !d.answers[i.id]).map((i) => i.id);
-const statusOf = (d) => (d.status === "applied" ? "applied" : unanswered(d).length ? "pending" : "answered");
-export const summary = (d) => ({ slug: slug(d.component), component: d.component, status: d.status, removals: removals(d).length, unanswered: unanswered(d).length, additions: d.items.length - removals(d).length, figmaNode: d.figmaNode, readAt: d.readAt, updatedAt: d.updatedAt, version: d.version });
 const bad = (status, error, extra = {}) => ({ status, body: { error, ...extra } });
 const ok = (body, status = 200) => ({ status, body });
 
-// A store failure (KV down, wrong token) is a 502 with the reason, not a stack trace.
+// A store failure (disk error) is a 502 with the reason, not a stack trace.
 export async function handle(request, ctx) {
   try { return await route(request, ctx); } catch (e) { return bad(502, `The store failed: ${e.message}`); }
 }
@@ -70,7 +45,7 @@ export async function handle(request, ctx) {
 async function route({ method, path: p = "", body, headers = {} }, { store, env = {} }) {
   const h = Object.fromEntries(Object.entries(headers).map(([k, v]) => [k.toLowerCase(), v]));
   if (!env.REVIEW_PASSWORD && !env.REVIEW_API_KEY) return bad(503, "The review API is not configured (set REVIEW_PASSWORD and REVIEW_API_KEY).");
-  if (!store) return bad(503, "No store configured (set KV_REST_API_URL and KV_REST_API_TOKEN).");
+  if (!store) return bad(503, "No store configured.");
   const isTool = same(h["x-review-key"], env.REVIEW_API_KEY);
   const isReviewer = same(h["x-review-password"], env.REVIEW_PASSWORD);
   if (!isTool && !isReviewer) return bad(401, "Missing or wrong password / key.");
@@ -91,21 +66,8 @@ async function route({ method, path: p = "", body, headers = {} }, { store, env 
     if (method === "GET") return doc ? ok(doc) : bad(404, `No review "${s}".`);
     if (method === "PUT") {
       if (!isTool) return bad(403, "Only the tool (x-review-key) can publish a review.");
-      const b = body ?? {};
-      if (!b.component || slug(b.component) !== s) return bad(400, "component must be set and its slug must equal the URL.");
-      if (!Array.isArray(b.items) || !b.sourceHash) return bad(400, "items (array) and sourceHash are required.");
-      const t = now();
-      const base = { component: b.component, jsxName: b.jsxName ?? null, storybookUrl: b.storybookUrl ?? null, storyId: b.storyId ?? null, figmaFileKey: b.figmaFileKey ?? null, figmaNode: b.figmaNode ?? null, figmaPage: b.figmaPage ?? null, code: b.code ?? null, readAt: b.readAt ?? null, sourceHash: b.sourceHash, items: b.items };
-      let next;
-      if (doc && doc.sourceHash === b.sourceHash && doc.status !== "applied") {
-        next = { ...doc, ...base, updatedAt: t, audit: [...doc.audit, { at: t, by: "tool", action: "republished (same Figma state, answers kept)" }] };
-      } else {
-        const why = !doc ? "published" : doc.status === "applied" ? "published (new cycle)" : "Figma changed: earlier answers dropped";
-        next = { ...base, answers: {}, status: "pending", version: (doc?.version ?? 0) + 1, createdAt: doc?.createdAt ?? t, updatedAt: t, audit: [...(doc?.audit ?? []), { at: t, by: "tool", action: why }] };
-      }
-      next.status = statusOf(next);
-      await store.set(KEY(s), next);
-      return ok(next, doc ? 200 : 201);
+      if (!body?.component || slug(body.component) !== s) return bad(400, "component must be set and its slug must equal the URL.");
+      return commit(store, s, publish(doc, body, now()), doc);
     }
     return bad(405, "Use GET or PUT.");
   }
@@ -114,37 +76,22 @@ async function route({ method, path: p = "", body, headers = {} }, { store, env 
 
   if (action === "decision") {
     if (method !== "POST") return bad(405, "Use POST.");
-    const { answers, reviewer, version } = body ?? {};
-    if (typeof reviewer !== "string" || !reviewer.trim() || reviewer.length > 80) return bad(400, "reviewer (a name, up to 80 characters) is required.");
-    if (!answers || typeof answers !== "object") return bad(400, "answers must be an object { itemId: choice }.");
-    if (doc.status === "applied") return bad(409, "This review was already applied.", { current: doc });
-    if (version !== doc.version) return bad(409, "Someone else changed this review. Reload and check before saving.", { current: doc });
-    const valid = new Set(removals(doc).map((i) => i.id));
-    for (const [id, choice] of Object.entries(answers)) {
-      if (!valid.has(id)) return bad(400, `Unknown item "${id}": only removals need an answer.`);
-      if (choice !== null && !CHOICES.includes(choice)) return bad(400, `Choice for "${id}" must be one of ${CHOICES.join(", ")}.`);
-    }
-    const t = now();
-    const merged = { ...doc.answers };
-    const changes = {};
-    for (const [id, choice] of Object.entries(answers)) {
-      if (choice === null) { if (merged[id]) { delete merged[id]; changes[id] = null; } } else if (merged[id] !== choice) { merged[id] = choice; changes[id] = choice; }
-    }
-    if (!Object.keys(changes).length) return ok(doc);
-    const next = { ...doc, answers: merged, version: doc.version + 1, updatedAt: t, audit: [...doc.audit, { at: t, by: reviewer.trim(), action: "decided", changes }] };
-    next.status = statusOf(next);
-    await store.set(KEY(s), next);
-    return ok(next);
+    const { answers, migrateBy, reviewer, version } = body ?? {};
+    return commit(store, s, decide(doc, { answers, migrateBy, version, by: reviewer }, now()), doc);
   }
 
   if (action === "applied") {
     if (method !== "POST") return bad(405, "Use POST.");
     if (!isTool) return bad(403, "Only the tool (x-review-key) can mark a review as applied.");
-    const t = now();
-    const next = { ...doc, status: "applied", version: doc.version + 1, updatedAt: t, audit: [...doc.audit, { at: t, by: "tool", action: "applied" }] };
-    await store.set(KEY(s), next);
-    return ok(next);
+    return commit(store, s, markApplied(doc, now()), doc);
   }
 
   return bad(404, "No such route.");
+}
+
+// A logic Result -> a response; writes the document only when it changed (the logic returns the same object when nothing changed).
+async function commit(store, s, r, prev) {
+  if (!r.ok) return bad(r.status, r.error, r.current ? { current: r.current } : {});
+  if (r.doc !== prev) await store.set(KEY(s), r.doc);
+  return ok(r.doc, r.status);
 }

@@ -2,7 +2,7 @@
 //   shared API   env REVIEW_API_URL + REVIEW_API_KEY, or the file .figma-dump/review-api.json { "url": "...", "key": "..." }
 //                (per machine, not in git). The URL ends in /api/review, e.g. https://mvp.example.com/api/review.
 //   local        nothing configured: the same logic runs in this process on files in .figma-dump/review-store/. Start
-//                `npm run review:api` (same files) and `npm run dev` to answer on /review (password "local-password").
+//                the review page needs the review service (Task 8 of the plan).
 import fs from "node:fs";
 import { fileStore, handle, slug } from "./reviewCore.mjs";
 
@@ -19,7 +19,7 @@ export function reviewConfig() {
 }
 
 // The page where reviewers answer, for messages.
-export const reviewPage = (cfg = reviewConfig()) => (cfg ? `${cfg.url.replace(/\/api\/review$/, "")}/review` : "http://localhost:5002/review (npm run review:api, npm run dev; password local-password)");
+export const reviewPage = (cfg = reviewConfig()) => (cfg ? `${cfg.url.replace(/\/api\/review$/, "")}/review` : "http://localhost:5002/review");
 
 export function reviewApi(cfg = reviewConfig(), { timeoutMs = 8000 } = {}) {
   const verbs = (call) => ({
