@@ -361,6 +361,18 @@ assert.deepEqual(codes, [200, 409]);
 
 ### Task 11: Deploy and demo run
 
+> **Demo setup note.** In the MVP today `src/components/select/index.js` has `searchable = false` (already deprecated on 2026-10-13, `docs/shield/select.md`) and no page passes `searchable`, so the demo review would show 0 usages and `--done` would pass at once. The demo needs:
+> - a "Now" app where the property is live: the baseline Select (the file `src/components/select/index.js` from commit `0b00c48`, `searchable = true` by default) put under the current pages gives 3 uses on 2 pages (`NewReservation.js` twice, `Reservations.js` once), or two pages that pass `searchable` explicitly;
+> - a candidate deployment (`--preview-url`) without the property;
+> - the reviewSync flags of `docs/shield/select.md`, so the review does not also list `options`, `error`, `clearable` or `readOnly` as removals:
+>   ```
+>   node scripts/figma/reviewSync.mjs .figma-dump/components.Input-Single-Select-Base.json src/components/select/index.js \
+>     --behavior options --legacy error=status --ignore "State,Label,Caption,Placeholder,Label Elements,Value Text" \
+>     --map '{"Read-only":"readOnly","Clearable Icon":"clearable","Label Text":"label","Caption Text":"caption","Placeholder Text":"placeholder"}'
+>   ```
+>   (`--behavior options`, `--legacy error=status`, `--ignore ...`, `--map ...`; add `--preview-url <url>`.)
+> - Checked while writing this note: `0b00c48` is in this repo (and the main MVP checkout), **not** in `mvp-dev`; at that commit no routed page uses the Select component (pages use a native `<select>`), so "3 uses on 2 pages" holds only for the baseline Select combined with the current pages, and whether the scan counts a default-on property for callers that do not pass it must be confirmed by running the scan before the demo.
+
 Manual account steps are the user's (creating the Atlas cluster and the Vercel project); the agent guides and verifies.
 
 - [ ] **Step 1 (user):** Atlas free cluster, database user with `readWrite` on `design_review`, Network Access `0.0.0.0/0` (Vercel has no fixed IPs). Connection string into the service's Vercel env `MONGO_URL`, plus `SESSION_SECRET` (`openssl rand -base64 48`), `ORG_ID=blue-silo`, `WEB_ORIGIN=https://<service>.vercel.app`.

@@ -41,7 +41,7 @@ test("publish sends Bearer token to the project path", async () => {
 test("list, get and applied use the project path", async () => {
   const s = await stub(() => ({ status: 200, body: { reviews: [] } }));
   try {
-    const api = reviewApi({ url: s.url, project: "mvp", token: "t" });
+    const api = reviewApi({ url: s.url, project: "mvp", token: "drp_t" });
     await api.list(); await api.get("Select"); await api.applied("Select");
     assert.deepEqual(s.seen.map((r) => `${r.method} ${r.url}`), ["GET /api/v1/projects/mvp/reviews", "GET /api/v1/projects/mvp/reviews/select", "POST /api/v1/projects/mvp/reviews/select/applied"]);
   } finally { await s.close(); }
@@ -62,7 +62,7 @@ test("a redirect is reported, not followed", async () => {
   const target = await stub(() => ({ status: 200 }));
   const s = await stub(() => ({ status: 307, headers: { Location: "https://vercel.com/sso-api?url=x" } }));
   try {
-    const api = reviewApi({ url: s.url, project: "mvp", token: "t" });
+    const api = reviewApi({ url: s.url, project: "mvp", token: "drp_t" });
     await assert.rejects(api.list(), /redirect.*Vercel Authentication/s);
     assert.equal(target.seen.length, 0);
   } finally { await s.close(); await target.close(); }
@@ -70,15 +70,15 @@ test("a redirect is reported, not followed", async () => {
 
 test("404 on get returns null", async () => {
   const s = await stub(() => ({ status: 404, body: { error: "No such review." } }));
-  try { assert.equal(await reviewApi({ url: s.url, project: "mvp", token: "t" }).get("Nope"), null); } finally { await s.close(); }
+  try { assert.equal(await reviewApi({ url: s.url, project: "mvp", token: "drp_t" }).get("Nope"), null); } finally { await s.close(); }
 });
 
 test("an error answer names the status and the service's text", async () => {
   const s = await stub(() => ({ status: 409, body: { error: "The reviewers have not answered every removal yet." } }));
-  try { await assert.rejects(reviewApi({ url: s.url, project: "mvp", token: "t" }).applied("Select"), /409.*not answered/); } finally { await s.close(); }
+  try { await assert.rejects(reviewApi({ url: s.url, project: "mvp", token: "drp_t" }).applied("Select"), /409.*not answered/); } finally { await s.close(); }
 });
 
-test("reviewConfig reads env, and accepts key as an alias of token in the file", () => {
+test("reviewConfig reads env and the file", () => {
   const keep = { ...process.env }, cwd = process.cwd();
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "review-cfg-"));
   try {
@@ -86,10 +86,10 @@ test("reviewConfig reads env, and accepts key as an alias of token in the file",
     process.chdir(dir);
     assert.equal(reviewConfig(), null);
     fs.mkdirSync(".figma-dump");
-    fs.writeFileSync(".figma-dump/review-api.json", JSON.stringify({ url: "https://s.example/api/v1/", project: "mvp", key: "k1", reviewPage: "https://app/review" }));
-    assert.deepEqual(reviewConfig(), { url: "https://s.example/api/v1", project: "mvp", token: "k1", reviewPage: "https://app/review" });
-    Object.assign(process.env, { REVIEW_API_URL: "https://e.example/api/v1", REVIEW_PROJECT: "p", REVIEW_API_KEY: "t2" });
-    assert.deepEqual(reviewConfig(), { url: "https://e.example/api/v1", project: "p", token: "t2" });
+    fs.writeFileSync(".figma-dump/review-api.json", JSON.stringify({ url: "https://s.example/api/v1/", project: "mvp", token: "drp_k1", reviewPage: "https://app/review" }));
+    assert.deepEqual(reviewConfig(), { url: "https://s.example/api/v1", project: "mvp", token: "drp_k1", reviewPage: "https://app/review" });
+    Object.assign(process.env, { REVIEW_API_URL: "https://e.example/api/v1", REVIEW_PROJECT: "p", REVIEW_API_KEY: "drp_t2" });
+    assert.deepEqual(reviewConfig(), { url: "https://e.example/api/v1", project: "p", token: "drp_t2" });
   } finally { process.chdir(cwd); process.env = keep; fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
@@ -154,8 +154,24 @@ test("url and project without key throws naming the token", () => {
 test("old-format file with only url and key says the API moved", () => {
   inTmp({}, { url: "https://s/api/review", key: "k" }, () => assert.throws(() => reviewConfig(), /no `project`.*design review service \(url ends in \/api\/v1\)/s));
 });
+test("a partial file error names the path, the full template and the project token", () => {
+  inTmp({}, { url: "https://s/api/v1", project: "p" }, () => assert.throws(() => reviewConfig(), (e) => {
+    assert.match(e.message, /\.figma-dump\/review-api\.json/);
+    assert.ok(e.message.includes('{ "url": "https://<service>/api/v1", "project": "<project key>", "token": "drp_..." }'));
+    assert.match(e.message, /project token created in the service UI \(it starts with drp_\)/);
+    return true;
+  }));
+  inTmp({}, { url: "https://s/api/review", key: "k" }, () => assert.throws(() => reviewConfig(), /review-api\.json.*"token": "drp_\.\.\."/s));
+});
+test("the old `key` alias is gone", () => {
+  inTmp({}, { url: "https://s/api/v1", project: "p", key: "drp_abc" }, () => assert.throws(() => reviewConfig(), /no `token`/));
+});
+test("a token that does not start with drp_ is refused, without printing it", () => {
+  inTmp({}, { url: "https://s/api/v1", project: "p", token: "SECRET-OLD-KEY" }, () => assert.throws(() => reviewConfig(), (e) => /not a project token.*drp_.*service UI/s.test(e.message) && !e.message.includes("SECRET-OLD-KEY")));
+  inTmp({ REVIEW_API_URL: "https://s/api/v1", REVIEW_PROJECT: "p", REVIEW_API_KEY: "SECRET-OLD-KEY" }, undefined, () => assert.throws(() => reviewConfig(), (e) => /not a project token/.test(e.message) && !e.message.includes("SECRET-OLD-KEY")));
+});
 test("a url ending in /api/review is flagged as the old API", () => {
-  inTmp({}, { url: "https://s/api/review", project: "p", token: "t" }, () => assert.throws(() => reviewConfig(), /old.*\/api\/review/s));
+  inTmp({}, { url: "https://s/api/review", project: "p", token: "drp_t" }, () => assert.throws(() => reviewConfig(), /old.*\/api\/review/s));
 });
 test("nothing configured at all falls back to local", () => {
   inTmp({}, undefined, () => { assert.equal(reviewConfig(), null); assert.equal(reviewApi().shared, false); });
@@ -164,7 +180,7 @@ test("a connection failure reports the real reason", async () => {
   const s = await stub(() => ({ status: 200 }));
   const url = s.url;
   await s.close(); // nothing listens there any more
-  const api = reviewApi({ url, project: "p", token: "t" });
+  const api = reviewApi({ url, project: "p", token: "drp_t" });
   await assert.rejects(api.list(), /ECONNREFUSED/);
 });
 
@@ -184,7 +200,7 @@ test("follow-figma refusal names files when no routed page is involved", () => {
 
 test("whitespace-only REVIEW_* env vars count as not set", () => {
   inTmp({ REVIEW_API_URL: "  ", REVIEW_PROJECT: "", REVIEW_API_KEY: "\t" }, undefined, () => assert.equal(reviewConfig(), null));
-  inTmp({ REVIEW_API_URL: " https://s/api/v1 ", REVIEW_PROJECT: " p ", REVIEW_API_KEY: " t " }, undefined, () => assert.deepEqual(reviewConfig(), { url: "https://s/api/v1", project: "p", token: "t" }));
+  inTmp({ REVIEW_API_URL: " https://s/api/v1 ", REVIEW_PROJECT: " p ", REVIEW_API_KEY: " drp_t " }, undefined, () => assert.deepEqual(reviewConfig(), { url: "https://s/api/v1", project: "p", token: "drp_t" }));
 });
 
 test("reviewSync in every mode prints only the config message, no stack, no key", () => {
@@ -201,5 +217,15 @@ test("reviewSync in every mode prints only the config message, no stack, no key"
       assert.doesNotMatch(r.stderr, /\n\s+at /, args[0]);
       assert.doesNotMatch(r.stderr + r.stdout, /SECRET-KEY-123/, args[0]);
     }
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("the local store refuses to apply a review twice (409)", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "review-local-"));
+  try {
+    const api = reviewApi(null, { localDir: dir });
+    await api.publish({ component: "Select", sourceHash: "h", items: [] });
+    await api.applied("Select");
+    await assert.rejects(api.applied("Select"), /409.*already applied/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });

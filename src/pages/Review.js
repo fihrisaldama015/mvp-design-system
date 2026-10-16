@@ -100,7 +100,7 @@ function Decision({ doc, item, choice, saved, onChoice, readOnly, date, onDate, 
   const preview = useMemo(() => previewFor(doc, item), [doc, item]);
   const story = storybookLink(doc);
   const chosen = CHOICES.find((c) => c.value === choice);
-  const where = [item.callers ? plural(item.callers, "app file", "app files") : null, item.storyCallers ? plural(item.storyCallers, "Storybook example", "Storybook examples") : null].filter(Boolean).join(" and ");
+  const where = item.callers ? plural(item.callers, "place", "places") + " in the app" : "";
   return (
     <li className="flex flex-col gap-4 rounded-default border border-default bg-surface p-5">
       <div className="flex flex-col gap-1">
@@ -231,7 +231,7 @@ function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) 
                   {when(a.at)}, {a.by}: {a.action}
                   {a.changes && Object.keys(a.changes).length > 0 && (
                     <ul className="list-disc pl-5 text-caption">
-                      {Object.entries(a.changes).map(([id, c]) => <li key={id}><code>{id}</code>: {changeText(c, CHOICE_LABELS)}</li>)}
+                      {Object.entries(a.changes).map(([id, c]) => <li key={id}><code>{id}</code>: {changeText(c, CHOICE_LABELS, a.migrateBy?.[id])}</li>)}
                     </ul>
                   )}
                 </li>
@@ -249,20 +249,22 @@ function LoginForm({ onLogin, message, expired }) {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
-  const enter = async () => {
+  const enter = async (e) => {
+    e?.preventDefault();
+    if (!email || !password || busy) return;
     setBusy(true);
     setError(null);
     try { onLogin(await login(email.trim(), password)); } catch (e) { setError(e.message); }
     setBusy(false);
   };
   return (
-    <div className="flex max-w-md flex-col gap-4">
+    <form className="flex max-w-md flex-col gap-4" onSubmit={enter}>
       {expired && <Alert status="warning" title="Log in again">{message} Your unsaved choices are still on this page.</Alert>}
       {error && <Alert status="danger" title="Cannot log in">{error}</Alert>}
       <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
       <Input label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} caption="Ask the developer if you do not have an account." />
-      <Button status="primary" loading={busy} disabled={!email || !password} onClick={enter}>Log in</Button>
-    </div>
+      <Button type="submit" status="primary" loading={busy} disabled={!email || !password}>Log in</Button>
+    </form>
   );
 }
 
@@ -331,7 +333,8 @@ export default function Review() {
     if (list.status === 401) return expire(list.json.error);
     if (mustChangePassword(list)) return lock();
     if (!list.ok) return setProblem(list.json.error ?? `Error ${list.status}.`);
-    const full = await Promise.all(list.json.reviews.map((r) => call(s, "GET", `/${r.slug}`)));
+    let full;
+    try { full = await Promise.all(list.json.reviews.map((r) => call(s, "GET", `/${r.slug}`))); } catch { return setProblem("The review service could not be reached."); }
     if (full.some(mustChangePassword)) return lock();
     if (full.some((x) => x.status === 401)) return expire(full.find((x) => x.status === 401).json.error);
     const bad = full.find((x) => !x.ok);

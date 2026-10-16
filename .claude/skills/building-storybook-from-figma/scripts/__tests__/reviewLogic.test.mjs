@@ -62,3 +62,24 @@ test("usageHistory is capped at 50 and carried across a new cycle", () => {
   const n = publish(d, { ...body, sourceHash: "h2", usage: { at: "t55", byItem: { x: { count: 1 } } } }, T).doc;
   assert.equal(n.version, d.version + 1); assert.equal(n.usageHistory.length, 50); assert.equal(n.usageHistory.at(-1).at, "t55"); assert.equal(n.usageHistory[0].at, "t6");
 });
+
+test("audit entry carries the migrate-by date for keep-deprecated, changes stay id -> choice", () => {
+  const id = "removed-prop:searchable";
+  const r = decide(publish(null, body, T).doc, { answers: { [id]: "keep-deprecated" }, migrateBy: { [id]: "2026-12-01" }, version: 1, by: "Dina" }, T);
+  const e = r.doc.audit.at(-1);
+  assert.deepEqual(e.changes, { [id]: "keep-deprecated" });
+  assert.deepEqual(e.migrateBy, { [id]: "2026-12-01" });
+  const f = decide(publish(null, body, T).doc, { answers: { [id]: "follow-figma" }, version: 1, by: "Dina" }, T);
+  assert.equal(f.doc.audit.at(-1).migrateBy, undefined);
+});
+test("a date-only change is a change: new audit entry, version bump", () => {
+  const id = "removed-prop:searchable";
+  const d = decide(publish(null, body, T).doc, { answers: { [id]: "keep-deprecated" }, migrateBy: { [id]: "2026-12-01" }, version: 1, by: "Dina" }, T).doc;
+  const r = decide(d, { answers: { [id]: "keep-deprecated" }, migrateBy: { [id]: "2027-01-15" }, version: d.version, by: "Dina" }, T);
+  assert.notEqual(r.doc, d);
+  assert.equal(r.doc.version, d.version + 1);
+  assert.equal(r.doc.migrateBy[id], "2027-01-15");
+  assert.deepEqual(r.doc.audit.at(-1).migrateBy, { [id]: "2027-01-15" });
+  // same choice and same date is still a no-op
+  assert.equal(decide(r.doc, { answers: { [id]: "keep-deprecated" }, migrateBy: { [id]: "2027-01-15" }, version: r.doc.version, by: "Dina" }, T).doc, r.doc);
+});

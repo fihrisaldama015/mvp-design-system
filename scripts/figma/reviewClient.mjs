@@ -1,7 +1,7 @@
 // How the scripts (reviewSync, reviewState) reach the review store. One interface, two backends:
 //   service   env REVIEW_API_URL + REVIEW_PROJECT + REVIEW_API_KEY, or the file .figma-dump/review-api.json
 //             { "url": "https://<service>/api/v1", "project": "mvp", "token": "drp_...", "reviewPage": "https://<app>/review" }
-//             (per machine, never in git; `key` is accepted as an alias of `token`). Requests go to
+//             (per machine, never in git). `token` is a project token made in the service UI (starts with drp_). Requests go to
 //             ${url}/projects/${project}/reviews with `Authorization: Bearer <project token>`.
 //   local     nothing configured: the same logic (reviewCore.mjs) runs in this process on files in .figma-dump/review-store/.
 //             Nobody can answer there: reviewers need the review service.
@@ -11,27 +11,31 @@ import { fileStore, handle, slug } from "./reviewCore.mjs";
 export const LOCAL_DIR = ".figma-dump/review-store";
 const LOCAL_ENV = { REVIEW_PASSWORD: "local-password", REVIEW_API_KEY: "local-key" };
 const trim = (u) => String(u).replace(/\/$/, "");
+const FILE = ".figma-dump/review-api.json";
+const TEMPLATE = '{ "url": "https://<service>/api/v1", "project": "<project key>", "token": "drp_..." }';
+const HOW = `The token is a project token created in the service UI (it starts with drp_).`;
+const NEEDS = `${FILE} needs ${TEMPLATE}. ${HOW}`;
+const badToken = (where) => new Error(`The review token in ${where} is not a project token (a project token starts with drp_). Create a project token in the service UI and use it as \`token\`. ${NEEDS}`);
 
 // null only when nothing is configured at all; a partial or old-format config throws, so it is never mistaken for "no review".
 export function reviewConfig() {
-  const FILE = ".figma-dump/review-api.json";
   const e = Object.fromEntries(["REVIEW_API_URL", "REVIEW_PROJECT", "REVIEW_API_KEY"].map((k) => [k, process.env[k]?.trim()])); // whitespace-only counts as not set
   const oldApi = (url) => { if (/\/api\/review\/?$/.test(url)) throw new Error(`The review URL ${url} is the old /api/review API, which is gone: the design review service lives at a url ending in /api/v1.`); };
-  const finish = (url, project, token, reviewPage) => { oldApi(url); return { url: trim(url), project, token, ...(reviewPage ? { reviewPage } : {}) }; };
+  const finish = (url, project, token, reviewPage, where) => { oldApi(url); if (!String(token).startsWith("drp_")) throw badToken(where); return { url: trim(url), project, token, ...(reviewPage ? { reviewPage } : {}) }; };
   if (e.REVIEW_API_URL || e.REVIEW_PROJECT || e.REVIEW_API_KEY) {
     const missing = [["REVIEW_API_URL", e.REVIEW_API_URL], ["REVIEW_PROJECT", e.REVIEW_PROJECT], ["REVIEW_API_KEY", e.REVIEW_API_KEY]].filter(([, v]) => !v).map(([k]) => k);
     if (missing.length) throw new Error(`Review config is incomplete: ${missing.join(", ")} not set (all of REVIEW_API_URL, REVIEW_PROJECT, REVIEW_API_KEY are needed).`);
-    return finish(e.REVIEW_API_URL, e.REVIEW_PROJECT, e.REVIEW_API_KEY);
+    return finish(e.REVIEW_API_URL, e.REVIEW_PROJECT, e.REVIEW_API_KEY, undefined, "REVIEW_API_KEY");
   }
   let text;
   try { text = fs.readFileSync(FILE, "utf8"); } catch { return null; }
   let j;
   try { j = JSON.parse(text); } catch (err) { throw new Error(`${FILE} is not valid JSON (${err.message}).`); }
-  const token = j.token ?? j.key;
-  if (j.url && !j.project) throw new Error(`review-api.json has no \`project\`: the review API now lives at the design review service (url ends in /api/v1), with { url, project, token }.`);
+  const token = j.token;
+  if (j.url && !j.project) throw new Error(`${FILE} has no \`project\`: the review API now lives at the design review service (url ends in /api/v1). ${NEEDS}`);
   const missing = [["url", j.url], ["project", j.project], ["token", token]].filter(([, v]) => !v).map(([k]) => `\`${k}\``);
-  if (missing.length) throw new Error(`review-api.json has no ${missing.join(", ")} (needs { url, project, token }).`);
-  return finish(j.url, j.project, token, j.reviewPage);
+  if (missing.length) throw new Error(`${FILE} has no ${missing.join(", ")}. ${NEEDS}`);
+  return finish(j.url, j.project, token, j.reviewPage, FILE);
 }
 
 // The page where reviewers answer, for messages.

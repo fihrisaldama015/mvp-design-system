@@ -84,6 +84,7 @@ async function route({ method, path: p = "", body, headers = {} }, { store, env 
   if (action === "applied") {
     if (method !== "POST") return bad(405, "Use POST.");
     if (!isTool) return bad(403, "Only the tool (x-review-key) can mark a review as applied.");
+    if (doc.status === "applied") return bad(409, "This review was already applied.");
     return commit(store, s, markApplied(doc, now()), doc);
   }
 

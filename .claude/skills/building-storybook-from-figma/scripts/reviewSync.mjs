@@ -13,7 +13,7 @@
 //          [--also src/components/field/index.js]  a wrapper whose props count as this component's API (label, hint, required in Field)
 //          [--ignore "State,Label"]           Figma properties that are not props (CSS state, show/hide switches for text that already has a prop)
 //          [--preview-url https://<preview-origin>]  the candidate's preview deployment (the page shows the route there next to the current one)
-//          [--src src] [--file <figmaFileKey>]   (the key makes the reviewers' "Open in Figma" link; default: figma-index.json)
+//          [--file <figmaFileKey>]   (the key makes the reviewers' "Open in Figma" link; default: figma-index.json)
 import fs from "node:fs";
 import crypto from "node:crypto";
 import { reviewApi, reviewPage } from "./reviewClient.mjs";
@@ -66,7 +66,6 @@ const LEGACY = Object.fromEntries((flag("--legacy", "") || "").split(",").filter
 const BEHAVIOR = new Set(["id", "name", "ref", "className", "style", "children", "value", "defaultValue", "onChange", "onClick", "onBlur", "onFocus", ...flag("--behavior", "").split(",").filter(Boolean)]);
 const IGNORE = new Set((flag("--ignore", "") || "").split(",").filter(Boolean));
 const ALSO = (flag("--also", "") || "").split(",").filter(Boolean);
-const SRC = flag("--src", "src");
 if (!figmaFile || !codeFile) {
   console.error("Usage: node scripts/figma/reviewSync.mjs <components.Name.json> <src/components/x/index.js> [--map JSON] [--legacy a=b] [--out file]");
   process.exit(1);

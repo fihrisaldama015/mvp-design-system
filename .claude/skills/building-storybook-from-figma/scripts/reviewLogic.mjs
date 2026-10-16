@@ -51,18 +51,19 @@ export function decide(doc, { answers, migrateBy = {}, version, by } = {}, at) {
   const merged = { ...doc.answers };
   const dates = { ...(doc.migrateBy ?? {}) };
   const changes = {};
+  const changedDates = {};
   for (const [id, choice] of Object.entries(answers)) {
     if (choice === null) {
       if (merged[id]) { delete merged[id]; changes[id] = null; }
       delete dates[id];
     } else {
-      if (merged[id] !== choice || (choice === "keep-deprecated" && dates[id] !== migrateBy[id])) changes[id] = choice;
+      if (merged[id] !== choice || (choice === "keep-deprecated" && dates[id] !== migrateBy[id])) { changes[id] = choice; if (choice === "keep-deprecated") changedDates[id] = migrateBy[id]; }
       merged[id] = choice;
       if (choice === "keep-deprecated") dates[id] = migrateBy[id]; else delete dates[id];
     }
   }
   if (!Object.keys(changes).length) return done(doc);
-  const next = { ...doc, answers: merged, migrateBy: dates, version: doc.version + 1, updatedAt: at, audit: [...doc.audit, { at, by: by.trim(), action: "decided", changes }] };
+  const next = { ...doc, answers: merged, migrateBy: dates, version: doc.version + 1, updatedAt: at, audit: [...doc.audit, { at, by: by.trim(), action: "decided", changes, ...(Object.keys(changedDates).length ? { migrateBy: changedDates } : {}) }] };
   next.status = statusOf(next);
   return done(next);
 }

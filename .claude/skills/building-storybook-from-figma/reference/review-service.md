@@ -39,7 +39,7 @@ Environment `REVIEW_API_URL`, `REVIEW_PROJECT`, `REVIEW_API_KEY`, or the git-ign
 { "url": "https://<service>/api/v1", "project": "mvp", "token": "drp_...", "reviewPage": "https://<app>/review" }
 ```
 
-`key` is accepted as an alias of `token`; `reviewPage` only feeds the messages that tell the dev where reviewers answer.
+`token` must be a **project token created in the service UI** (it starts with drp_); the old `key` field is no longer read, and a token that does not start with `drp_` is refused with a message (the token itself is never printed). `reviewPage` only feeds the messages that tell the dev where reviewers answer.
 
 **Token handling.** The project token is shown once when an admin creates it in the service UI; the service keeps only its hash. Never commit it,
 never put it in a page bundle or a `VITE_`/`PUBLIC_` variable, never paste it in a chat. A revoked token is `401`; a token of another project is `403`.
@@ -61,14 +61,21 @@ review was published locally; it is not a review.
 
 | Choice | Meaning | `--done` passes when |
 |---|---|---|
-| `follow-figma` | the property goes; every usage is migrated (codemod or AI, done by the dev) | the usage scan shows 0 uses left; otherwise `"<prop>" still used on <n> page(s): <paths>. Migrate them first.` |
-| `keep-deprecated` | `@deprecated` in code, new pages may not use it; needs a `migrateBy` date (`YYYY-MM-DD`) | the deprecation is in code; `--done` prints the burn-down (uses now vs at publish), tracked on each sync until 0 |
+| `follow-figma` | the property goes; every usage is migrated (codemod or AI, done by the dev) | the usage scan shows 0 uses left; otherwise `"<prop>" still used in <n> place(s) on <m> page(s): <paths>. Migrate them first.` |
+| `keep-deprecated` | `@deprecated` in code, new pages may not use it; needs a `migrateBy` date (`YYYY-MM-DD`) | the migrate-by date is set; `--done` does not check the code (the developer marks the prop `@deprecated`) and prints the burn-down (uses now vs at publish), tracked on each sync until 0 |
 | `keep` (Figma changes) | rare; a task for the designer | never: `Waiting for Figma: "<prop>" was kept, so the design changes first. Publish again after Figma is updated.` The review stays open until Figma changes and a new `sourceHash` is published |
+
+Refusal texts are exactly those of `reviewGate.mjs`: `"<prop>" still used in <n> place(s) on <m> page(s): <paths>. Migrate them first.` (or `(not on a routed page: <file:line>, ...)` instead of the paths), `Waiting for Figma: ...` as above, `"<component>" still has unanswered removals: do not apply or close it.`, and `Cannot count usage: the scan skipped <n> file(s): ... Fix them and run --done again.`.
 
 `--done` also refuses while any removal is unanswered, and refuses (rather than passing) when the usage scan itself fails. Then it calls `applied`; the
 service's `409` text (still pending, already applied) is shown as the error. `reviewState` shows `waiting-for-figma` when every unapplied answer is `keep`.
 
 A decision is taken per component change, not per page; the usage list helps decide and then serves as the migration checklist.
+
+## Known limitations
+
+After a review is applied, the next sync of the same component starts a new cycle (`published (new cycle)`) and asks the reviewers again, including for
+properties they already answered `keep-deprecated`. Carrying a keep-deprecated answer (and its migrate-by date) forward across syncs is planned, not built.
 
 ## Usage scan and its limits
 
