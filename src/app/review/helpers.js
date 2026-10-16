@@ -4,8 +4,11 @@ const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 // The two iframe addresses for one affected page. `route.url` is a concrete path or null (a route with
 // parameters and no sample). `after` is null without a usable previewUrl.
+// Only a same-site path ("/reservations"): never "//host" or a scheme.
+export const safeRouteUrl = (url) => typeof url === "string" && /^\/(?!\/)/.test(url);
+
 export function frameUrls(route, previewUrl, origin) {
-  if (!route || route.url === null || route.url === undefined) return { now: null, after: null, sample: false };
+  if (!route || !safeRouteUrl(route.url)) return { now: null, after: null, sample: false };
   let after = null;
   try {
     if (previewUrl) after = new URL(route.url, new URL(previewUrl).origin).href;
@@ -13,10 +16,21 @@ export function frameUrls(route, previewUrl, origin) {
   return { now: `${origin.replace(/\/$/, "")}${route.url}`, after, sample: true };
 }
 
-// "N pages when this was published", only when it differs from today's count.
-export function publishedNote(currentCount, published) {
-  if (!published || typeof published.count !== "number" || published.count === currentCount) return null;
-  return `${plural(published.count, "page", "pages")} when this was published`;
+// "N pages when this was published" (pages = distinct routes), only when it differs from today's page count.
+export function publishedNote(currentPages, published) {
+  const n = published?.routes?.length;
+  if (typeof n !== "number" || n === currentPages) return null;
+  return `${plural(n, "page", "pages")} when this was published`;
+}
+
+// The service refuses everything but the password change while the account is locked.
+export const mustChangePassword = (r) => Boolean(r && r.status === 403 && r.json?.error === "Change your password first.");
+
+// One line of the decision history: the choice in plain English, with the migrate-by date when known.
+export function changeText(choice, labels, date) {
+  if (!choice) return "answer cleared";
+  const label = labels[choice] ?? choice;
+  return date ? `${label} (migrate by ${date})` : label;
 }
 
 export function validMigrateBy(value) {

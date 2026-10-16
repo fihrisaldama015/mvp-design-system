@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BookOpen, ExternalLink, ListChecks } from "lucide-react";
+import { BookOpen, ExternalLink, ListChecks, LogOut } from "lucide-react";
 import { Alert } from "components/alert";
 import { Badge } from "components/badge";
 import { Button } from "components/button";
@@ -13,7 +13,7 @@ import { StatCard } from "components/stat-card";
 import { previewFor } from "pages/review/previews";
 import PagePreview from "pages/review/PagePreview";
 import { call, changePassword, configured, login, sessionStore } from "app/review/serviceClient";
-import { missingDates, publishedNote } from "app/review/helpers";
+import { changeText, missingDates, mustChangePassword, publishedNote, safeRouteUrl } from "app/review/helpers";
 import { usageFor } from "../../scripts/figma/usageCore.mjs";
 import usage from "app/review/usage.json";
 
@@ -69,7 +69,7 @@ function Preview({ preview, prop }) {
 function AffectedPages({ doc, item }) {
   const found = useMemo(() => usageFor(usage, doc.jsxName, item), [doc.jsxName, item]);
   const [path, setPath] = useState(null);
-  const note = publishedNote(found.count, doc.usage?.byItem?.[item.id]);
+  const note = publishedNote(found.routes.length, doc.usage?.byItem?.[item.id]);
   const route = found.routes.find((r) => r.path === path) ?? found.routes[0];
   return (
     <div className="flex flex-col gap-2">
@@ -81,7 +81,7 @@ function AffectedPages({ doc, item }) {
             {found.routes.map((r) => (
               <li key={r.path}>
                 <code>{r.path}</code>{" "}
-                {r.url ? <a href={r.url} target="_blank" rel="noreferrer" className="text-primary underline">Open this page</a> : <span className="text-caption">(needs a sample path)</span>}
+                {safeRouteUrl(r.url) ? <a href={r.url} target="_blank" rel="noreferrer" className="text-primary underline">Open this page</a> : <span className="text-caption">(needs a sample path)</span>}
               </li>
             ))}
           </ul>
@@ -143,7 +143,9 @@ const changeLine = (i) => {
   return i.detail;
 };
 
-function ReviewCard({ doc, session, onChanged, onExpired }) {
+const CHOICE_LABELS = Object.fromEntries(CHOICES.map((c) => [c.value, c.label]));
+
+function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) {
   const [draft, setDraft] = useState(doc.answers);
   const [dates, setDates] = useState(doc.migrateBy ?? {});
   const [dateErrors, setDateErrors] = useState([]);
@@ -174,7 +176,12 @@ function ReviewCard({ doc, session, onChanged, onExpired }) {
     setBusy(false);
     if (!r) return setError("The server could not be reached. Try again.");
     if (r.status === 401) return onExpired(r.json.error);
-    if (r.status === 409) { onChanged(r.json.current); return setError(`${r.json.error} The page now shows the latest answers.`); }
+    if (mustChangePassword(r)) return onLocked();
+    if (r.status === 409) {
+      if (r.json.current) { onChanged(r.json.current); return setError(`${r.json.error} The page now shows the latest answers.`); }
+      onReload();
+      return setError(`${r.json.error ?? "Someone else changed this review."} The page is reloading the latest answers.`);
+    }
     if (!r.ok) return setError(r.json.error ?? `Error ${r.status}.`);
     onChanged(r.json);
   };
@@ -224,7 +231,7 @@ function ReviewCard({ doc, session, onChanged, onExpired }) {
                   {when(a.at)}, {a.by}: {a.action}
                   {a.changes && Object.keys(a.changes).length > 0 && (
                     <ul className="list-disc pl-5 text-caption">
-                      {Object.entries(a.changes).map(([id, c]) => <li key={id}><code>{id}</code>: {c ?? "answer cleared"}</li>)}
+                      {Object.entries(a.changes).map(([id, c]) => <li key={id}><code>{id}</code>: {changeText(c, CHOICE_LABELS)}</li>)}
                     </ul>
                   )}
                 </li>
@@ -259,7 +266,7 @@ function LoginForm({ onLogin, message, expired }) {
   );
 }
 
-function ChangePasswordForm({ session, onDone }) {
+function ChangePasswordForm({ session, onDone, onExpired }) {
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [again, setAgain] = useState("");
@@ -270,7 +277,10 @@ function ChangePasswordForm({ session, onDone }) {
   const save = async () => {
     setBusy(true);
     setError(null);
-    try { await changePassword(session, current, next); onDone(); } catch (e) { setError(e.message); }
+    try { await changePassword(session, current, next); onDone(); } catch (e) {
+      if (e.status === 401) onExpired(e.message);
+      else setError(e.message);
+    }
     setBusy(false);
   };
   return (
@@ -285,7 +295,15 @@ function ChangePasswordForm({ session, onDone }) {
   );
 }
 
-const HEADER = <PageHeader title="Design system review" description="Decide what happens to component features that the design no longer has." />;
+function Header({ session, onLogout, description }) {
+  return (
+    <PageHeader
+      title="Design system review"
+      description={description ?? "Decide what happens to component features that the design no longer has."}
+      actions={session && <Button kind="outlined" size="sm" prefixIcon={<LogOut />} onClick={onLogout}>Log out</Button>}
+    />
+  );
+}
 
 export default function Review() {
   const [session, setSession] = useState(() => sessionStore.get());
@@ -294,6 +312,14 @@ export default function Review() {
   const [problem, setProblem] = useState(null);
   const locked = Boolean(session?.user?.mustChangePassword);
 
+  const logout = () => { sessionStore.set(null); setSession(null); setExpired(null); setDocs(null); setProblem(null); };
+  // The account must set its own password before anything else works.
+  const lock = useCallback(() => setSession((s) => {
+    if (!s) return s;
+    const next = { ...s, user: { ...s.user, mustChangePassword: true } };
+    sessionStore.set(next);
+    return next;
+  }), []);
   const start = (next) => { sessionStore.set(next); setSession(next); setExpired(null); };
   // An ended session keeps the loaded reviews (and the unsaved choices in the cards) on the page.
   const expire = useCallback((message) => { sessionStore.set(null); setSession(null); setExpired(message || "Your session expired. Log in again."); }, []);
@@ -303,13 +329,15 @@ export default function Review() {
     const list = await call(s, "GET").catch(() => null);
     if (!list) return setProblem("The review service could not be reached.");
     if (list.status === 401) return expire(list.json.error);
+    if (mustChangePassword(list)) return lock();
     if (!list.ok) return setProblem(list.json.error ?? `Error ${list.status}.`);
     const full = await Promise.all(list.json.reviews.map((r) => call(s, "GET", `/${r.slug}`)));
+    if (full.some(mustChangePassword)) return lock();
     if (full.some((x) => x.status === 401)) return expire(full.find((x) => x.status === 401).json.error);
     const bad = full.find((x) => !x.ok);
     if (bad) return setProblem(bad.json.error ?? `Error ${bad.status}.`);
     setDocs(Object.fromEntries(full.map((x) => [x.json.component, x.json])));
-  }, [expire]);
+  }, [expire, lock]);
 
   useEffect(() => { if (configured && session && !locked) load(session); }, [session, locked, load]);
 
@@ -323,7 +351,7 @@ export default function Review() {
   if (!configured) {
     return (
       <div className="flex max-w-xl flex-col gap-4">
-        {HEADER}
+        <Header />
         <Alert status="warning" title="The review service is not set up">Set PUBLIC_REVIEW_SERVICE_URL and PUBLIC_REVIEW_PROJECT (see .env.example), then restart the app.</Alert>
       </div>
     );
@@ -332,8 +360,8 @@ export default function Review() {
   if (locked) {
     return (
       <div className="flex flex-col gap-4">
-        {HEADER}
-        <ChangePasswordForm session={session} onDone={() => start({ ...session, user: { ...session.user, mustChangePassword: false } })} />
+        <Header session={session} onLogout={logout} />
+        <ChangePasswordForm session={session} onExpired={expire} onDone={() => start({ ...session, user: { ...session.user, mustChangePassword: false } })} />
       </div>
     );
   }
@@ -341,7 +369,7 @@ export default function Review() {
   if (!session && !docs) {
     return (
       <div className="flex flex-col gap-4">
-        {HEADER}
+        <Header />
         <LoginForm onLogin={start} message={expired} expired={Boolean(expired)} />
       </div>
     );
@@ -349,8 +377,9 @@ export default function Review() {
 
   return (
     <div className="flex max-w-5xl flex-col gap-6">
-      <PageHeader
-        title="Design system review"
+      <Header
+        session={session}
+        onLogout={logout}
         description="The developers are matching the components in code to the Figma design. A few things exist in the code but not in Figma. Tell us what to do with each one; nothing changes in the code until a developer applies your answer."
       />
       {!session && <LoginForm onLogin={start} message={expired} expired />}
@@ -363,11 +392,11 @@ export default function Review() {
         </div>
       )}
       {docs && !list.length && <EmptyState title="Nothing to review" description="Reviews appear here when the developer syncs a component that already exists from Figma." />}
-      {open.map((d) => <ReviewCard key={d.component} doc={d} session={session} onChanged={replace} onExpired={expire} />)}
+      {open.map((d) => <ReviewCard key={d.component} doc={d} session={session} onChanged={replace} onExpired={expire} onLocked={lock} onReload={() => session && load(session)} />)}
       {applied.length > 0 && (
         <>
           <h2 className="typo-semi-bold-text-lg">Applied</h2>
-          {applied.map((d) => <ReviewCard key={d.component} doc={d} session={session} onChanged={replace} onExpired={expire} />)}
+          {applied.map((d) => <ReviewCard key={d.component} doc={d} session={session} onChanged={replace} onExpired={expire} onLocked={lock} onReload={() => session && load(session)} />)}
         </>
       )}
     </div>
