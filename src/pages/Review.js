@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BookOpen, ExternalLink, ListChecks, LogOut } from "lucide-react";
+import { BookOpen, ExternalLink, ListChecks, LogOut, RefreshCw } from "lucide-react";
 import { Alert } from "components/alert";
 import { Badge } from "components/badge";
 import { Button } from "components/button";
@@ -297,12 +297,17 @@ function ChangePasswordForm({ session, onDone, onExpired }) {
   );
 }
 
-function Header({ session, onLogout, description }) {
+function Header({ session, onLogout, onRefresh, description }) {
   return (
     <PageHeader
       title="Design system review"
       description={description ?? "Decide what happens to component features that the design no longer has."}
-      actions={session && <Button kind="outlined" size="sm" prefixIcon={<LogOut />} onClick={onLogout}>Log out</Button>}
+      actions={session && (
+        <div className="flex items-center gap-2">
+          {onRefresh && <Button kind="outlined" size="sm" prefixIcon={<RefreshCw />} onClick={onRefresh}>Refresh</Button>}
+          <Button kind="outlined" size="sm" prefixIcon={<LogOut />} onClick={onLogout}>Log out</Button>
+        </div>
+      )}
     />
   );
 }
@@ -343,6 +348,19 @@ export default function Review() {
   }, [expire, lock]);
 
   useEffect(() => { if (configured && session && !locked) load(session); }, [session, locked, load]);
+  // A review published while this tab was open (or in the background) shows up when the tab is looked at again.
+  // The cards keep their unsaved choices: they only reset when a review gets a new version.
+  useEffect(() => {
+    if (!configured || !session || locked) return undefined;
+    let last = Date.now();
+    const onVisible = () => {
+      if (document.visibilityState !== "visible" || Date.now() - last < 5000) return;
+      last = Date.now();
+      load(session);
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [session, locked, load]);
 
   const replace = (doc) => setDocs((d) => ({ ...d, [doc.component]: doc }));
 
@@ -383,6 +401,7 @@ export default function Review() {
       <Header
         session={session}
         onLogout={logout}
+        onRefresh={() => session && load(session)}
         description="The developers are matching the components in code to the Figma design. A few things exist in the code but not in Figma. Tell us what to do with each one; nothing changes in the code until a developer applies your answer."
       />
       {!session && <LoginForm onLogin={start} message={expired} expired />}
