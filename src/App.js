@@ -21,6 +21,8 @@ import NewReservation from "pages/NewReservation";
 export default function App() {
   return (
     <Routes>
+      {/* The review page is a tool for reviewers, not a screen of the app: no sidebar, full width. */}
+      <Route path="/review" element={<Review />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/equipment" element={<EquipmentList />} />
@@ -37,7 +39,6 @@ export default function App() {
         <Route path="/import" element={<ImportCsv />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/review" element={<Review />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

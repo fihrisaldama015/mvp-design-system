@@ -7,13 +7,23 @@ const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 // Only a same-site path ("/reservations"): never "//host" or a scheme.
 export const safeRouteUrl = (url) => typeof url === "string" && /^\/(?!\/)/.test(url);
 
+// The same address with ?embed=1: the app then shows the page without its sidebar and top bar (see app/Layout.js),
+// so a small frame is all content. "Open in a new tab" keeps the plain address (the whole app).
+export function embedUrl(url) {
+  if (!url) return null;
+  const u = new URL(url);
+  u.searchParams.set("embed", "1");
+  return u.href;
+}
+
 export function frameUrls(route, previewUrl, origin) {
   if (!route || !safeRouteUrl(route.url)) return { now: null, after: null, sample: false };
   let after = null;
   try {
     if (previewUrl) after = new URL(route.url, new URL(previewUrl).origin).href;
   } catch { /* not a url: show only the Now frame */ }
-  return { now: `${origin.replace(/\/$/, "")}${route.url}`, after, sample: true };
+  const now = new URL(route.url, origin.replace(/\/$/, "")).href;
+  return { now, after, nowEmbed: embedUrl(now), afterEmbed: embedUrl(after), sample: true };
 }
 
 // "N pages when this was published" (pages = distinct routes), only when it differs from today's page count.

@@ -18,6 +18,9 @@ const LINKS = [
 
 export default function Layout() {
   const [paletteOpen, setPaletteOpen] = useState(false);
+  // ?embed=1: the page alone, without the sidebar and top bar. The review page shows two of these side by side
+  // in small frames, where the navigation would take more room than the page. Kept while navigating inside the frame.
+  const [embedded] = useState(() => new URLSearchParams(window.location.search).get("embed") === "1");
 
   useEffect(() => {
     const onKey = (e) => {
@@ -29,6 +32,14 @@ export default function Layout() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  if (embedded) {
+    return (
+      <main className="min-h-screen bg-gray-100 p-6">
+        <Outlet />
+      </main>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-100">

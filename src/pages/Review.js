@@ -297,6 +297,15 @@ function ChangePasswordForm({ session, onDone, onExpired }) {
   );
 }
 
+// The page has no app sidebar (see App.js) and uses the full width; forms keep their own narrow width.
+function Shell({ children }) {
+  return (
+    <div className="min-h-screen bg-gray-100 p-page-padding">
+      <div className="flex w-full flex-col gap-6">{children}</div>
+    </div>
+  );
+}
+
 function Header({ session, onLogout, onRefresh, description }) {
   return (
     <PageHeader
@@ -371,33 +380,33 @@ export default function Review() {
 
   if (!configured) {
     return (
-      <div className="flex max-w-xl flex-col gap-4">
+      <Shell>
         <Header />
         <Alert status="warning" title="The review service is not set up">Set PUBLIC_REVIEW_SERVICE_URL and PUBLIC_REVIEW_PROJECT (see .env.example), then restart the app.</Alert>
-      </div>
+      </Shell>
     );
   }
 
   if (locked) {
     return (
-      <div className="flex flex-col gap-4">
+      <Shell>
         <Header session={session} onLogout={logout} />
         <ChangePasswordForm session={session} onExpired={expire} onDone={() => start({ ...session, user: { ...session.user, mustChangePassword: false } })} />
-      </div>
+      </Shell>
     );
   }
 
   if (!session && !docs) {
     return (
-      <div className="flex flex-col gap-4">
+      <Shell>
         <Header />
         <LoginForm onLogin={start} message={expired} expired={Boolean(expired)} />
-      </div>
+      </Shell>
     );
   }
 
   return (
-    <div className="flex max-w-5xl flex-col gap-6">
+    <Shell>
       <Header
         session={session}
         onLogout={logout}
@@ -421,6 +430,6 @@ export default function Review() {
           {applied.map((d) => <ReviewCard key={d.component} doc={d} session={session} onChanged={replace} onExpired={expire} onLocked={lock} onReload={() => session && load(session)} />)}
         </>
       )}
-    </div>
+    </Shell>
   );
 }

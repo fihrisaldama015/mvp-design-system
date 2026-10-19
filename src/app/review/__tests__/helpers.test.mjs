@@ -1,15 +1,26 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText } from "../helpers.js";
+import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText } from "../helpers.js";
 
 test("frame urls join the origin and the route", () => {
   const r = frameUrls({ url: "/reservations" }, "https://x-abc.vercel.app/", "http://localhost:5002");
-  assert.deepEqual(r, { now: "http://localhost:5002/reservations", after: "https://x-abc.vercel.app/reservations", sample: true });
+  assert.deepEqual(r, {
+    now: "http://localhost:5002/reservations", after: "https://x-abc.vercel.app/reservations",
+    nowEmbed: "http://localhost:5002/reservations?embed=1", afterEmbed: "https://x-abc.vercel.app/reservations?embed=1", sample: true,
+  });
+});
+
+test("embed urls add embed=1 and keep what is already in the query", () => {
+  assert.equal(embedUrl("http://o/a"), "http://o/a?embed=1");
+  assert.equal(embedUrl("http://o/a?x=1"), "http://o/a?x=1&embed=1");
+  assert.equal(embedUrl("http://o/a?embed=0"), "http://o/a?embed=1");
+  assert.equal(embedUrl(null), null);
 });
 
 test("no previewUrl gives only the Now frame", () => {
   const r = frameUrls({ url: "/reservations" }, null, "http://localhost:5002");
   assert.equal(r.after, null);
+  assert.equal(r.afterEmbed, null);
   assert.equal(r.now, "http://localhost:5002/reservations");
 });
 
