@@ -32,6 +32,7 @@ Run sheet demo: `docs/demo/review-service-demo.md` (di branch `demo/review-usage
 | D13 | Halaman `/review` dan skill Figma sync pindah ke **app dev** (mvp-dev berperan seperti swt-fe). Scan usage lalu memindai halaman yang sudah di-slice, yaitu halaman produksi. | Alat sisi dev; bukan bagian sandbox prototipe PM. |
 | D14 | **Demo hari ini memakai worktree vibe** (`mvp-design-system-review`, branch `demo/review-usage`). | Sudah disiapkan dan diuji. |
 | D15 | Halaman `/review` ada di luar `Layout` (tanpa sidebar, selebar layar). Frame preview memuat halaman dengan `?embed=1` (tanpa sidebar dan top bar). App yang di-preview harus mendukungnya. | Fokus ke konten dan usage komponen. |
+| D16 | **Developer melihat keputusan lewat skill (CLI) dan UI service.** CLI memanggil API service dengan token project: `reviewState` (daftar review yang belum applied, dan hook SessionStart menjalankannya sehingga Claude/dev melihatnya di awal sesi), `reviewSync --answers "<Nama>"` (jawaban, siapa, kapan, tanggal migrate-by), `--done` (gerbang). UI service (tab History) dan halaman `/review` untuk melihat riwayat. | Sudah ada; tidak ada alur terpisah. Celahnya ada di Q11. |
 
 ## 2. Pertanyaan yang masih perlu dijawab
 
@@ -47,6 +48,7 @@ Run sheet demo: `docs/demo/review-service-demo.md` (di branch `demo/review-usage
 | Q8 | swt-fe: nama build flag untuk `/review` (hanya stage), cara menanam URL service saat build (`REACT_APP_*` atau Vault), dan dukungan `?embed=1` di layout swt? | Perubahan kecil di swt-fe; perlu dipastikan polanya. |
 | Q9 | Field `hasPreviewBuilds` di project tidak dipakai dan tidak bisa diedit di UI. Dipakai (untuk menentukan jenis preview) atau dihapus? | Putuskan saat membangun frame Storybook. |
 | Q10 | "Now" untuk Storybook swt: Storybook Vercel production, atau perlu langkah Storybook di pipeline stage? | Selama pakai Vercel, "Now" = production Vercel; tidak perlu pipeline. |
+| Q11 | **Bagaimana developer tahu ada keputusan baru?** Sekarang hanya dengan memeriksa sendiri: hook SessionStart di Claude Code, `reviewState` di CLI, atau membuka UI. Tidak ada notifikasi. Dan UI service tidak punya daftar antrean: tab History adalah log kronologis, bukan daftar review dengan status. | Usulan: tab "Reviews" di UI service (daftar review, status pending/answered/applied, filter) dan notifikasi saat keputusan masuk (webhook ke Slack atau email). Putuskan mana yang perlu. |
 
 ## 3. Pekerjaan setelah demo (urutan yang disarankan)
 
@@ -58,7 +60,9 @@ Run sheet demo: `docs/demo/review-service-demo.md` (di branch `demo/review-usage
 6. **Spike override runtime** (D11/Q5) di mvp-dev: apakah "setelah" untuk properti dihapus bisa tanpa deployment kedua.
 7. **swt:** jawab Q2, Q3, Q8; siapkan build flag `/review`, `?embed=1`, origin stage di `allowedOrigins`; branch `design-review` dengan Preview Deployment di Vercel.
 8. **VPS (hanya setelah acc):** Dockerfile untuk `design-review-fe` dan `design-review-be`, pipeline, Mongo (database dan user sendiri), subdomain, reverse proxy, header iframe. Database mulai kosong.
-9. Perbaikan dari bagian 4, mulai dari F1 dan Q4.
+9. **Antrean keputusan untuk developer (Q11):** tab "Reviews" di UI service dan, kalau diputuskan, notifikasi saat keputusan masuk.
+10. **Opsi demo tanpa share screen:** push branch `demo/review-usage` (sebagai "Now") dan branch fitur (sebagai kandidat) ke GitHub, lalu dua Preview Deployment Vercel dari project app mvp, dengan env `PUBLIC_REVIEW_SERVICE_URL` dan `PUBLIC_REVIEW_PROJECT`, Deployment Protection preview dimatikan, dan kedua origin preview ditambahkan ke `allowedOrigins` project `mvp`. Itu model sesungguhnya (dua deployment dari satu repo), bukan `localhost`.
+11. Perbaikan dari bagian 4, mulai dari F1 dan Q4.
 
 ## 4. Temuan yang sengaja ditunda (dari review tiap task dan review akhir)
 
