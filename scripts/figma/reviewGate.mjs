@@ -30,3 +30,12 @@ export function doneGate(doc, usage) {
   }
   return { ok: true, burnDown };
 }
+
+// May `reviewSync --plan` print a plan? Not when the usage scan skipped files: the plan would hide uses. -> { ok: true } | { ok: false, reason }
+export function planGate(doc, usage) {
+  if (!doc.jsxName) return { ok: false, reason: "This review has no component name; publish it again." };
+  const warnings = usage?.warnings ?? [];
+  const removals = (doc.items ?? []).filter((i) => i.kind.startsWith("removed"));
+  if (removals.length && warnings.length) return { ok: false, reason: `Cannot count usage: the scan skipped ${warnings.length} file(s): ${warnings.join("; ")}. Fix them and run --plan again.` };
+  return { ok: true };
+}

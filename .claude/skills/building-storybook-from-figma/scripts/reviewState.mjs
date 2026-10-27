@@ -41,6 +41,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       : c.state === "waiting-for-figma"
       ? `  -> Waiting for Figma: the reviewers kept every removed property, so the design changes first. Do NOT apply. Tell the designer; after Figma is updated, re-read the node and run reviewSync again to publish a new review.`
       : c.kept.length ? `  -> Mixed answers: apply the non-keep answers (reviewSync.mjs --answers "${c.name}"), but --done will refuse until the kept ${c.kept.length === 1 ? "property is" : "properties are"} resolved in Figma (${c.kept.join(", ")}); the state stays answered-not-applied.`
-      : `  -> Get the answers: reviewSync.mjs --answers "${c.name}", then reviewSync.mjs --plan "${c.name}" (what to change; or run /apply-review). Re-read the node from Figma (readComponents.js with ARGS.IDS), reviewSync.mjs --verify on that file; unchanged: apply the answers, then reviewSync.mjs --done "${c.name}".`);
+      : `  -> Get the answers: reviewSync.mjs --answers "${c.name}", then reviewSync.mjs --plan "${c.name}" (what to change; or ask the developer to run /apply-review). Re-read the node from Figma (readComponents.js with ARGS.IDS), reviewSync.mjs --verify on that file; unchanged: apply the answers, then reviewSync.mjs --done "${c.name}".`);
   }
 }

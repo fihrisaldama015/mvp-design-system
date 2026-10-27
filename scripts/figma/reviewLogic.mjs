@@ -5,9 +5,16 @@ export const CHOICES = ["follow-figma", "keep-deprecated", "keep"];
 export const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 const removals = (d) => d.items.filter((i) => i.kind.startsWith("removed"));
-const unanswered = (d) => removals(d).filter((i) => !d.answers[i.id]).map((i) => i.id);
+const unanswered = (d) => removals(d).filter((i) => !d.answers?.[i.id]).map((i) => i.id);
 export const statusOf = (d) => (d.status === "applied" ? "applied" : unanswered(d).length ? "pending" : "answered");
-const decisions = (d) => (d.audit ?? []).filter((a) => a.action === "decided");
+// The audit entries of the current Figma cycle: after the last "published..." or "Figma changed..." entry ("republished" is not a marker).
+export function currentCycleAudit(audit) {
+  const a = Array.isArray(audit) ? audit : [];
+  let at = -1;
+  a.forEach((e, n) => { if (/^(published|Figma changed)/.test(String(e?.action ?? ""))) at = n; });
+  return a.slice(at + 1);
+}
+const decisions = (d) => currentCycleAudit(d.audit).filter((a) => a.action === "decided");
 const answeredIds = (d) => removals(d).filter((i) => d.answers?.[i.id]).map((i) => i.id);
 function lastDecision(d) {
   const a = decisions(d).at(-1);
@@ -22,7 +29,7 @@ function usageCount(d) {
   return by && typeof by === "object" ? removals(d).reduce((n, i) => n + (Number(by[i.id]?.count) || 0), 0) : null;
 }
 export const summary = (d) => ({ slug: slug(d.component), component: d.component, status: d.status, removals: removals(d).length, unanswered: unanswered(d).length, additions: d.items.length - removals(d).length, figmaNode: d.figmaNode, readAt: d.readAt, updatedAt: d.updatedAt, version: d.version,
-  jsxName: d.jsxName ?? null, answered: answeredIds(d).length, choices: [...new Set(answeredIds(d).map((id) => d.answers[id]))].sort(), lastDecision: lastDecision(d), deadline: deadline(d), usageCount: usageCount(d) });
+  jsxName: d.jsxName ?? null, answered: answeredIds(d).length, choices: [...new Set(answeredIds(d).map((id) => d.answers?.[id]))].sort(), lastDecision: lastDecision(d), deadline: deadline(d), usageCount: usageCount(d) });
 
 const fail = (status, error, extra = {}) => ({ ok: false, status, error, ...extra });
 const done = (doc, status = 200) => ({ ok: true, status, doc });

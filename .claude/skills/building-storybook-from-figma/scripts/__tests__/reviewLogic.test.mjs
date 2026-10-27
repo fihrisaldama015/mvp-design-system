@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { publish, decide, markApplied, summary } from "../reviewLogic.mjs";
+import { publish, decide, markApplied, summary, currentCycleAudit } from "../reviewLogic.mjs";
 
 const T = "2026-10-16T00:00:00.000Z";
 const body = { component: "Input - Single Select/Base", sourceHash: "h1", items: [{ id: "removed-prop:searchable", kind: "removed-prop", prop: "searchable" }],
@@ -132,4 +132,21 @@ test("summary of an old document has nulls and zeros, not errors", () => {
   assert.equal(s.jsxName, null); assert.equal(s.answered, 0); assert.deepEqual(s.choices, []);
   assert.equal(s.lastDecision, null); assert.equal(s.deadline, null); assert.equal(s.usageCount, null); assert.equal(s.unanswered, 1);
   assert.doesNotThrow(() => summary({ component: "X", status: "pending", items: [], answers: {} }));
+});
+
+test("currentCycleAudit keeps only entries after the last cycle marker; republished is not a marker", () => {
+  const a = (action) => ({ action });
+  assert.deepEqual(currentCycleAudit([a("published"), a("decided"), a("Figma changed: earlier answers dropped"), a("decided"), a("republished (same Figma state, answers kept)"), a("decided")]).map((x) => x.action), ["decided", "republished (same Figma state, answers kept)", "decided"]);
+  assert.deepEqual(currentCycleAudit([a("published"), a("decided"), a("applied"), a("published (new cycle)")]), []);
+  assert.deepEqual(currentCycleAudit([a("decided")]).length, 1);
+  assert.deepEqual(currentCycleAudit(undefined), []);
+});
+test("summary lastDecision only looks at the current cycle", () => {
+  let d = decide(fresh(), { answers: { [ID]: "follow-figma" }, version: 1, by: "Dina", note: "old" }, T).doc;
+  assert.equal(summary(d).lastDecision.by, "Dina");
+  d = publish(d, { ...body, sourceHash: "h2" }, T).doc;
+  assert.equal(summary(d).lastDecision, null);
+});
+test("a document without answers does not throw", () => {
+  assert.doesNotThrow(() => summary({ component: "X", status: "pending", items: [{ id: ID, kind: "removed-prop", prop: "a" }] }));
 });

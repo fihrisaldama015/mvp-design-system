@@ -20,7 +20,7 @@ import crypto from "node:crypto";
 import { reviewApi, reviewPage } from "./reviewClient.mjs";
 import { scanUsage } from "./usageScan.mjs";
 import { usageFor } from "./usageCore.mjs";
-import { doneGate } from "./reviewGate.mjs";
+import { doneGate, planGate } from "./reviewGate.mjs";
 import { buildPlan, planText } from "./reviewPlan.mjs";
 
 const [, , figmaFile, codeFile, ...rest] = process.argv;
@@ -44,7 +44,7 @@ if (["--verify", "--answers", "--plan", "--done"].includes(process.argv[2])) {
       console.log(`${fresh.name}: Figma node ${fresh.nodeId} CHANGED since the review (read ${entry.readAt}). Run reviewSync again and have the reviewers answer again; do not apply the old answers.`);
       process.exit(1);
     }
-    const name = process.argv[3];
+    const name = process.argv.slice(3).find((a) => !a.startsWith("--"));
     const d = await api.get(name);
     if (!d) fail(`No review "${name}" (${api.url}).`);
     if (mode === "--answers") {
@@ -55,9 +55,9 @@ if (["--verify", "--answers", "--plan", "--done"].includes(process.argv[2])) {
     try { usage = scan(); } catch (e) { fail(mode === "--plan" ? `Cannot count usage for "${name}": the usage scan failed (${e.message}).` : `Cannot check what still uses "${name}": the usage scan failed (${e.message}). Not marking it applied.`); }
     for (const w of usage.warnings ?? []) console.warn(`usage: skipped ${w}`);
     if (mode === "--plan") {
-      if (!d.jsxName) fail("This review has no component name; publish it again.");
+      const pg = planGate(d, usage);
+      if (!pg.ok) fail(pg.reason);
       const removalItems = (d.items ?? []).filter((i) => i.kind.startsWith("removed"));
-      if (removalItems.length && (usage.warnings ?? []).length) fail(`Cannot count usage: the scan skipped ${usage.warnings.length} file(s): ${usage.warnings.join("; ")}. Fix them and run --plan again.`);
       const byItem = Object.fromEntries(removalItems.map((i) => [i.id, usageFor(usage, d.jsxName, i)]));
       const plan = buildPlan(d, byItem);
       console.log(process.argv.includes("--json") ? JSON.stringify(plan, null, 2) : planText(plan));
