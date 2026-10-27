@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { publish, decide, markApplied } from "../reviewLogic.mjs";
+import { publish, decide, markApplied, summary } from "../reviewLogic.mjs";
 
 const T = "2026-10-16T00:00:00.000Z";
 const body = { component: "Input - Single Select/Base", sourceHash: "h1", items: [{ id: "removed-prop:searchable", kind: "removed-prop", prop: "searchable" }],
@@ -82,4 +82,54 @@ test("a date-only change is a change: new audit entry, version bump", () => {
   assert.deepEqual(r.doc.audit.at(-1).migrateBy, { [id]: "2027-01-15" });
   // same choice and same date is still a no-op
   assert.equal(decide(r.doc, { answers: { [id]: "keep-deprecated" }, migrateBy: { [id]: "2027-01-15" }, version: r.doc.version, by: "Dina" }, T).doc, r.doc);
+});
+
+const ID = "removed-prop:searchable";
+const fresh = () => publish(null, body, T).doc;
+const answer = (extra = {}) => decide(fresh(), { answers: { [ID]: "follow-figma" }, version: 1, by: "Dina", ...extra }, T);
+
+test("decide stores a trimmed note on the audit entry", () => {
+  const r = answer({ note: "  Search moves to the toolbar.  " });
+  assert.equal(r.ok, true);
+  const last = r.doc.audit.at(-1);
+  assert.equal(last.action, "decided");
+  assert.equal(last.note, "Search moves to the toolbar.");
+});
+test("a note over 500 characters is 400", () => {
+  const r = answer({ note: "x".repeat(501) });
+  assert.equal(r.status, 400); assert.equal(r.error, "note must be at most 500 characters.");
+  assert.equal(answer({ note: "x".repeat(500) }).ok, true);
+});
+test("a non-string note is 400", () => {
+  for (const n of [5, {}, ["a"], true]) { const r = answer({ note: n }); assert.equal(r.status, 400); assert.equal(r.error, "note must be text."); }
+});
+test("an empty note adds no note key", () => {
+  for (const n of [undefined, null, "", "   "]) assert.equal("note" in answer({ note: n }).doc.audit.at(-1), false);
+});
+test("a no-op decision ignores the note", () => {
+  const d = answer().doc;
+  const r = decide(d, { answers: { [ID]: "follow-figma" }, version: d.version, by: "Dina", note: "again" }, T);
+  assert.equal(r.doc, d); assert.equal(r.doc.audit.length, d.audit.length);
+});
+test("summary reports answered, choices, lastDecision with note, deadline and usageCount", () => {
+  const items = [{ id: "removed-prop:a", kind: "removed-prop", prop: "a" }, { id: "removed-option:b=x", kind: "removed-option", prop: "b", option: "x" }, { id: "removed-prop:c", kind: "removed-prop", prop: "c" }, { id: "added-prop:z", kind: "added-prop", prop: "z" }];
+  const b = { component: "Alert", jsxName: "Alert", sourceHash: "h", items, usage: { at: T, byItem: { "removed-prop:a": { count: 2 }, "removed-option:b=x": { count: 3 }, "removed-prop:c": { count: 1 } } } };
+  let d = publish(null, b, T).doc;
+  d = decide(d, { answers: { "removed-prop:a": "keep-deprecated", "removed-option:b=x": "follow-figma" }, migrateBy: { "removed-prop:a": "2026-12-01" }, version: 1, by: "Dina", note: "Soon" }, "2026-10-17T00:00:00.000Z").doc;
+  d = decide(d, { answers: { "removed-prop:c": "keep-deprecated" }, migrateBy: { "removed-prop:c": "2026-11-15" }, version: d.version, by: "Sam" }, "2026-10-18T00:00:00.000Z").doc;
+  const s = summary(d);
+  assert.equal(s.jsxName, "Alert"); assert.equal(s.answered, 3);
+  assert.deepEqual(s.choices, ["follow-figma", "keep-deprecated"]);
+  assert.deepEqual(s.lastDecision, { by: "Sam", at: "2026-10-18T00:00:00.000Z" });
+  assert.equal(s.deadline, "2026-11-15"); assert.equal(s.usageCount, 6);
+  assert.equal(s.removals, 3); assert.equal(s.additions, 1); assert.equal(s.slug, "alert");
+  const withNote = decide(d, { answers: { "removed-prop:c": "follow-figma" }, version: d.version, by: "Kim", note: "ok" }, "2026-10-19T00:00:00.000Z").doc;
+  assert.deepEqual(summary(withNote).lastDecision, { by: "Kim", at: "2026-10-19T00:00:00.000Z", note: "ok" });
+});
+test("summary of an old document has nulls and zeros, not errors", () => {
+  const old = { component: "Old", status: "pending", items: [{ id: ID, kind: "removed-prop", prop: "searchable" }], answers: {}, audit: [{ at: T, by: "tool", action: "published" }], version: 1 };
+  const s = summary(old);
+  assert.equal(s.jsxName, null); assert.equal(s.answered, 0); assert.deepEqual(s.choices, []);
+  assert.equal(s.lastDecision, null); assert.equal(s.deadline, null); assert.equal(s.usageCount, null); assert.equal(s.unanswered, 1);
+  assert.doesNotThrow(() => summary({ component: "X", status: "pending", items: [], answers: {} }));
 });

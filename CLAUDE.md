@@ -27,7 +27,7 @@ You do not remember the earlier session; the review store does. At the start of 
 (every removal was answered `keep`: the design changes first, do not apply) or **answered, not applied**
 (`reviewSync.mjs --answers "<Name>"`, re-read the node from Figma, `reviewSync.mjs --verify <file>`: unchanged -> apply, then
 `reviewSync.mjs --done "<Name>"`; changed -> run reviewSync again and have the reviewers answer again). If it says the store cannot be reached, do not
-assume nothing is pending. Never answer for the reviewers. Procedure: `reference/existing-component.md`; the store and its API: `reference/review-service.md`.
+assume nothing is pending. `reviewSync.mjs --plan "<Name>"` lists what to change for each answer, and `/apply-review` runs the whole flow. Never answer for the reviewers. Procedure: `reference/existing-component.md`; the store and its API: `reference/review-service.md`.
 
 ## Are the tokens still current?
 

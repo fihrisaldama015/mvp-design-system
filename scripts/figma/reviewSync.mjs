@@ -5,6 +5,7 @@
 // Where each removal is used comes from the usage scan (usageScan.mjs), not from grep.
 //   node scripts/figma/reviewSync.mjs --verify <components.Name.json>   after RE-READING the node from Figma: is it still what the review was made from?
 //   node scripts/figma/reviewSync.mjs --answers "<Name>"                 print the answers and who gave them
+//   node scripts/figma/reviewSync.mjs --plan "<Name>" [--json]          what to change in the code for each answer (scans the current code; refuses when the scan skipped files)
 //   node scripts/figma/reviewSync.mjs --done "<Name>"                    after applying the answers: checks the gates (usage, Waiting for Figma), then marks the review as applied
 // Usage: node scripts/figma/reviewSync.mjs <components.Name.json> <src/components/x/index.js>
 //          [--map '{"Dismiss":"onDismiss"}']   Figma property -> code prop (default: camelCase)
@@ -20,6 +21,7 @@ import { reviewApi, reviewPage } from "./reviewClient.mjs";
 import { scanUsage } from "./usageScan.mjs";
 import { usageFor } from "./usageCore.mjs";
 import { doneGate } from "./reviewGate.mjs";
+import { buildPlan, planText } from "./reviewPlan.mjs";
 
 const [, , figmaFile, codeFile, ...rest] = process.argv;
 const flag = (n, d) => (rest.includes(n) ? rest[rest.indexOf(n) + 1] : d);
@@ -30,7 +32,7 @@ const makeApi = () => { try { return reviewApi(); } catch (e) { return fail(e.me
 const readJson = (f) => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return {}; } };
 const scan = () => scanUsage(process.cwd(), { routeSamples: readJson("figma-tokens.config.json").review?.routeSamples ?? {} });
 
-if (["--verify", "--answers", "--done"].includes(process.argv[2])) {
+if (["--verify", "--answers", "--plan", "--done"].includes(process.argv[2])) {
   const api = makeApi();
   const mode = process.argv[2];
   try {
@@ -46,12 +48,21 @@ if (["--verify", "--answers", "--done"].includes(process.argv[2])) {
     const d = await api.get(name);
     if (!d) fail(`No review "${name}" (${api.url}).`);
     if (mode === "--answers") {
-      console.log(JSON.stringify({ component: d.component, status: d.status, version: d.version, sourceHash: d.sourceHash, answers: d.answers, migrateBy: d.migrateBy ?? {}, previewUrl: d.previewUrl ?? null, decidedBy: d.audit.filter((a) => a.action === "decided").map((a) => ({ by: a.by, at: a.at })) }, null, 2));
+      console.log(JSON.stringify({ component: d.component, status: d.status, version: d.version, sourceHash: d.sourceHash, answers: d.answers, migrateBy: d.migrateBy ?? {}, previewUrl: d.previewUrl ?? null, decidedBy: d.audit.filter((a) => a.action === "decided").map((a) => ({ by: a.by, at: a.at, ...(a.note ? { note: a.note } : {}) })) }, null, 2));
       process.exit(0);
     }
     let usage;
-    try { usage = scan(); } catch (e) { fail(`Cannot check what still uses "${name}": the usage scan failed (${e.message}). Not marking it applied.`); }
+    try { usage = scan(); } catch (e) { fail(mode === "--plan" ? `Cannot count usage for "${name}": the usage scan failed (${e.message}).` : `Cannot check what still uses "${name}": the usage scan failed (${e.message}). Not marking it applied.`); }
     for (const w of usage.warnings ?? []) console.warn(`usage: skipped ${w}`);
+    if (mode === "--plan") {
+      if (!d.jsxName) fail("This review has no component name; publish it again.");
+      const removalItems = (d.items ?? []).filter((i) => i.kind.startsWith("removed"));
+      if (removalItems.length && (usage.warnings ?? []).length) fail(`Cannot count usage: the scan skipped ${usage.warnings.length} file(s): ${usage.warnings.join("; ")}. Fix them and run --plan again.`);
+      const byItem = Object.fromEntries(removalItems.map((i) => [i.id, usageFor(usage, d.jsxName, i)]));
+      const plan = buildPlan(d, byItem);
+      console.log(process.argv.includes("--json") ? JSON.stringify(plan, null, 2) : planText(plan));
+      process.exit(0);
+    }
     const gate = doneGate(d, usage);
     if (!gate.ok) fail(gate.reason);
     await api.applied(name);

@@ -7,13 +7,29 @@ export const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").r
 const removals = (d) => d.items.filter((i) => i.kind.startsWith("removed"));
 const unanswered = (d) => removals(d).filter((i) => !d.answers[i.id]).map((i) => i.id);
 export const statusOf = (d) => (d.status === "applied" ? "applied" : unanswered(d).length ? "pending" : "answered");
-export const summary = (d) => ({ slug: slug(d.component), component: d.component, status: d.status, removals: removals(d).length, unanswered: unanswered(d).length, additions: d.items.length - removals(d).length, figmaNode: d.figmaNode, readAt: d.readAt, updatedAt: d.updatedAt, version: d.version });
+const decisions = (d) => (d.audit ?? []).filter((a) => a.action === "decided");
+const answeredIds = (d) => removals(d).filter((i) => d.answers?.[i.id]).map((i) => i.id);
+function lastDecision(d) {
+  const a = decisions(d).at(-1);
+  return a ? { by: a.by, at: a.at, ...(a.note ? { note: a.note } : {}) } : null;
+}
+function deadline(d) {
+  const dates = removals(d).filter((i) => d.answers?.[i.id] === "keep-deprecated").map((i) => d.migrateBy?.[i.id]).filter((x) => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x)).sort();
+  return dates[0] ?? null;
+}
+function usageCount(d) {
+  const by = d.usage?.byItem;
+  return by && typeof by === "object" ? removals(d).reduce((n, i) => n + (Number(by[i.id]?.count) || 0), 0) : null;
+}
+export const summary = (d) => ({ slug: slug(d.component), component: d.component, status: d.status, removals: removals(d).length, unanswered: unanswered(d).length, additions: d.items.length - removals(d).length, figmaNode: d.figmaNode, readAt: d.readAt, updatedAt: d.updatedAt, version: d.version,
+  jsxName: d.jsxName ?? null, answered: answeredIds(d).length, choices: [...new Set(answeredIds(d).map((id) => d.answers[id]))].sort(), lastDecision: lastDecision(d), deadline: deadline(d), usageCount: usageCount(d) });
 
 const fail = (status, error, extra = {}) => ({ ok: false, status, error, ...extra });
 const done = (doc, status = 200) => ({ ok: true, status, doc });
 const HISTORY_MAX = 50;
 const PREVIEW = /^(https:\/\/\S|http:\/\/localhost(?:[:/?#]|$))/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const NOTE_MAX = 500;
 
 export function publish(prev, body, at) {
   const b = body ?? {};
@@ -37,9 +53,12 @@ export function publish(prev, body, at) {
   return done(next, prev ? 200 : 201);
 }
 
-export function decide(doc, { answers, migrateBy = {}, version, by } = {}, at) {
+export function decide(doc, { answers, migrateBy = {}, version, by, note } = {}, at) {
   if (typeof by !== "string" || !by.trim() || by.length > 80) return fail(400, "reviewer (a name, up to 80 characters) is required.");
   if (!answers || typeof answers !== "object") return fail(400, "answers must be an object { itemId: choice }.");
+  if (note != null && typeof note !== "string") return fail(400, "note must be text.");
+  const text = (note ?? "").trim();
+  if (text.length > NOTE_MAX) return fail(400, `note must be at most ${NOTE_MAX} characters.`);
   if (doc.status === "applied") return fail(409, "This review was already applied.", { current: doc });
   if (version !== doc.version) return fail(409, "Someone else changed this review. Reload and check before saving.", { current: doc });
   const valid = new Set(removals(doc).map((i) => i.id));
@@ -63,7 +82,7 @@ export function decide(doc, { answers, migrateBy = {}, version, by } = {}, at) {
     }
   }
   if (!Object.keys(changes).length) return done(doc);
-  const next = { ...doc, answers: merged, migrateBy: dates, version: doc.version + 1, updatedAt: at, audit: [...doc.audit, { at, by: by.trim(), action: "decided", changes, ...(Object.keys(changedDates).length ? { migrateBy: changedDates } : {}) }] };
+  const next = { ...doc, answers: merged, migrateBy: dates, version: doc.version + 1, updatedAt: at, audit: [...doc.audit, { at, by: by.trim(), action: "decided", changes, ...(text ? { note: text } : {}), ...(Object.keys(changedDates).length ? { migrateBy: changedDates } : {}) }] };
   next.status = statusOf(next);
   return done(next);
 }

@@ -20,7 +20,7 @@ session for a reviewer). `:slug` is the lowercase, dash-separated component name
 | `GET /projects/:project/reviews` | session or project token | `{ reviews: [summary], counts }` |
 | `GET /projects/:project/reviews/:slug` | session or project token | the full document (404 when there is none) |
 | `PUT /projects/:project/reviews/:slug` | project token | publish (same `sourceHash` keeps the answers; `400` when the URL slug is not the slug of `component`, or `items` is malformed) |
-| `POST /projects/:project/reviews/:slug/decision` | session (reviewer of that project) | `{ answers, migrateBy, version }`; `by` comes from the session, not the body |
+| `POST /projects/:project/reviews/:slug/decision` | session (reviewer of that project) | `{ answers, migrateBy, version, note? }`; `by` comes from the session, not the body; `note` is an optional reason (text, trimmed, at most 500 characters: `400 "note must be text."` / `"note must be at most 500 characters."`) |
 | `POST /projects/:project/reviews/:slug/applied` | project token | marks the review applied (`409` while still pending or already applied) |
 
 Errors are `{ "error": "..." }` with `400 401 403 404 409 502 503`. The tool uses `list`, `get`, `publish`, `applied`; the decision route is for reviewers only
@@ -29,6 +29,10 @@ Errors are `{ "error": "..." }` with `400 401 403 404 409 502 503`. The tool use
 Document fields the skill reads or sends: `component, jsxName, storybookUrl, storyId, figmaFileKey, figmaNode, figmaPage, code, readAt, sourceHash, items`
 (each removal carries `callers` = number of uses and `callerRoutes` = their route paths), `usage` (`{ at, byItem: { itemId: { count, routes: [paths] } } }`,
 sent with every publish), `previewUrl` (from `--preview-url`), and from the service `status, version, answers, migrateBy, usageHistory, audit`.
+A decision that changes something appends a `decided` audit entry `{ at, by, action, changes, migrateBy?, note? }`; `note` is only there when the reviewer wrote one (a decision that changes nothing ignores it).
+The list `summary` has `slug, component, status, removals, unanswered, additions, figmaNode, readAt, updatedAt, version` and also (`null`/`0`/`[]` for a review published before they existed):
+`jsxName`, `answered` (removals with an answer), `choices` (sorted distinct answered choices), `lastDecision` (`{ by, at, note? }` or `null`), `deadline` (earliest `migrateBy` of a
+`keep-deprecated` answer, else `null`), `usageCount` (sum of `usage.byItem[id].count` over the removals, `null` when no usage was published).
 `usageHistory` is the burn-down: each publish appends `{ at, counts }` (last 50). `usage` never enters `sourceHash`, so a code change does not look like a Figma change.
 
 ## Config (per machine, never in git)
@@ -71,6 +75,15 @@ Refusal texts are exactly those of `reviewGate.mjs`: `"<prop>" still used in <n>
 service's `409` text (still pending, already applied) is shown as the error. `reviewState` shows `waiting-for-figma` when every unapplied answer is `keep`.
 
 A decision is taken per component change, not per page; the usage list helps decide and then serves as the migration checklist.
+
+## What to change: `--plan`
+
+`node scripts/figma/reviewSync.mjs --plan "<Name>" [--json]` reads the review (service or local store, like `--answers`), scans the CURRENT code and prints, per item in
+review order, what to do: `follow-figma` (edit the component file `code` in the dev repo, one edit per remaining use as `file:line`, `npm run usage` must report 0, then `--done`),
+`keep-deprecated` (mark `@deprecated` if it is not yet, the migrate-by date and the uses still to migrate), `keep` (a single wait: Figma changes first), `unanswered` (wait),
+`safe-addition` (see `existing-component.md`). A reviewer's `note` is shown under its step. `--json` prints `{ component, status, version, steps: [{ id, kind, choice, title, note?, actions: [{ type: "edit"|"run"|"wait", file?, line?, text }] }], finalChecks }`.
+Like `--done` it refuses (exit 2) when the usage scan skipped files, so a plan never hides a use. In the vibe repo a change to the component file is a dev-repo change: say so and stop.
+In Claude Code the slash command `/apply-review` runs the whole flow (`.claude/commands/apply-review.md`).
 
 ## Known limitations
 
