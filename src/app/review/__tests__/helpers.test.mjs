@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText } from "../helpers.js";
+import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText } from "../helpers.js";
 
 test("frame urls join the origin and the route", () => {
   const r = frameUrls({ url: "/reservations" }, "https://x-abc.vercel.app/", "http://localhost:5002");
@@ -75,4 +75,45 @@ test("migrate-by must be a real YYYY-MM-DD date", () => {
 test("missingDates lists keep-deprecated items without a valid date", () => {
   const changes = { a: "keep-deprecated", b: "keep-deprecated", c: "follow-figma", d: "keep-deprecated" };
   assert.deepEqual(missingDates(changes, { a: "2026-12-01", b: "", d: "bad" }), ["b", "d"]);
+});
+
+const today = new Date(2026, 9, 27, 15, 30);
+
+test("daysLeft counts whole days, negative when overdue, null when invalid", () => {
+  assert.equal(daysLeft("2026-10-31", today), 4);
+  assert.equal(daysLeft("2026-10-27", today), 0);
+  assert.equal(daysLeft("2026-10-28", today), 1);
+  assert.equal(daysLeft("2026-10-25", today), -2);
+  assert.equal(daysLeft("2026-02-30", today), null);
+  assert.equal(daysLeft("soon", today), null);
+  assert.equal(daysLeft(undefined, today), null);
+  assert.equal(daysLeft("", today), null);
+});
+
+test("deadline text says how many days are left, due today or overdue", () => {
+  assert.equal(deadlineText("2026-10-31", today), "Migrate by 2026-10-31 (4 days left)");
+  assert.equal(deadlineText("2026-10-28", today), "Migrate by 2026-10-28 (1 day left)");
+  assert.equal(deadlineText("2026-10-27", today), "Migrate by 2026-10-27 (due today)");
+  assert.equal(deadlineText("2026-10-26", today), "Migrate by 2026-10-26 (overdue by 1 day)");
+  assert.equal(deadlineText("2026-10-25", today), "Migrate by 2026-10-25 (overdue by 2 days)");
+  assert.equal(deadlineText("bad", today), "");
+  assert.equal(deadlineText(undefined, today), "");
+});
+
+test("usage trend lists the counts of one item in order, last 6", () => {
+  const h = [{ at: "a", counts: { x: 3, y: 9 } }, { at: "b", counts: { y: 1 } }, { at: "c", counts: { x: 3 } }, { at: "d", counts: { x: 1 } }];
+  assert.deepEqual(usageTrend(h, "x"), [3, 3, 1]);
+  assert.deepEqual(usageTrend(h, "z"), []);
+  const long = Array.from({ length: 9 }, (_, i) => ({ counts: { x: i } }));
+  assert.deepEqual(usageTrend(long, "x"), [3, 4, 5, 6, 7, 8]);
+  assert.deepEqual(usageTrend(undefined, "x"), []);
+  assert.deepEqual(usageTrend([null, { counts: null }, { counts: { x: "n" } }], "x"), []);
+});
+
+test("trend text needs two points", () => {
+  assert.equal(trendText([3, 3, 1]), "3 -> 3 -> 1");
+  assert.equal(trendText([2, 1]), "2 -> 1");
+  assert.equal(trendText([2]), "");
+  assert.equal(trendText([]), "");
+  assert.equal(trendText(undefined), "");
 });

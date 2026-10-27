@@ -53,3 +53,29 @@ export function validMigrateBy(value) {
 export function missingDates(changes, dates) {
   return Object.keys(changes).filter((id) => changes[id] === "keep-deprecated" && !validMigrateBy(dates[id]));
 }
+
+// Whole days from today (local date) to a YYYY-MM-DD date: negative when overdue, null when the date is missing or not real.
+export function daysLeft(dateString, today = new Date()) {
+  if (!validMigrateBy(dateString)) return null;
+  const [y, m, d] = dateString.split("-").map(Number);
+  return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000);
+}
+
+// "Migrate by 2026-10-31 (4 days left)"; "" when the date is missing or invalid.
+export function deadlineText(dateString, today = new Date()) {
+  const n = daysLeft(dateString, today);
+  if (n === null) return "";
+  const state = n === 0 ? "due today" : n > 0 ? `${plural(n, "day", "days")} left` : `overdue by ${plural(-n, "day", "days")}`;
+  return `Migrate by ${dateString} (${state})`;
+}
+
+// The counts of one item over the published usage history (each entry { at, counts }), oldest first, last 6.
+export function usageTrend(usageHistory, itemId) {
+  if (!Array.isArray(usageHistory)) return [];
+  const counts = usageHistory.map((h) => h?.counts?.[itemId]).filter((c) => typeof c === "number" && Number.isFinite(c));
+  return counts.slice(-6);
+}
+
+export const trendText = (counts) => (Array.isArray(counts) && counts.length >= 2 ? counts.join(" -> ") : "");
+
+export const NOTE_MAX = 500;

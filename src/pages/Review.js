@@ -5,15 +5,17 @@ import { Badge } from "components/badge";
 import { Button } from "components/button";
 import { Card } from "components/card";
 import { EmptyState } from "components/empty-state";
+import { Field } from "components/field";
 import { Input } from "components/input";
 import { PageHeader } from "components/page-header";
 import { ProgressBar } from "components/progress-bar";
 import { Select } from "components/select";
 import { StatCard } from "components/stat-card";
+import { Textarea } from "components/textarea";
 import { previewFor } from "pages/review/previews";
 import PagePreview from "pages/review/PagePreview";
 import { call, changePassword, configured, login, sessionStore } from "app/review/serviceClient";
-import { changeText, missingDates, mustChangePassword, publishedNote, safeRouteUrl } from "app/review/helpers";
+import { NOTE_MAX, changeText, deadlineText, daysLeft, missingDates, mustChangePassword, publishedNote, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
 import { usageFor } from "../../scripts/figma/usageCore.mjs";
 import usage from "app/review/usage.json";
 
@@ -96,7 +98,28 @@ function AffectedPages({ doc, item }) {
   );
 }
 
-function Decision({ doc, item, choice, saved, onChoice, readOnly, date, onDate, dateError }) {
+// Where the property stands now: uses in this build next to the count at the last sync, the trend, and the deadline
+// of a saved "keep it, but mark it as old" answer. Each part is left out when its data is missing.
+function Standing({ doc, item, saved, today }) {
+  const found = useMemo(() => usageFor(usage, doc.jsxName, item), [doc.jsxName, item]);
+  const atSync = doc.usage?.byItem?.[item.id]?.count;
+  const trend = trendText(usageTrend(doc.usageHistory, item.id));
+  const dateText = saved === "keep-deprecated" ? deadlineText(doc.migrateBy?.[item.id], today) : "";
+  const overdue = dateText && daysLeft(doc.migrateBy[item.id], today) < 0;
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="typo-medium-text-sm">Where it stands</p>
+      <ul className="flex flex-col gap-1 typo-regular-text-sm">
+        <li>In this build: {plural(found.count, "use", "uses")} on {plural(found.routes.length, "page", "pages")}</li>
+        {typeof atSync === "number" && <li>At the last sync: {plural(atSync, "use", "uses")}</li>}
+        {trend && <li>Over the syncs: {trend}</li>}
+        {dateText && <li className="flex flex-wrap items-center gap-2">{dateText}{overdue && <Badge tone="danger">Overdue</Badge>}</li>}
+      </ul>
+    </div>
+  );
+}
+
+function Decision({ doc, item, choice, saved, onChoice, readOnly, date, onDate, dateError, today }) {
   const preview = useMemo(() => previewFor(doc, item), [doc, item]);
   const story = storybookLink(doc);
   const chosen = CHOICES.find((c) => c.value === choice);
@@ -122,6 +145,7 @@ function Decision({ doc, item, choice, saved, onChoice, readOnly, date, onDate, 
           {story ? <a href={story} target="_blank" rel="noreferrer" className="text-primary underline">Try the component in Storybook</a> : "Ask the developer to show it to you."}
         </p>
       )}
+      <Standing doc={doc} item={item} saved={saved} today={today} />
       <AffectedPages doc={doc} item={item} />
       <div className="flex flex-col gap-2">
         <div className="w-96"><Select label="What should we do with it?" options={CHOICES} value={choice ?? ""} placeholder="Choose what to do" disabled={readOnly} onChange={onChoice} /></div>
@@ -151,6 +175,8 @@ function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) 
   const [dateErrors, setDateErrors] = useState([]);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
+  const today = useMemo(() => new Date(), []);
   // Only a new version of the review resets the choices: a reload after logging in again keeps them.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { setDraft(doc.answers); setDates(doc.migrateBy ?? {}); setDateErrors([]); }, [doc.version]);
@@ -172,7 +198,7 @@ function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) 
     const migrateBy = Object.fromEntries(Object.keys(changes).filter((id) => changes[id] === "keep-deprecated").map((id) => [id, dates[id]]));
     setBusy(true);
     setError(null);
-    const r = await call(session, "POST", `/${slugOf(doc.component)}/decision`, { answers: changes, migrateBy, version: doc.version }).catch(() => null);
+    const r = await call(session, "POST", `/${slugOf(doc.component)}/decision`, { answers: changes, migrateBy, version: doc.version, ...(note.trim() ? { note: note.trim() } : {}) }).catch(() => null);
     setBusy(false);
     if (!r) return setError("The server could not be reached. Try again.");
     if (r.status === 401) return onExpired(r.json.error);
@@ -183,6 +209,7 @@ function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) 
       return setError(`${r.json.error ?? "Someone else changed this review."} The page is reloading the latest answers.`);
     }
     if (!r.ok) return setError(r.json.error ?? `Error ${r.status}.`);
+    setNote("");
     onChanged(r.json);
   };
 
@@ -202,7 +229,7 @@ function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) 
         {needs.length > 0 && !applied && <ProgressBar value={Math.round((answered / needs.length) * 100)} tone={answered === needs.length ? "success" : "warning"} label={`Your decisions: ${answered} of ${needs.length}`} />}
         {needs.length > 0 && (
           <ul className="flex flex-col gap-4">
-            {needs.map((i) => <Decision key={i.id} doc={doc} item={i} choice={draft[i.id]} saved={doc.answers[i.id]} readOnly={applied} onChoice={(v) => setDraft((d) => ({ ...d, [i.id]: v }))} date={dates[i.id]} onDate={(v) => setDates((d) => ({ ...d, [i.id]: v }))} dateError={dateErrors.includes(i.id)} />)}
+            {needs.map((i) => <Decision key={i.id} doc={doc} item={i} choice={draft[i.id]} saved={doc.answers[i.id]} readOnly={applied} onChoice={(v) => setDraft((d) => ({ ...d, [i.id]: v }))} date={dates[i.id]} onDate={(v) => setDates((d) => ({ ...d, [i.id]: v }))} dateError={dateErrors.includes(i.id)} today={today} />)}
           </ul>
         )}
         {safe.length > 0 && (
@@ -211,6 +238,13 @@ function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) 
             <p className="mt-2 text-caption typo-regular-text-sm">These come straight from the Figma design and are added to the component automatically.</p>
             <ul className="mt-2 flex list-disc flex-col gap-1 pl-5 typo-regular-text-sm">{safe.map((i) => <li key={i.id}>{changeLine(i)}</li>)}</ul>
           </details>
+        )}
+        {!applied && needs.length > 0 && (
+          <div className="w-96">
+            <Field label="Why? (optional)" hint={`${note.length} of ${NOTE_MAX} characters. Shown to the developer and kept in the history.`}>
+              <Textarea rows={3} maxLength={NOTE_MAX} value={note} onChange={(e) => setNote(e.target.value)} />
+            </Field>
+          </div>
         )}
         {!applied && needs.length > 0 && (
           <div className="flex flex-wrap items-center gap-3">
@@ -234,6 +268,7 @@ function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) 
                       {Object.entries(a.changes).map(([id, c]) => <li key={id}><code>{id}</code>: {changeText(c, CHOICE_LABELS, a.migrateBy?.[id])}</li>)}
                     </ul>
                   )}
+                  {typeof a.note === "string" && a.note && <p className="mt-1 break-words border-l-2 border-default pl-3 text-caption">&ldquo;{a.note}&rdquo;</p>}
                 </li>
               ))}
             </ul>
