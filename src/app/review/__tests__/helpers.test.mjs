@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText, eventLabel, timelineSteps, defaultRoute, previewProps } from "../helpers.js";
+import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText, eventLabel, timelineSteps, defaultRoute, previewProps, previewNotes } from "../helpers.js";
 
 test("frame urls join the origin and the route", () => {
   const r = frameUrls({ url: "/reservations" }, "https://x-abc.vercel.app/", "http://localhost:5002");
@@ -241,4 +241,9 @@ test("previewProps returns null for other kinds and malformed input", () => {
   assert.equal(previewProps(undefined, undefined), null);
   assert.equal(previewProps("x", 3), null);
   assert.equal(previewProps({ examples: { a: null } }, { kind: "removed-prop", prop: "a" }), null);
+});
+
+test("previewNotes words a removed option and keeps the boolean wording for a removed prop", () => {
+  assert.deepEqual(previewNotes("kind", "outlined"), { without: 'How it looks in Figma, which no longer has "outlined"', with: 'The current code, with kind set to "outlined"' });
+  assert.deepEqual(previewNotes("action"), { without: "How the component looks in Figma", with: "The current code, with action on" });
 });

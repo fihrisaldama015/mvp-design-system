@@ -150,3 +150,9 @@ export function previewProps(spec, item) {
   if (item.kind === "removed-option") return from(spec.examples?.[`${item.prop}=${item.option}`]);
   return null;
 }
+
+// The captions under the two preview panels. A removed option names the option; a removed prop keeps the on/off wording.
+export function previewNotes(prop, option) {
+  if (option) return { without: `How it looks in Figma, which no longer has "${option}"`, with: `The current code, with ${prop} set to "${option}"` };
+  return { without: "How the component looks in Figma", with: `The current code, with ${prop} on` };
+}

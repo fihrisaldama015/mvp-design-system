@@ -16,7 +16,7 @@ import { Textarea } from "components/textarea";
 import { previewFor } from "pages/review/previews";
 import PagePreview from "pages/review/PagePreview";
 import { call, changePassword, configured, login, sessionStore } from "app/review/serviceClient";
-import { NOTE_MAX, changeText, defaultRoute, deadlineText, eventLabel, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
+import { NOTE_MAX, changeText, defaultRoute, deadlineText, eventLabel, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, previewNotes, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
 import { usageFor } from "../../scripts/figma/usageCore.mjs";
 import usage from "app/review/usage.json";
 
@@ -46,7 +46,8 @@ function Live({ spec, props }) {
   return <Component {...spec.sample} {...props} {...(spec.controlled ? { value, onChange: setValue } : {})} />;
 }
 
-function Preview({ preview, prop }) {
+function Preview({ preview, prop, option }) {
+  const notes = previewNotes(prop, option);
   const panel = (title, note, props) => (
     <div className="flex min-h-48 flex-1 flex-col gap-3 rounded-default border border-default bg-surface p-4">
       <div>
@@ -60,8 +61,8 @@ function Preview({ preview, prop }) {
     <div className="flex flex-col gap-2">
       <p className="typo-medium-text-sm">See the difference</p>
       <div className="flex flex-col gap-3 md:flex-row">
-        {panel("Without it", "How the component looks in Figma", preview.without)}
-        {panel("With it", `The current code, with ${prop} on`, preview.with)}
+        {panel("Without it", notes.without, preview.without)}
+        {panel("With it", notes.with, preview.with)}
       </div>
       {(preview.hint ?? preview.spec.hint) && <p className="text-caption typo-regular-text-sm">{preview.hint ?? preview.spec.hint}</p>}
     </div>
@@ -139,7 +140,7 @@ function Decision({ doc, item, choice, saved, onChoice, readOnly, date, onDate, 
           {where ? `Used in ${where}.` : "Nothing in the app asks for it explicitly."}
         </p>
       </div>
-      {preview && <Preview preview={preview} prop={item.prop} />}
+      {preview && <Preview preview={preview} prop={item.prop} option={item.option} />}
       {!preview && (
         <p className="text-caption typo-regular-text-sm">
           There is no live preview for this one yet.{" "}
