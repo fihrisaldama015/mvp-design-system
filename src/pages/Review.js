@@ -210,6 +210,15 @@ function ReviewCard({ doc, index, total, open, onToggle, session, onChanged, onE
   const answered = needs.filter((i) => draft[i.id] ?? doc.answers[i.id]).length;
   const changed = (i) => draft[i.id] && (draft[i.id] !== doc.answers[i.id] || (draft[i.id] === "keep-deprecated" && (dates[i.id] ?? "") !== (doc.migrateBy?.[i.id] ?? "")));
   const changes = Object.fromEntries(needs.filter(changed).map((i) => [i.id, draft[i.id]]));
+  const unsaved = Object.keys(changes).length;
+  const savedCount = needs.filter((i) => doc.answers[i.id]).length; // what the service has, not what is picked on this page
+  // A reload or closing the tab would drop the picked answers: let the browser ask first.
+  useEffect(() => {
+    if (!unsaved) return undefined;
+    const warn = (e) => { e.preventDefault(); e.returnValue = ""; };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [unsaved]);
   const details = useMemo(() => decisionDetails(doc.audit, doc.answers, doc.migrateBy), [doc.audit, doc.answers, doc.migrateBy]);
   const decided = Object.values(details);
   const decidedBy = decided.find((d) => d.by)?.by;
@@ -248,6 +257,7 @@ function ReviewCard({ doc, index, total, open, onToggle, session, onChanged, onE
       action={
         <div className="flex items-center gap-3">
           <Badge tone={STATUS[doc.status].tone}>{STATUS[doc.status].label}</Badge>
+          {unsaved > 0 && <Badge tone="warning" dot>{unsaved} not saved</Badge>}
           {open && story && <Button as="a" href={story} target="_blank" rel="noreferrer" kind="outlined" size="sm" prefixIcon={<BookOpen />}>Open in Storybook</Button>}
           {open && link && <Button as="a" href={link} target="_blank" rel="noreferrer" kind="outlined" size="sm" suffixIcon={<ExternalLink />}>Open in Figma</Button>}
           <Button kind="text" size="sm" suffixIcon={open ? <ChevronUp /> : <ChevronDown />} onClick={onToggle}>{open ? "Hide" : "Show"}</Button>
@@ -256,7 +266,7 @@ function ReviewCard({ doc, index, total, open, onToggle, session, onChanged, onE
     >
       {!open ? (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 typo-regular-text-sm">
-          {needs.length > 0 && !applied && <span>Decisions: {answered} of {needs.length}</span>}
+          {needs.length > 0 && !applied && <span>Decisions saved: {savedCount} of {needs.length}</span>}
           {decided.length > 0 && <span className="flex items-center gap-1 text-caption"><CheckCircle2 size={14} className="text-success" />{decisionSummary}</span>}
           {needs.length === 0 && decided.length === 0 && <span className="text-caption">{timeline.details[timeline.current === 3 ? 2 : timeline.current === 2 ? 1 : 0]}</span>}
         </div>
@@ -268,7 +278,7 @@ function ReviewCard({ doc, index, total, open, onToggle, session, onChanged, onE
             {timeline.details.filter(Boolean).map((d) => <li key={d}>{d}</li>)}
           </ul>
         </div>
-        {needs.length > 0 && !applied && <ProgressBar value={Math.round((answered / needs.length) * 100)} tone={answered === needs.length ? "success" : "warning"} label={`Your decisions: ${answered} of ${needs.length}`} />}
+        {needs.length > 0 && !applied && <ProgressBar value={Math.round((savedCount / needs.length) * 100)} tone={savedCount === needs.length ? "success" : "warning"} label={`Decisions saved: ${savedCount} of ${needs.length}`} />}
         {needs.length > 0 && (
           <ul className="flex flex-col gap-4">
             {needs.map((i) => <Decision key={i.id} doc={doc} item={i} choice={draft[i.id]} saved={doc.answers[i.id]} detail={details[i.id]} readOnly={applied} onChoice={(v) => setDraft((d) => ({ ...d, [i.id]: v }))} date={dates[i.id]} onDate={(v) => setDates((d) => ({ ...d, [i.id]: v }))} dateError={dateErrors.includes(i.id)} today={today} />)}
