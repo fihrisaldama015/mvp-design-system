@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BookOpen, ExternalLink, ListChecks, LogOut, RefreshCw } from "lucide-react";
+import { BadgeCheck, BookOpen, CheckCircle2, ChevronDown, ChevronUp, ExternalLink, Info, ListChecks, LogOut, RefreshCw, RotateCw, Upload } from "lucide-react";
 import { Alert } from "components/alert";
 import { Badge } from "components/badge";
 import { Button } from "components/button";
@@ -16,7 +16,7 @@ import { Textarea } from "components/textarea";
 import { previewFor } from "pages/review/previews";
 import PagePreview from "pages/review/PagePreview";
 import { call, changePassword, configured, login, sessionStore } from "app/review/serviceClient";
-import { NOTE_MAX, changeText, defaultRoute, deadlineText, eventLabel, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, previewNotes, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
+import { NOTE_MAX, activityKind, actorLabel, changeText, decisionDetails, defaultRoute, deadlineText, eventLabel, itemName, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, previewNotes, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
 import { usageFor } from "../../scripts/figma/usageCore.mjs";
 import usage from "app/review/usage.json";
 
@@ -121,10 +121,11 @@ function Standing({ doc, item, saved, today }) {
   );
 }
 
-function Decision({ doc, item, choice, saved, onChoice, readOnly, date, onDate, dateError, today }) {
+function Decision({ doc, item, choice, saved, detail, onChoice, readOnly, date, onDate, dateError, today }) {
   const preview = useMemo(() => previewFor(doc, item), [doc, item]);
   const story = storybookLink(doc);
   const chosen = CHOICES.find((c) => c.value === choice);
+  const decision = CHOICES.find((c) => c.value === saved);
   const where = item.callers ? plural(item.callers, "place", "places") + " in the app" : "";
   return (
     <li className="flex flex-col gap-4 rounded-default border border-default bg-surface p-5">
@@ -140,6 +141,15 @@ function Decision({ doc, item, choice, saved, onChoice, readOnly, date, onDate, 
           {where ? `Used in ${where}.` : "Nothing in the app asks for it explicitly."}
         </p>
       </div>
+      {saved && (
+        <div className="flex flex-col gap-1 rounded-default border border-success p-3">
+          <p className="flex items-center gap-2 typo-semi-bold-text-sm"><CheckCircle2 size={16} className="shrink-0 text-success" />Decision: {decision?.label ?? saved}</p>
+          {detail && (detail.by || detail.at || detail.migrateBy) && (
+            <p className="text-caption typo-regular-text-sm">{[detail.by && `by ${detail.by}`, when(detail.at), detail.migrateBy && `migrate by ${detail.migrateBy}`].filter(Boolean).join(" · ")}</p>
+          )}
+          {detail?.note && <p className="break-words border-l-2 border-default pl-3 typo-regular-text-sm">&ldquo;{detail.note}&rdquo;</p>}
+        </div>
+      )}
       {preview && <Preview preview={preview} prop={item.prop} option={item.option} />}
       {!preview && (
         <p className="text-caption typo-regular-text-sm">
@@ -171,7 +181,18 @@ const changeLine = (i) => {
 
 const CHOICE_LABELS = Object.fromEntries(CHOICES.map((c) => [c.value, c.label]));
 
-function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) {
+// The left edge says where a review stands at a glance; the icons give each kind of event in the activity log its own look.
+const ACCENT = { pending: "border-warning", answered: "border-info", applied: "border-success" };
+const ACTIVITY = {
+  published: { Icon: Upload, tone: "text-caption" },
+  reopened: { Icon: RefreshCw, tone: "text-warning" },
+  synced: { Icon: RotateCw, tone: "text-caption" },
+  decided: { Icon: CheckCircle2, tone: "text-success" },
+  applied: { Icon: BadgeCheck, tone: "text-primary" },
+  other: { Icon: Info, tone: "text-caption" },
+};
+
+function ReviewCard({ doc, index, total, open, onToggle, session, onChanged, onExpired, onLocked, onReload }) {
   const [draft, setDraft] = useState(doc.answers);
   const [dates, setDates] = useState(doc.migrateBy ?? {});
   const [dateErrors, setDateErrors] = useState([]);
@@ -189,7 +210,10 @@ function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) 
   const answered = needs.filter((i) => draft[i.id] ?? doc.answers[i.id]).length;
   const changed = (i) => draft[i.id] && (draft[i.id] !== doc.answers[i.id] || (draft[i.id] === "keep-deprecated" && (dates[i.id] ?? "") !== (doc.migrateBy?.[i.id] ?? "")));
   const changes = Object.fromEntries(needs.filter(changed).map((i) => [i.id, draft[i.id]]));
-  const lastDecision = [...doc.audit].reverse().find((a) => a.action === "decided");
+  const details = useMemo(() => decisionDetails(doc.audit, doc.answers, doc.migrateBy), [doc.audit, doc.answers, doc.migrateBy]);
+  const decided = Object.values(details);
+  const decidedBy = decided.find((d) => d.by)?.by;
+  const decisionSummary = [...new Set(decided.map((d) => CHOICE_LABELS[d.choice] ?? d.choice))].join(", ") + (decidedBy ? ` · by ${decidedBy}` : "");
   const timeline = timelineSteps(doc.audit, doc.status);
   const link = figmaUrl(doc);
   const story = storybookLink(doc);
@@ -217,17 +241,26 @@ function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) 
   };
 
   return (
+    <div className={`rounded-default border-l-4 ${ACCENT[doc.status] ?? "border-default"}`}>
     <Card
       title={doc.component}
-      description={doc.figmaPage ? `Figma page "${doc.figmaPage}"` : "Figma component"}
+      description={`Review ${index} of ${total} · ${doc.figmaPage ? `Figma page "${doc.figmaPage}"` : "Figma component"}`}
       action={
         <div className="flex items-center gap-3">
           <Badge tone={STATUS[doc.status].tone}>{STATUS[doc.status].label}</Badge>
-          {story && <Button as="a" href={story} target="_blank" rel="noreferrer" kind="outlined" size="sm" prefixIcon={<BookOpen />}>Open in Storybook</Button>}
-          {link && <Button as="a" href={link} target="_blank" rel="noreferrer" kind="outlined" size="sm" suffixIcon={<ExternalLink />}>Open in Figma</Button>}
+          {open && story && <Button as="a" href={story} target="_blank" rel="noreferrer" kind="outlined" size="sm" prefixIcon={<BookOpen />}>Open in Storybook</Button>}
+          {open && link && <Button as="a" href={link} target="_blank" rel="noreferrer" kind="outlined" size="sm" suffixIcon={<ExternalLink />}>Open in Figma</Button>}
+          <Button kind="text" size="sm" suffixIcon={open ? <ChevronUp /> : <ChevronDown />} onClick={onToggle}>{open ? "Hide" : "Show"}</Button>
         </div>
       }
     >
+      {!open ? (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 typo-regular-text-sm">
+          {needs.length > 0 && !applied && <span>Decisions: {answered} of {needs.length}</span>}
+          {decided.length > 0 && <span className="flex items-center gap-1 text-caption"><CheckCircle2 size={14} className="text-success" />{decisionSummary}</span>}
+          {needs.length === 0 && decided.length === 0 && <span className="text-caption">{timeline.details[timeline.current === 3 ? 2 : timeline.current === 2 ? 1 : 0]}</span>}
+        </div>
+      ) : (
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <Stepper steps={timeline.labels} current={timeline.current} />
@@ -238,7 +271,7 @@ function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) 
         {needs.length > 0 && !applied && <ProgressBar value={Math.round((answered / needs.length) * 100)} tone={answered === needs.length ? "success" : "warning"} label={`Your decisions: ${answered} of ${needs.length}`} />}
         {needs.length > 0 && (
           <ul className="flex flex-col gap-4">
-            {needs.map((i) => <Decision key={i.id} doc={doc} item={i} choice={draft[i.id]} saved={doc.answers[i.id]} readOnly={applied} onChoice={(v) => setDraft((d) => ({ ...d, [i.id]: v }))} date={dates[i.id]} onDate={(v) => setDates((d) => ({ ...d, [i.id]: v }))} dateError={dateErrors.includes(i.id)} today={today} />)}
+            {needs.map((i) => <Decision key={i.id} doc={doc} item={i} choice={draft[i.id]} saved={doc.answers[i.id]} detail={details[i.id]} readOnly={applied} onChoice={(v) => setDraft((d) => ({ ...d, [i.id]: v }))} date={dates[i.id]} onDate={(v) => setDates((d) => ({ ...d, [i.id]: v }))} dateError={dateErrors.includes(i.id)} today={today} />)}
           </ul>
         )}
         {safe.length > 0 && (
@@ -263,28 +296,39 @@ function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) 
             </span>
           </div>
         )}
-        {lastDecision && <p className="text-caption typo-regular-text-sm">Last answer by {lastDecision.by}, {when(lastDecision.at)}. Nothing changes in the code until the developer applies it.</p>}
+        {doc.status === "answered" && <p className="text-caption typo-regular-text-sm">Nothing changes in the code until the developer applies it.</p>}
         {error && <Alert status="danger" title="Not saved">{error}</Alert>}
         {doc.audit.length > 0 && (
           <details className="rounded-default border border-default p-4">
-            <summary className="cursor-pointer typo-medium-text-sm">Decision history ({doc.audit.length})</summary>
-            <ul className="mt-2 flex flex-col gap-2 typo-regular-text-sm">
-              {[...doc.audit].reverse().map((a) => (
-                <li key={`${a.at}-${a.action}-${a.by}`}>
-                  {when(a.at)}, {a.by}: {eventLabel(a.action)}
-                  {a.changes && Object.keys(a.changes).length > 0 && (
-                    <ul className="list-disc pl-5 text-caption">
-                      {Object.entries(a.changes).map(([id, c]) => <li key={id}><code>{id}</code>: {changeText(c, CHOICE_LABELS, a.migrateBy?.[id])}</li>)}
-                    </ul>
-                  )}
-                  {typeof a.note === "string" && a.note && <p className="mt-1 break-words border-l-2 border-default pl-3 text-caption">&ldquo;{a.note}&rdquo;</p>}
-                </li>
-              ))}
+            <summary className="cursor-pointer typo-medium-text-sm">Activity log ({doc.audit.length})</summary>
+            <ul className="mt-3 flex flex-col gap-3">
+              {[...doc.audit].reverse().map((a, n) => {
+                const kind = activityKind(a.action);
+                const { Icon, tone } = ACTIVITY[kind];
+                const strong = kind === "decided" || kind === "applied";
+                return (
+                  <li key={`${a.at}-${a.action}-${a.by}-${n}`} className="flex gap-3">
+                    <Icon size={16} className={`mt-0.5 shrink-0 ${tone}`} />
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                      <p className={strong ? "typo-medium-text-sm" : "text-caption typo-regular-text-sm"}>{eventLabel(a.action)}</p>
+                      <p className="text-caption typo-regular-text-sm">{[actorLabel(a), when(a.at)].filter(Boolean).join(" · ")}</p>
+                      {a.changes && Object.keys(a.changes).length > 0 && (
+                        <ul className="flex flex-col gap-0.5 typo-regular-text-sm">
+                          {Object.entries(a.changes).map(([id, c]) => <li key={id} className="break-words"><code>{itemName(id)}</code>: {changeText(c, CHOICE_LABELS, a.migrateBy?.[id])}</li>)}
+                        </ul>
+                      )}
+                      {typeof a.note === "string" && a.note && <p className="mt-1 break-words border-l-2 border-default pl-3 text-caption typo-regular-text-sm">&ldquo;{a.note}&rdquo;</p>}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </details>
         )}
       </div>
+      )}
     </Card>
+    </div>
   );
 }
 
@@ -421,6 +465,12 @@ export default function Review() {
   const open = list.filter((d) => d.status !== "applied");
   const applied = list.filter((d) => d.status === "applied");
   const pending = open.filter((d) => d.status === "pending").length;
+  const everything = [...open, ...applied];
+  const [openSet, setOpenSet] = useState(null); // null: the default, only the first review that waits for an answer is open
+  const firstPending = open.find((d) => d.status === "pending")?.component;
+  const expanded = openSet ?? new Set(firstPending ? [firstPending] : []);
+  const toggle = (component) => setOpenSet(() => { const next = new Set(expanded); if (next.has(component)) next.delete(component); else next.add(component); return next; });
+  const cardProps = (d) => ({ doc: d, index: everything.indexOf(d) + 1, total: everything.length, open: expanded.has(d.component), onToggle: () => toggle(d.component) });
 
   if (!configured) {
     return (
@@ -467,11 +517,17 @@ export default function Review() {
         </div>
       )}
       {docs && !list.length && <EmptyState title="Nothing to review" description="Reviews appear here when the developer syncs a component that already exists from Figma." />}
-      {open.map((d) => <ReviewCard key={d.component} doc={d} session={session} onChanged={replace} onExpired={expire} onLocked={lock} onReload={() => session && load(session)} />)}
+      {docs && everything.length > 1 && (
+        <div className="flex justify-end gap-2">
+          <Button kind="text" size="sm" onClick={() => setOpenSet(new Set(everything.map((d) => d.component)))}>Expand all</Button>
+          <Button kind="text" size="sm" onClick={() => setOpenSet(new Set())}>Collapse all</Button>
+        </div>
+      )}
+      {open.map((d) => <ReviewCard key={d.component} {...cardProps(d)} session={session} onChanged={replace} onExpired={expire} onLocked={lock} onReload={() => session && load(session)} />)}
       {applied.length > 0 && (
         <>
           <h2 className="typo-semi-bold-text-lg">Applied</h2>
-          {applied.map((d) => <ReviewCard key={d.component} doc={d} session={session} onChanged={replace} onExpired={expire} onLocked={lock} onReload={() => session && load(session)} />)}
+          {applied.map((d) => <ReviewCard key={d.component} {...cardProps(d)} session={session} onChanged={replace} onExpired={expire} onLocked={lock} onReload={() => session && load(session)} />)}
         </>
       )}
     </Shell>

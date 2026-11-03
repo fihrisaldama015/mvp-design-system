@@ -156,3 +156,51 @@ export function previewNotes(prop, option) {
   if (option) return { without: `How it looks in Figma, which no longer has "${option}"`, with: `The current code, with ${prop} set to "${option}"` };
   return { without: "How the component looks in Figma", with: `The current code, with ${prop} on` };
 }
+
+// What kind of event an audit entry is, to pick its icon and how loud it is in the activity log.
+export function activityKind(action) {
+  if (typeof action !== "string") return "other";
+  if (action === "decided") return "decided";
+  if (action === "applied") return "applied";
+  if (action.startsWith("Figma changed")) return "reopened";
+  if (action.startsWith("republished")) return "synced";
+  if (action.startsWith("published")) return "published";
+  return "other";
+}
+
+// Who did it, in words a designer or PM knows: the tool's entries are the Figma sync, or the developer when applied.
+export function actorLabel(entry) {
+  const by = entry && typeof entry.by === "string" ? entry.by.trim() : "";
+  if (by === "tool") return entry.action === "applied" ? "Developer" : "Figma sync";
+  return by || "Someone";
+}
+
+// A review item id as a person reads it: "removed-prop:searchable" -> searchable, "removed-option:kind=outlined" -> kind="outlined".
+export function itemName(id) {
+  if (typeof id !== "string") return "";
+  const rest = id.slice(id.indexOf(":") + 1);
+  if (!id.includes(":")) return id;
+  const eq = rest.indexOf("=");
+  return eq < 0 ? rest : `${rest.slice(0, eq)}="${rest.slice(eq + 1)}"`;
+}
+
+// For each answered item: the answer, who gave it, when, the reason and the migrate-by date, from the current cycle of the
+// audit (an earlier cycle's decision never shows). Missing parts are empty strings, so an old document still renders.
+export function decisionDetails(audit, answers, migrateBy) {
+  const entries = Array.isArray(audit) ? audit.filter((a) => a && typeof a === "object") : [];
+  const at = entries.findLastIndex((a) => typeof a.action === "string" && (a.action.startsWith("published") || a.action.startsWith("Figma changed")));
+  const cycle = at >= 0 ? entries.slice(at) : entries;
+  const out = {};
+  for (const [id, choice] of Object.entries(answers && typeof answers === "object" ? answers : {})) {
+    if (!choice) continue;
+    const entry = cycle.findLast((a) => a.action === "decided" && a.changes && typeof a.changes === "object" && Object.hasOwn(a.changes, id));
+    out[id] = {
+      choice,
+      by: typeof entry?.by === "string" ? entry.by : "",
+      at: typeof entry?.at === "string" ? entry.at : "",
+      note: typeof entry?.note === "string" ? entry.note : "",
+      migrateBy: typeof migrateBy?.[id] === "string" ? migrateBy[id] : "",
+    };
+  }
+  return out;
+}

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText, eventLabel, timelineSteps, defaultRoute, previewProps, previewNotes } from "../helpers.js";
+import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText, eventLabel, timelineSteps, defaultRoute, previewProps, previewNotes, activityKind, actorLabel, itemName, decisionDetails } from "../helpers.js";
 
 test("frame urls join the origin and the route", () => {
   const r = frameUrls({ url: "/reservations" }, "https://x-abc.vercel.app/", "http://localhost:5002");
@@ -246,4 +246,52 @@ test("previewProps returns null for other kinds and malformed input", () => {
 test("previewNotes words a removed option and keeps the boolean wording for a removed prop", () => {
   assert.deepEqual(previewNotes("kind", "outlined"), { without: 'How it looks in Figma, which no longer has "outlined"', with: 'The current code, with kind set to "outlined"' });
   assert.deepEqual(previewNotes("action"), { without: "How the component looks in Figma", with: "The current code, with action on" });
+});
+
+test("activityKind classifies every audit action and unknown text as other", () => {
+  assert.equal(activityKind("published"), "published");
+  assert.equal(activityKind("published (new cycle)"), "published");
+  assert.equal(activityKind("Figma changed: earlier answers dropped"), "reopened");
+  assert.equal(activityKind("republished (same Figma state, answers kept)"), "synced");
+  assert.equal(activityKind("decided"), "decided");
+  assert.equal(activityKind("applied"), "applied");
+  assert.equal(activityKind("something else"), "other");
+  assert.equal(activityKind(undefined), "other");
+});
+
+test("actorLabel names the sync tool and the developer, and keeps a person's name", () => {
+  assert.equal(actorLabel({ by: "tool", action: "published" }), "Figma sync");
+  assert.equal(actorLabel({ by: "tool", action: "applied" }), "Developer");
+  assert.equal(actorLabel({ by: "  Siti Aminah ", action: "decided" }), "Siti Aminah");
+  assert.equal(actorLabel({ action: "decided" }), "Someone");
+  assert.equal(actorLabel(null), "Someone");
+});
+
+test("itemName strips the kind and quotes an option", () => {
+  assert.equal(itemName("removed-prop:searchable"), "searchable");
+  assert.equal(itemName("removed-option:kind=outlined"), 'kind="outlined"');
+  assert.equal(itemName("plain"), "plain");
+  assert.equal(itemName(undefined), "");
+});
+
+test("decisionDetails finds who decided each answered item in the current cycle", () => {
+  const audit = [
+    { at: "2026-11-01T01:00:00Z", by: "tool", action: "published" },
+    { at: "2026-11-01T02:00:00Z", by: "Siti", action: "decided", changes: { "removed-prop:a": "keep" }, note: "first" },
+    { at: "2026-11-01T03:00:00Z", by: "Budi", action: "decided", changes: { "removed-prop:a": "follow-figma", "removed-prop:b": "keep-deprecated" }, migrateBy: { "removed-prop:b": "2026-12-01" }, note: "second" },
+  ];
+  const d = decisionDetails(audit, { "removed-prop:a": "follow-figma", "removed-prop:b": "keep-deprecated" }, { "removed-prop:b": "2026-12-01" });
+  assert.deepEqual(d["removed-prop:a"], { choice: "follow-figma", by: "Budi", at: "2026-11-01T03:00:00Z", note: "second", migrateBy: "" });
+  assert.deepEqual(d["removed-prop:b"], { choice: "keep-deprecated", by: "Budi", at: "2026-11-01T03:00:00Z", note: "second", migrateBy: "2026-12-01" });
+});
+
+test("decisionDetails ignores an earlier cycle and survives old documents", () => {
+  const audit = [
+    { at: "2026-10-01T01:00:00Z", by: "tool", action: "published" },
+    { at: "2026-10-01T02:00:00Z", by: "Siti", action: "decided", changes: { "removed-prop:a": "keep" } },
+    { at: "2026-11-01T01:00:00Z", by: "tool", action: "Figma changed: earlier answers dropped" },
+  ];
+  assert.deepEqual(decisionDetails(audit, { "removed-prop:a": "keep" }, {}), { "removed-prop:a": { choice: "keep", by: "", at: "", note: "", migrateBy: "" } });
+  assert.deepEqual(decisionDetails(undefined, undefined, undefined), {});
+  assert.deepEqual(decisionDetails([null, 3, {}], { x: "keep" }, null), { x: { choice: "keep", by: "", at: "", note: "", migrateBy: "" } });
 });
