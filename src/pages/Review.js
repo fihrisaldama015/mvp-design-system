@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BadgeCheck, BookOpen, CheckCircle2, ChevronDown, ChevronUp, ExternalLink, Info, ListChecks, LogOut, RefreshCw, RotateCw, Upload } from "lucide-react";
 import { Alert } from "components/alert";
 import { Badge } from "components/badge";
 import { Button } from "components/button";
 import { Card } from "components/card";
+import { ConfirmDialog } from "components/confirm-dialog";
 import { EmptyState } from "components/empty-state";
 import { Field } from "components/field";
 import { Input } from "components/input";
@@ -192,7 +193,7 @@ const ACTIVITY = {
   other: { Icon: Info, tone: "text-caption" },
 };
 
-function ReviewCard({ doc, index, total, open, onToggle, session, onChanged, onExpired, onLocked, onReload }) {
+function ReviewCard({ doc, index, total, open, onToggle, onUnsaved, session, onChanged, onExpired, onLocked, onReload }) {
   const [draft, setDraft] = useState(doc.answers);
   const [dates, setDates] = useState(doc.migrateBy ?? {});
   const [dateErrors, setDateErrors] = useState([]);
@@ -212,13 +213,11 @@ function ReviewCard({ doc, index, total, open, onToggle, session, onChanged, onE
   const changes = Object.fromEntries(needs.filter(changed).map((i) => [i.id, draft[i.id]]));
   const unsaved = Object.keys(changes).length;
   const savedCount = needs.filter((i) => doc.answers[i.id]).length; // what the service has, not what is picked on this page
-  // A reload or closing the tab would drop the picked answers: let the browser ask first.
+  // The page needs the total: it asks before a reload or a log out would drop the picked answers.
   useEffect(() => {
-    if (!unsaved) return undefined;
-    const warn = (e) => { e.preventDefault(); e.returnValue = ""; };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [unsaved]);
+    onUnsaved?.(doc.component, unsaved);
+    return () => onUnsaved?.(doc.component, 0);
+  }, [unsaved, doc.component, onUnsaved]);
   const details = useMemo(() => decisionDetails(doc.audit, doc.answers, doc.migrateBy), [doc.audit, doc.answers, doc.migrateBy]);
   const decided = Object.values(details);
   const decidedBy = decided.find((d) => d.by)?.by;
@@ -480,7 +479,35 @@ export default function Review() {
   const firstPending = open.find((d) => d.status === "pending")?.component;
   const expanded = openSet ?? new Set(firstPending ? [firstPending] : []);
   const toggle = (component) => setOpenSet(() => { const next = new Set(expanded); if (next.has(component)) next.delete(component); else next.add(component); return next; });
-  const cardProps = (d) => ({ doc: d, index: everything.indexOf(d) + 1, total: everything.length, open: expanded.has(d.component), onToggle: () => toggle(d.component) });
+  const [unsavedMap, setUnsavedMap] = useState({});
+  const reportUnsaved = useCallback((component, n) => setUnsavedMap((m) => {
+    if ((m[component] ?? 0) === n) return m;
+    const next = { ...m };
+    if (n) next[component] = n; else delete next[component];
+    return next;
+  }), []);
+  const unsavedTotal = Object.values(unsavedMap).reduce((a, b) => a + b, 0);
+  const [leaving, setLeaving] = useState(null); // "reload" | "logout" while the dialog asks
+  const skipGuard = useRef(false);
+  const cardProps = (d) => ({ doc: d, index: everything.indexOf(d) + 1, total: everything.length, open: expanded.has(d.component), onToggle: () => toggle(d.component), onUnsaved: reportUnsaved });
+  useEffect(() => {
+    if (!unsavedTotal) return undefined;
+    // F5 and Ctrl/Cmd+R get the page's own dialog. The browser's reload button and closing the tab cannot be customised: the browser asks.
+    const onKey = (e) => {
+      if (e.key === "F5" || ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === "r")) { e.preventDefault(); setLeaving("reload"); }
+    };
+    const warn = (e) => { if (skipGuard.current) return; e.preventDefault(); e.returnValue = ""; };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("beforeunload", warn);
+    return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("beforeunload", warn); };
+  }, [unsavedTotal]);
+  const confirmLeave = () => {
+    const what = leaving;
+    setLeaving(null);
+    if (what === "logout") return logout();
+    skipGuard.current = true;
+    window.location.reload();
+  };
 
   if (!configured) {
     return (
@@ -513,7 +540,7 @@ export default function Review() {
     <Shell>
       <Header
         session={session}
-        onLogout={logout}
+        onLogout={() => (unsavedTotal ? setLeaving("logout") : logout())}
         onRefresh={() => session && load(session)}
         description="The developers are matching the components in code to the Figma design. A few things exist in the code but not in Figma. Tell us what to do with each one; nothing changes in the code until a developer applies your answer."
       />
@@ -540,6 +567,15 @@ export default function Review() {
           {applied.map((d) => <ReviewCard key={d.component} {...cardProps(d)} session={session} onChanged={replace} onExpired={expire} onLocked={lock} onReload={() => session && load(session)} />)}
         </>
       )}
+      <ConfirmDialog
+        open={leaving !== null}
+        onClose={() => setLeaving(null)}
+        onConfirm={confirmLeave}
+        title="Leave without saving?"
+        description={`You picked ${plural(unsavedTotal, "answer", "answers")} that ${unsavedTotal === 1 ? "is" : "are"} not saved yet. If you ${leaving === "logout" ? "log out" : "reload the page"}, ${unsavedTotal === 1 ? "it is" : "they are"} lost. Choose Cancel to go back and press Save answers.`}
+        confirmLabel={leaving === "logout" ? "Log out anyway" : "Reload anyway"}
+        tone="danger"
+      />
     </Shell>
   );
 }
