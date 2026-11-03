@@ -1,0 +1,341 @@
+<title>Talk Notes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* A reading page for the speaker's second screen or phone: big type, one column, a card per slide. Dark, like the deck. */
+:root {
+  --bg: #0d1017;
+  --surface: #161a23;
+  --surface-2: #1d222d;
+  --line: #2a303d;
+  --text: #f2f4f8;
+  --dim: #aab3c2;
+  --accent: #fb7185;
+  --green: #4ade80;
+  --amber: #fbbf24;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 18px;
+  line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 80px;
+}
+main { max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+h1 { font-size: 34px; margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+h2 { font-size: 24px; margin: 18px 0 0; letter-spacing: -0.01em; }
+h3 { font-size: 20px; margin: 0; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+p { margin: 0; }
+.lead { color: var(--dim); }
+code, .mono { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.card h3 .n { font-family: var(--mono); color: var(--accent); }
+.card h3 .t { font-family: var(--mono); font-size: 14px; color: var(--dim); font-weight: 400; margin-left: auto; }
+.label { font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-top: 4px; }
+.label.act { color: var(--amber); }
+.label.ask { color: var(--green); }
+ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+table { width: 100%; border-collapse: collapse; font-size: 16px; }
+th, td { text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--dim); font-weight: 600; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+td.num { font-family: var(--mono); white-space: nowrap; }
+.warn { border-left: 3px solid var(--amber); padding: 6px 0 6px 14px; color: var(--text); }
+.overflow { overflow-x: auto; }
+@media (max-width: 560px) { body { font-size: 17px; } h1 { font-size: 28px; } }
+</style>
+
+<main>
+  <header>
+    <h1>Video as code: catatan presentasi</h1>
+    <p class="lead">Untuk dibaca sendiri di layar kedua atau HP. Jangan dibuka di layar yang dilihat penonton. 30 menit: 19 slide ±22,5 menit, video demo 3 menit, tanya jawab ±4,5 menit.</p>
+  </header>
+
+  <section class="card">
+    <h2 style="margin:0">Sebelum mulai</h2>
+    <ul>
+      <li>Buka dek di laptop presentasi, tekan <code>F</code> untuk layar penuh (bar tombol hilang sendiri). <b>Jangan tekan N</b>: itu menampilkan catatan singkat di layar yang sama.</li>
+      <li>Cek klip autoplay di browser yang dipakai (Zen). Kalau ada klip yang diam, klik sekali di halaman.</li>
+      <li>Jalankan <code>npm run studio</code> di folder <code>video/</code> sekali sebelum sesi dan biarkan terbuka (langkah pertamanya menyalin aset). Pilih <code>DemoProps</code> dan pastikan panel Props muncul.</li>
+      <li>Salin <code>video/out/demo/demo-video.mp4</code> ke folder yang mudah dibuka (Desktop), putar sekali untuk menguji suara lewat speaker ruangan.</li>
+      <li>Cadangan offline: <code>docs/tech-sharing/remotion/index.html</code> (dek) dibuka dari disk, tanpa internet. Fontnya jatuh ke font sistem, tidak apa-apa.</li>
+      <li>Cek <b>jumlah karyawan perusahaan</b> untuk jawaban soal lisensi Remotion (lihat bagian tanya jawab).</li>
+      <li>HP atau layar kedua: buka halaman catatan ini. Matikan notifikasi.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2 style="margin:0">Anggaran waktu</h2>
+    <div class="overflow"><table>
+      <thead><tr><th>Slide</th><th>Isi</th><th>Menit</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1–3</td><td>Judul, kenapa kode, apa yang kita buat</td><td class="num">2,5</td></tr>
+        <tr><td class="num">4–7</td><td>Satu ide Remotion, anatomi proyek, timing dan penyelarasan</td><td class="num">6</td></tr>
+        <tr><td class="num">8–12</td><td>Motion, spring, kinetic, transisi, suara</td><td class="num">6,5</td></tr>
+        <tr><td class="num">13</td><td>Props dan Studio (demo langsung)</td><td class="num">2,5</td></tr>
+        <tr><td class="num">14–17</td><td>Peta, kerja dengan Claude, perbandingan, lanjutan</td><td class="num">5</td></tr>
+        <tr><td class="num">18</td><td>Video demo</td><td class="num">3</td></tr>
+        <tr><td class="num">19</td><td>Tanya jawab</td><td class="num">±4,5</td></tr>
+      </tbody>
+    </table></div>
+    <p class="lead">Kalau molor: potong slide 14 (peta, tinggal sebut kelompoknya) dan slide 7. Jangan potong video demo.</p>
+  </section>
+
+  <h2>Per slide</h2>
+
+  <article class="card">
+    <h3><span class="n">1</span>Title <span class="t">0,5 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li>"Hari ini kita bahas membuat video dari kode, dengan Claude dan Remotion."</li>
+      <li>"Kita membuat video Shield 10 scene, dan satu video demo ±3 menit yang saya putar di akhir. Semua bagian video itu dipakai juga di video-nya sendiri."</li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">2</span>Change one sentence, render again <span class="t">1 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li>Di editor video, naskah berubah berarti merekam ulang, memotong, dan menggeser manual.</li>
+      <li>Di kode: ubah <code>narration.json</code>, buat audio baru, jalankan <code>npm run align</code>, render. Timing mengikuti suara.</li>
+      <li>Contoh nyata: naskah video demo berubah beberapa kali (scene props ditukar scene kamera), dan scene 1–6 yang sudah bersuara tidak disentuh.</li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">3</span>The Shield video <span class="t">1 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li>10 scene. Panjang yang direncanakan 6:50, tetapi hasil render sebenarnya <b>4 menit 57 detik</b>, karena durasi mengikuti audio, bukan rencana.</li>
+      <li>Suara, caption, timing, dan animasi, semuanya dihasilkan dari kode.</li>
+    </ul>
+    <div class="label act">Aksi</div>
+    <ul><li>Klip 12 detik berputar sendiri. Biarkan satu putaran.</li></ul>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">4</span>A video is a function of the frame number <span class="t">1,5 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li><code>useCurrentFrame()</code> memberi 0, 1, 2, dan seterusnya. Pada 30 fps, frame 45 adalah 1,5 detik.</li>
+      <li>Tidak ada timer, tidak ada state tersembunyi. Frame yang sama selalu menghasilkan gambar yang sama.</li>
+      <li>Kode di kanan adalah helper kita yang asli (<code>ramp</code>), bukan contoh buatan.</li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">5</span>From script to scenes <span class="t">1 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li>Satu sumber naskah: <code>video-script.md</code> menjadi <code>narration.json</code>, scene dan caption membaca dari sana.</li>
+      <li>Karena itu suara dan caption tidak bisa melenceng satu sama lain.</li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">6</span>The audio sets the schedule <span class="t">2 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li>Suara tidak membawa timestamp. Jadi urutannya terbalik: rekam dulu, ukur dengan <code>npm run align</code>, lalu scene membaca <code>audioTiming.json</code>.</li>
+      <li>Tunjuk JSON di kanan: scene 1 dimulai di frame 15, durasi 718 frame, kalimat mulai di 15, 329, dan 405, <code>sure: true</code>.</li>
+      <li>Ada jeda 15 frame sebelum suara dan 36 frame sesudahnya.</li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">7</span>Two ways to find each sentence <span class="t">1,5 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li>Deteksi jeda dengan ffmpeg: cepat, tapi jeda di koma bisa tertukar dengan akhir kalimat.</li>
+      <li>Transkrip whisper: setiap kata punya waktu, lalu tiap kalimat menempel ke jeda sebelumnya. Dalam pengecekan kita semua batas jatuh di jeda 0,5 sampai 0,8 detik.</li>
+      <li>Suara apa pun boleh: TTS (saya pakai MiniMax) atau suara manusia.</li>
+    </ul>
+    <p class="warn">Jujur soal batasan: model whisper kita <code>small.en</code>, khusus bahasa Inggris. Bahasa Indonesia belum diuji dan butuh model multibahasa.</p>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">8</span>Same move, three curves <span class="t">1,5 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li>Jarak dan frame mulai sama, hanya kurvanya yang beda. Lihat jarak antar garis tepi: rapat berarti pelan.</li>
+      <li>Easing mengubah rasa, bukan jarak. Spring memakai fisika: melewati target lalu menetap.</li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">9</span>Two numbers decide the feel <span class="t">1 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li><code>damping</code> kecil berarti memantul, <code>stiffness</code> besar berarti cepat.</li>
+      <li>Garis putus-putus di grafik adalah target. Contoh angka asli: damping 7 dan stiffness 220 melewati target sampai 1,455 pada frame 7. Damping 10 dan stiffness 100 sampai 1,163 pada frame 11.</li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">10</span>From a sentence to a word <span class="t">1,5 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li>Atas: satu kalimat sekaligus. Bawah: kata muncul saat diucapkan, kata yang sedang diucapkan menyala.</li>
+      <li>Datanya <code>[kata, frame mulai, frame akhir]</code> dari transkrip, dibuat dengan <code>npm run words</code>.</li>
+      <li>"Caption yang Anda baca di video demo nanti memakai ini."</li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">11</span>Scenes overlap, the presentation decides <span class="t">1 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li><code>&lt;TransitionSeries&gt;</code> membuat dua scene tumpang tindih 20 frame, dan <code>presentation</code> menentukan caranya: fade, slide, wipe, flip.</li>
+      <li>Efek <code>cube</code> ditandai berbayar di dokumentasi.</li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">12</span>Sound is just another layer <span class="t">1,5 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li>Suara narasi satu berkas per scene, dimulai di frame yang diukur. Efek ditaruh di frame tertentu.</li>
+      <li>Level musik adalah fungsi dari frame: turun saat ada suara (0,2) dan naik di sela-sela (0,75).</li>
+      <li>Delapan efek suara dan musiknya dibuat dengan ffmpeg dari rumus, jadi tidak ada lisensi yang perlu dicek.</li>
+      <li>Langkah terakhir: loudness dinormalisasi ke −16 LUFS (puncak −1,4 dB).</li>
+    </ul>
+    <div class="label ask">Cerita yang bagus</div>
+    <ul>
+      <li>Musik pertama kita terdengar seram (akor minor, register rendah, gema panjang). Diganti musik mayor. Lalu petikan arpeggio yang berjalan terus kita buang karena bersaing dengan suara: energinya di pita 300 sampai 3400 Hz terukur sekitar 2,4 dB lebih tinggi daripada versi pad saja.</li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">13</span>One composition, many videos <span class="t">2,5 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li>Satu komposisi, props berbeda, video berbeda. Schema zod membuat Studio menampilkan panel Props.</li>
+    </ul>
+    <div class="label act">Demo langsung (±1,5 menit)</div>
+    <ul>
+      <li>Pindah ke Studio (<code>npm run studio</code> sudah terbuka). Pilih <code>DemoProps</code> di sidebar kiri.</li>
+      <li>Di panel Props kanan: ubah <code>title</code>, pilih warna di <code>accent</code>, geser <code>damping</code> dan <code>stiffness</code>.</li>
+      <li>Tekan play. Tunjukkan bahwa damping kecil membuat kotak memantul.</li>
+      <li>Lalu kembali ke dek (slide 14).</li>
+    </ul>
+    <p class="warn">Kalau Studio bermasalah: jangan diperbaiki di depan penonton. Bilang "ini hasilnya" dan tunjuk klip di slide, lalu lanjut.</p>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">14</span>The map <span class="t">1,5 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li>Jangan dibaca satu per satu. Sebut kelompoknya saja: motion, scenes, teks, grafik, 3D dan kamera, media, ship it, data.</li>
+      <li>Label hijau berarti sudah kita pakai. Yang berlabel "In the demo video" (kamera, 3D, motion blur, garis, bentuk, noise, video di dalam video) akan terlihat di video demo.</li>
+      <li>Ini peta potensi penuhnya. Kita memakai sebagian.</li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">15</span>Who does what, and what bit us <span class="t">2 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li>Claude menulis scene, helper, dan skrip, dan memeriksa frame sebagai gambar diam. Ia tidak "menonton" gerakan, jadi rasa gerak dinilai manusia.</li>
+      <li>Anda menulis naskah, memilih suara, dan menilai rasa.</li>
+    </ul>
+    <div class="label ask">Jebakan nyata</div>
+    <ul>
+      <li>TTS salah baca nama: eja ulang khusus untuk TTS, jaga jumlah kalimat.</li>
+      <li>Jeda di koma menipu deteksi jeda: pakai transkrip.</li>
+      <li>Peringatan "Version mismatch": Remotion 4.0.535 meminta zod 4.5.4. <code>npx remotion versions</code> menunjukkannya.</li>
+      <li>3D di React 18 butuh <code>@react-three/fiber</code> 8.x. Versi 9.x meminta React 19.</li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">16</span>Remotion, Claude Motion, or an editor <span class="t">1 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li>Remotion: kode di repo, kontrol penuh sampai frame dan audio, masuk git. Cocok untuk video berulang atau berbasis data.</li>
+      <li>Claude Motion (Help Center Anthropic): beta untuk paket Team dan Enterprise, berupa kode yang menganimasikan teks, grafik, dan bentuk, diekspor sebagai MP4, dihitung ke batas pemakaian. Tidak memakai model pembuat video. Aktif bawaan di Team, mati bawaan di Enterprise sampai owner menyalakannya.</li>
+      <li>Keduanya tidak saling menggantikan: Claude Motion untuk animasi cepat di percakapan, Remotion untuk yang berulang dan bisa di-review.</li>
+    </ul>
+    <p class="warn"><b>Lisensi Remotion</b> (LICENSE.md versi 4.0.535): gratis untuk individu dan perusahaan for-profit sampai 3 karyawan. Di atas itu perlu Company License. Harga tidak ada di slide, lihat remotion.dev/license. Cek jumlah karyawan perusahaan Anda sebelum sesi.</p>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">17</span>Beyond one video <span class="t">0,5 menit</span></h3>
+    <div class="label">Katakan</div>
+    <ul>
+      <li>Subtitle SRT dari naskah yang sama sudah ada di proyek lain kita.</li>
+      <li><code>calculateMetadata</code> membuat durasi dan props dari data.</li>
+      <li>Satu ide yang belum dibangun: video mingguan dari riwayat design review. Sebut sebagai ide, bukan hasil.</li>
+    </ul>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">18</span>Now: the demo video <span class="t">3 menit</span></h3>
+    <div class="label">Katakan sebelum memutar</div>
+    <ul>
+      <li>"Video ini 2 menit 56 detik, dan dibuat persis dengan cara yang tadi saya jelaskan. Perhatikan caption kinetic-nya, suaranya, efek, lalu kamera, 3D, dan motion blur."</li>
+    </ul>
+    <div class="label act">Aksi</div>
+    <ul>
+      <li>Putar <code>demo-video.mp4</code> dari berkas lokal (di luar dek), layar penuh.</li>
+      <li>Setelah selesai, kembali ke dek, slide 19.</li>
+    </ul>
+    <p class="warn">Kalau tidak ada suara: cek keluaran audio ke speaker ruangan. Kalau berkas tidak terbuka, lanjut ke tanya jawab dan tunjukkan klip-klip di slide.</p>
+  </article>
+
+  <article class="card">
+    <h3><span class="n">19</span>Questions? <span class="t">±4,5 menit</span></h3>
+    <div class="label">Tunjukkan</div>
+    <ul><li>Folder <code>video/</code> dan <code>video/src/showcase/</code>, perintah <code>npm run studio</code>.</li></ul>
+  </article>
+
+  <h2>Tanya jawab: kemungkinan pertanyaan</h2>
+
+  <section class="card">
+    <div class="label ask">Kenapa bukan Claude Motion?</div>
+    <p>Beda tujuan. Claude Motion membuat animasi pendek di dalam percakapan dan hanya tersedia di paket Team dan Enterprise (beta). Remotion kode di repo kita: bisa di-git, diatur sampai frame dan audio, dan dijalankan berulang. Untuk video Shield dengan narasi dan timing presisi, Remotion yang cocok.</p>
+    <div class="label ask">Berapa lama render?</div>
+    <p>Video demo 2:56 (5288 frame) di 1920x1080 selesai sekitar <b>5 menit</b> di laptop ini. Itu satu kali pengukuran, di mesin saya; di mesin lain bisa berbeda. Scene 3D dan motion blur yang paling berat.</p>
+    <div class="label ask">Apakah Claude "menonton" videonya?</div>
+    <p>Tidak. Ia memeriksa frame sebagai gambar diam dan angka timing. Rasa gerak, bunyi, dan keseimbangan audio dinilai manusia.</p>
+    <div class="label ask">Bisa narasi bahasa Indonesia?</div>
+    <p>Suaranya bisa, TTS atau suara asli. Tetapi alat penyelarasan kita memakai whisper <code>small.en</code> (Inggris saja). Untuk bahasa Indonesia modelnya perlu diganti ke multibahasa, dan itu belum kita uji.</p>
+    <div class="label ask">Bisa di Windows atau Mac?</div>
+    <p>Remotion sendiri berjalan di ketiganya. Skrip kita memakai ffmpeg dan Python, dan baru diuji di Linux. Jawab jujur: belum diuji di Windows atau Mac.</p>
+    <div class="label ask">Bisa render di cloud?</div>
+    <p>Remotion punya Lambda dan renderMedia untuk server. Kita belum mencobanya.</p>
+    <div class="label ask">Lisensinya bagaimana?</div>
+    <p>Gratis untuk individu dan perusahaan for-profit sampai 3 karyawan. Di atas itu Company License berbayar. Rinci dan harga: remotion.dev/license.</p>
+    <div class="label ask">Suara dan musiknya aman dipakai?</div>
+    <p>Efek dan musik di video demo dibuat sendiri dengan ffmpeg dari rumus, jadi tidak ada hak cipta pihak lain. Untuk suara TTS, ikuti syarat penyedia TTS yang dipakai.</p>
+    <div class="label ask">Seberapa banyak ditulis Claude?</div>
+    <p>Hampir semua kode scene, helper, dan skrip. Naskah, pilihan suara, dan penilaian rasa gerak tetap pekerjaan manusia.</p>
+  </section>
+
+  <section class="card">
+    <h2 style="margin:0">Angka untuk diingat</h2>
+    <ul>
+      <li>Video demo: 12 scene, 2:56, 5288 frame, 1920x1080, 30 fps.</li>
+      <li>Video Shield: 10 scene, rencana 6:50, hasil 4:57.</li>
+      <li>Versi: Remotion 4.0.535, zod 4.5.4, three 0.170.0, @react-three/fiber 8.18.0.</li>
+      <li>Motion blur: bawaan 10 sampel dan shutter 180°.</li>
+      <li>Loudness akhir: −16 LUFS, puncak −1,4 dB. Musik di bawah suara: level 0,2, di sela 0,75.</li>
+      <li>Penyelarasan: jeda 15 frame sebelum dan 36 frame sesudah suara.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2 style="margin:0">Yang belum kita uji (jujur kalau ditanya)</h2>
+    <ul>
+      <li>Gerakan dan bunyi dinilai manusia, bukan diukur otomatis.</li>
+      <li>Narasi bahasa Indonesia dan model whisper multibahasa.</li>
+      <li>Windows dan Mac, render cloud (Lambda), dan Lottie.</li>
+      <li>Claude Motion secara langsung: info di slide dari Help Center, kita belum memakainya.</li>
+    </ul>
+  </section>
+</main>

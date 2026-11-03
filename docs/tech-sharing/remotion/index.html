@@ -43,6 +43,7 @@ body {
 .bar button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .bar .count { font-family: var(--mono); min-width: 64px; text-align: center; }
 .bar .hint { font-size: 13px; }
+html:fullscreen .bar { display: none; }
 #notes { flex: none; max-height: 30%; overflow: auto; background: var(--surface); border-top: 1px solid var(--line); padding: 14px 18px; color: var(--text); font-size: 16px; line-height: 1.5; }
 #notes b { color: var(--accent); font-weight: 600; }
 
@@ -124,7 +125,7 @@ td:first-child { font-weight: 600; width: 17%; }
         <div class="kicker">Dev sharing session</div>
         <h1>Video as code</h1>
         <div class="sub">Claude + Remotion</div>
-        <div class="foot">Press → to start · N for notes · F for full screen</div>
+        <div class="foot">Press → to start · F for full screen</div>
       </section>
 
       <!-- 2 -->
@@ -305,6 +306,31 @@ td:first-child { font-weight: 600; width: 17%; }
         </div>
       </section>
 
+      <!-- 12 sound -->
+      <section class="slide" data-notes="<b>Suara.</b> Suara adalah lapisan seperti lainnya. Suara narasi satu berkas per scene, dimulai di frame yang sudah diukur. Efek dibuat dengan ffmpeg dan ditaruh di frame tertentu. Musik: volumenya fungsi dari frame, turun saat ada suara dan naik di sela-sela. Langkah terakhir: loudness dinormalisasi ke -16 LUFS. Temuan: melodi petikan di bawah suara bersaing dengan narasi, jadi kita buang.">
+        <div class="kicker">Sound</div>
+        <h2>Sound is just another layer</h2>
+        <div class="split flip">
+          <ul class="points">
+            <li>The voice: one file per scene, started at its measured frame</li>
+            <li>Effects: made with <code>ffmpeg</code>, each placed on a frame</li>
+            <li>Music: pad and bass, its level is a function of the frame</li>
+            <li>Last step: loudness to −16 LUFS</li>
+          </ul>
+          <pre class="code" style="font-size:25px"><span class="c">// low under the voice, up in the gaps</span>
+<span class="k">const</span> volume = (f) =&gt; {
+  <span class="k">let</span> v = <span class="n">0.75</span>;
+  <span class="k">for</span> (<span class="k">const</span> [a, b] <span class="k">of</span> voice)
+    v = Math.<span class="f">min</span>(v, <span class="f">interpolate</span>(f,
+      [a - <span class="n">12</span>, a + <span class="n">6</span>, b - <span class="n">6</span>, b + <span class="n">18</span>],
+      [<span class="n">0.75</span>, <span class="n">0.2</span>, <span class="n">0.2</span>, <span class="n">0.75</span>]));
+  <span class="k">return</span> v;
+};
+&lt;<span class="f">Audio</span> src={music} volume={volume} /&gt;</pre>
+        </div>
+        <div class="chips"><span class="chip">no melody under speech</span><span class="chip">8 effects</span><span class="chip">music-pad.mp3</span></div>
+      </section>
+
       <!-- 12 -->
       <section class="slide" data-notes="<b>Props dan Studio.</b> Satu komposisi, banyak video. Dengan schema zod, Studio menampilkan panel Props. <b>DEMO LANGSUNG:</b> buka npm run studio, pilih DemoProps, ubah warna dan damping.">
         <div class="kicker">Props and the Studio</div>
@@ -323,16 +349,16 @@ td:first-child { font-weight: 600; width: 17%; }
       </section>
 
       <!-- 13 -->
-      <section class="slide" data-notes="<b>Peta.</b> Ini potensi penuhnya; kita memakai sebagian kecil. Jangan dibacakan satu per satu: sebut kelompoknya. Nama paket sudah dicek di npm untuk versi 4.0.535 yang kita pakai.">
+      <section class="slide" data-notes="<b>Peta.</b> Ini potensi penuhnya; kita memakai sebagian kecil. Jangan dibacakan satu per satu: sebut kelompoknya. Yang berlabel hijau sudah dipakai di video kita; kamera, 3D, motion blur, garis, bentuk, noise, dan video di dalam video akan terlihat di video demo nanti. Nama paket sudah dicek di npm untuk versi 4.0.535 yang kita pakai.">
         <div class="kicker">What else is possible</div>
         <h2>The map</h2>
         <div class="cards">
-          <div class="card"><h3>Motion</h3><p>interpolate · spring · Easing · interpolateColors</p><span class="badge used">In our video</span></div>
-          <div class="card"><h3>Scenes</h3><p>Series · Sequence · TransitionSeries · Loop · Freeze</p><span class="badge part">Partly</span></div>
+          <div class="card"><h3>Motion</h3><p>interpolate · spring · Easing · interpolateColors</p><span class="badge used">In our videos</span></div>
+          <div class="card"><h3>Scenes</h3><p>Series · Sequence · TransitionSeries · Loop</p><span class="badge used">In our videos</span></div>
           <div class="card"><h3>Text</h3><p>@remotion/captions · layout-utils · google-fonts</p><span class="badge part">Partly</span></div>
-          <div class="card"><h3>Graphics</h3><p>paths · shapes · noise · motion-blur · lottie</p><span class="badge none">Not used yet</span></div>
-          <div class="card"><h3>3D and camera</h3><p>@remotion/three (Three.js). A 2D camera is a transform on a wrapper</p><span class="badge none">Not used yet</span></div>
-          <div class="card"><h3>Media</h3><p>Video · OffthreadVideo · Audio · media-utils · gif</p><span class="badge part">Partly</span></div>
+          <div class="card"><h3>Graphics</h3><p>paths · shapes · noise · motion-blur</p><span class="badge used">In the demo video</span></div>
+          <div class="card"><h3>3D and camera</h3><p>@remotion/three (Three.js). A 2D camera is a transform on a wrapper</p><span class="badge used">In the demo video</span></div>
+          <div class="card"><h3>Media</h3><p>OffthreadVideo · Audio · media-utils</p><span class="badge used">In the demo video</span></div>
           <div class="card"><h3>Ship it</h3><p>@remotion/player · renderMedia · Lambda · codecs · --props</p><span class="badge part">Partly</span></div>
           <div class="card"><h3>Data</h3><p>calculateMetadata · zod schema · inputProps</p><span class="badge part">Partly</span></div>
         </div>
@@ -360,6 +386,7 @@ td:first-child { font-weight: 600; width: 17%; }
               <li>A comma pause fools pause detection: use the transcript</li>
               <li>Pin every <code>remotion</code> and <code>@remotion/*</code> version. 4.0.535 needs zod 4.5.4</li>
               <li><code>npx remotion versions</code> tells you when something is off</li>
+              <li>3D on React 18 needs <code>@react-three/fiber</code> 8.x (9.x asks for React 19)</li>
             </ul>
           </div>
         </div>
@@ -396,7 +423,7 @@ td:first-child { font-weight: 600; width: 17%; }
       <section class="slide title-slide" data-notes="<b>Putar video demo</b> dari berkas lokal (di luar slide), lalu kembali ke slide terakhir untuk tanya jawab.">
         <div class="kicker">Demo</div>
         <h1 style="font-size:132px">Now: the demo video</h1>
-        <div class="chips"><span class="chip accent">voice</span><span class="chip accent">sound effects</span><span class="chip accent">kinetic captions</span><span class="chip accent">all from Remotion</span></div>
+        <div class="chips"><span class="chip accent">voice</span><span class="chip accent">sound</span><span class="chip accent">kinetic captions</span><span class="chip accent">camera · 3D · motion blur</span><span class="chip accent">2 min 56 s</span></div>
         <div class="foot">Played from a local file</div>
       </section>
 
