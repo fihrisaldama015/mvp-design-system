@@ -40,9 +40,9 @@ export const Motion: React.FC = () => {
               <div style={{ fontSize: 18, color: c.faint, marginTop: 4 }}>{lane.note}</div>
             </div>
             <div style={{ position: "absolute", left: X0, width: X1 - X0 + 56, top: y + 28, height: 2, background: c.line }} />
-            {t > 0 && Array.from({ length: 6 }, (_, k) => k + 1).map((k) => (
+            {t > 0 && Array.from({ length: 5 }, (_, k) => k + 1).map((k) => (
               // Trails are outlines only, few and faint: they show the spacing without competing with the box.
-              <div key={k} style={{ position: "absolute", left: pos(Math.max(0, t - 4 * k)) + 4, top: y + 8, width: 48, height: 48, borderRadius: 12, border: `2px solid ${lane.color}`, opacity: visible * 0.5 * (1 - k / 7) }} />
+              <div key={k} style={{ position: "absolute", left: pos(Math.max(0, t - 4 * k)) + 4, top: y + 8, width: 48, height: 48, borderRadius: 12, border: `1.5px solid ${lane.color}`, opacity: visible * 0.22 * (1 - k / 6) }} />
             ))}
             <div style={{ position: "absolute", left: pos(t), top: y + 4, width: 56, height: 56, borderRadius: 14, background: lane.color, opacity: visible, boxShadow: `0 0 28px ${lane.color}66` }} />
             <CurveChart x={950} y={y - 6} w={270} h={104} tMax={60} now={t} value={curves[i]} color={lane.color} />
