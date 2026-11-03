@@ -1,47 +1,53 @@
 import React from "react";
-import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { c, inter, mono } from "../theme";
+import { Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { c, mono } from "../theme";
 import { ramp } from "../anim";
+import { CurveChart, Stage } from "./Stage";
 
-/** Showcase clip: the same move (same distance, same start) with three curves. 1280x720, loops every 90 frames. */
-const LANES = [
-  { name: "interpolate()", note: "linear: constant speed", color: c.blue },
-  { name: "Easing.out(cubic)", note: "fast start, soft landing", color: c.amber },
-  { name: "spring()", note: "overshoots, then settles", color: c.rose },
-];
+/** Showcase clip: the same move (same distance, same start) with three curves. Each lane has trails (the gaps between
+ *  them show the speed) and a chart of its curve. 1280x720, loops every 90 frames. */
 const X0 = 330;
-const X1 = 1130;
+const X1 = 830;
 const CYCLE = 90;
 const START = 8;
+const clamp01 = (t: number) => Math.max(0, Math.min(1, t));
 
 export const Motion: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const f = frame % CYCLE;
-  const t = f - START;
-  const progress = [
-    interpolate(t, [0, 50], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }),
-    interpolate(t, [0, 50], [0, 1], { easing: Easing.out(Easing.cubic), extrapolateLeft: "clamp", extrapolateRight: "clamp" }),
-    spring({ frame: t, fps, config: { damping: 10, stiffness: 100 } }),
+  const curves = [
+    (t: number) => clamp01(t / 50),
+    (t: number) => Easing.out(Easing.cubic)(clamp01(t / 50)),
+    (t: number) => spring({ frame: t, fps, config: { damping: 10, stiffness: 100 } }),
+  ];
+  const lanes = [
+    { name: "interpolate()", note: "linear: constant speed", color: c.blue },
+    { name: "Easing.out(cubic)", note: "fast start, soft landing", color: c.amber },
+    { name: "spring()", note: "overshoots, then settles", color: c.rose },
   ];
   const visible = ramp(f, 0, 8) * (1 - ramp(f, CYCLE - 10, CYCLE));
+  const t = f - START;
   return (
-    <AbsoluteFill style={{ background: c.bg, fontFamily: inter, color: c.text }}>
-      <div style={{ position: "absolute", left: 60, top: 44, fontSize: 38, fontWeight: 600 }}>Same move, three curves</div>
-      <div style={{ position: "absolute", left: 60, top: 100, fontSize: 24, color: c.dim }}>Same distance, same start frame. Only the curve differs.</div>
-      {LANES.map((lane, i) => {
-        const y = 230 + i * 150;
+    <Stage title="Same move, three curves" subtitle="Same distance, same start frame. Only the curve differs: watch the gaps between the trails." at={f}>
+      {lanes.map((lane, i) => {
+        const y = 200 + i * 160;
+        const pos = (tt: number) => X0 + (X1 - X0) * curves[i](tt);
         return (
           <React.Fragment key={lane.name}>
-            <div style={{ position: "absolute", left: 60, top: y - 6, width: 262 }}>
+            <div style={{ position: "absolute", left: 60, top: y + 4, width: 262 }}>
               <div style={{ fontFamily: mono, fontSize: 22, fontWeight: 600, color: lane.color }}>{lane.name}</div>
               <div style={{ fontSize: 18, color: c.faint, marginTop: 4 }}>{lane.note}</div>
             </div>
-            <div style={{ position: "absolute", left: X0, width: X1 - X0 + 64, top: y + 30, height: 2, background: c.line }} />
-            <div style={{ position: "absolute", left: X0 + (X1 - X0) * progress[i], top: y, width: 64, height: 64, borderRadius: 16, background: lane.color, opacity: visible }} />
+            <div style={{ position: "absolute", left: X0, width: X1 - X0 + 56, top: y + 28, height: 2, background: c.line }} />
+            {t > 0 && Array.from({ length: 9 }, (_, k) => k + 1).map((k) => (
+              <div key={k} style={{ position: "absolute", left: pos(Math.max(0, t - 3 * k)), top: y + 4, width: 56, height: 56, borderRadius: 14, background: lane.color, opacity: visible * 0.34 * (1 - k / 10) }} />
+            ))}
+            <div style={{ position: "absolute", left: pos(t), top: y + 4, width: 56, height: 56, borderRadius: 14, background: lane.color, opacity: visible, boxShadow: `0 0 28px ${lane.color}66` }} />
+            <CurveChart x={950} y={y - 6} w={270} h={104} tMax={60} now={t} value={curves[i]} color={lane.color} />
           </React.Fragment>
         );
       })}
-    </AbsoluteFill>
+    </Stage>
   );
 };

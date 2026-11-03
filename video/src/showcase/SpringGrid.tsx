@@ -1,41 +1,42 @@
 import React from "react";
-import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { c, inter, mono } from "../theme";
+import { spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { c, mono } from "../theme";
 import { ramp } from "../anim";
+import { CurveChart, Stage } from "./Stage";
 
-/** Showcase clip: four spring() settings side by side. damping = bounce (lower bounces more), stiffness = speed. */
+/** Showcase clip: four spring() settings side by side, each with the chart of its response. The dashed line is the
+ *  target: a bounce shows as the curve going above it. damping = bounce (lower bounces more), stiffness = speed. */
 const CELLS = [
   { name: "stiff, no bounce", damping: 30, stiffness: 220, color: c.blue },
   { name: "bouncy", damping: 7, stiffness: 220, color: c.rose },
   { name: "soft and slow", damping: 18, stiffness: 40, color: c.amber },
   { name: "wobbly", damping: 5, stiffness: 60, color: c.green },
 ];
-const CYCLE = 100;
+const CYCLE = 110;
 
 export const SpringGrid: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const f = frame % CYCLE;
   const visible = ramp(f, 0, 8) * (1 - ramp(f, CYCLE - 10, CYCLE));
+  const t = f - 8;
   return (
-    <AbsoluteFill style={{ background: c.bg, fontFamily: inter, color: c.text }}>
-      <div style={{ position: "absolute", left: 60, top: 40, fontSize: 38, fontWeight: 600 }}>spring(): two numbers</div>
-      <div style={{ position: "absolute", left: 60, top: 96, fontSize: 24, color: c.dim }}>damping: lower bounces more · stiffness: higher is faster</div>
+    <Stage title="spring(): two numbers" subtitle="damping: lower bounces more · stiffness: higher is faster" at={f}>
       {CELLS.map((cell, i) => {
-        const col = i % 2;
-        const row = Math.floor(i / 2);
-        const left = 60 + col * 610;
-        const top = 170 + row * 260;
-        const p = spring({ frame: f - 8, fps, config: { damping: cell.damping, stiffness: cell.stiffness } });
+        const left = 60 + (i % 2) * 610;
+        const top = 160 + Math.floor(i / 2) * 270;
+        const value = (tt: number) => spring({ frame: tt, fps, config: { damping: cell.damping, stiffness: cell.stiffness } });
+        const trackW = 560 - 56 - 56 - 64;
         return (
-          <div key={cell.name} style={{ position: "absolute", left, top, width: 560, height: 220, background: c.panel, border: `1px solid ${c.line}`, borderRadius: 20 }}>
-            <div style={{ position: "absolute", left: 28, top: 22, fontSize: 26, fontWeight: 600 }}>{cell.name}</div>
-            <div style={{ position: "absolute", left: 28, top: 62, fontFamily: mono, fontSize: 20, color: c.dim }}>damping {cell.damping} · stiffness {cell.stiffness}</div>
-            <div style={{ position: "absolute", left: 28, right: 28, top: 164, height: 2, background: c.line }} />
-            <div style={{ position: "absolute", left: 28 + (560 - 56 - 56 - 64) * p, top: 134, width: 56, height: 56, borderRadius: 14, background: cell.color, opacity: visible }} />
+          <div key={cell.name} style={{ position: "absolute", left, top, width: 560, height: 240, background: c.panel, border: `1px solid ${c.line}`, borderRadius: 20 }}>
+            <div style={{ position: "absolute", left: 28, top: 24, fontSize: 26, fontWeight: 600 }}>{cell.name}</div>
+            <div style={{ position: "absolute", left: 28, top: 64, fontFamily: mono, fontSize: 19, color: c.dim, lineHeight: 1.5 }}>damping {cell.damping}<br />stiffness {cell.stiffness}</div>
+            <CurveChart x={300} y={20} w={236} h={120} tMax={70} now={t} value={value} color={cell.color} ymax={1.4} />
+            <div style={{ position: "absolute", left: 28, right: 28, top: 195, height: 2, background: c.line }} />
+            <div style={{ position: "absolute", left: 28 + trackW * value(Math.max(0, t)), top: 167, width: 56, height: 56, borderRadius: 14, background: cell.color, opacity: visible, boxShadow: `0 0 24px ${cell.color}66` }} />
           </div>
         );
       })}
-    </AbsoluteFill>
+    </Stage>
   );
 };
