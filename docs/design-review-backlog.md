@@ -88,6 +88,7 @@ Run sheet demo: `docs/demo/review-service-demo.md` (di branch `demo/review-usage
 | F8 | UI service: Tabs, Card, DataTable, Badge memakai kelas `slate/indigo` mentah dari komponen yang ditarik (milik repo dev). Tombol Copy gagal diam-diam tanpa izin clipboard (secret tetap terlihat). Alert error sesaat sebelum redirect 401. | Kecil; sebagian pekerjaan repo dev. |
 | F9 | Skill: fallback lokal (`reviewCore`) tidak dibatasi per project dan tidak memiliki cek route (`/applied` pada review pending, validasi `items`). Tes CLI hanya menegaskan exit non-zero (bukan tepat 2) dan tidak mencakup konfigurasi parsial atau galat jaringan di `--answers`. | Kecil. |
 | F10 | `hasPreviewBuilds` tidak dipakai (Q9). Perbandingan komponen via Storybook baru berupa link "Open in Storybook". | Sudah ada di langkah 5. |
+| F11 | Review tidak tahu *kapan* komponen muncul di sebuah halaman: Alert `outlined` di `/reservations/new` hanya tampil setelah form diisi (peralatan bentrok), jadi frame halaman kosong tidak menampilkannya. Sama untuk modal, toast, error state. Perbaikan yang mungkin: catatan "muncul saat..." per item, atau route sample dengan state awal (parameter URL). Kalimat "There is no live preview for this one yet" (preview komponen) juga tercampur dengan "Page to preview" (preview halaman). | Sedang. Demo: pilih `/reservations/:id` (RS-1001 sudah bentrok). |
 
 ## 5. Batas demo yang jujur (katakan sebelum ditanya)
 
