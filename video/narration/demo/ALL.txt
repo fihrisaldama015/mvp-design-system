@@ -33,10 +33,12 @@ Sound is just another layer.
 There is a voice, there are effects, and there is music that ducks under the voice, so you can always hear it.
 All of it is placed by frame number, like everything else.
 
-# scene7  (3 sentences)
-Props turn one composition into many videos.
-Edit them in the Studio, pass them from a script, or fetch them from data.
-Same template, different story.
+# scene7  (5 sentences)
+The camera is just math too.
+A zoom is a scale, a pan is a translation, and a tilt is a rotation with perspective.
+Here the view leans over by twenty degrees, then rolls back.
+For real depth, Remotion can render three-dimensional scenes, with lights and an orbiting camera.
+Add motion blur, and fast moves look as if a real lens filmed them.
 
 # scene8  (3 sentences)
 Claude writes the scenes, the helpers, and the scripts.
