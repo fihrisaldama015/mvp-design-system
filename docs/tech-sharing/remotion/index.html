@@ -1,0 +1,501 @@
+<title>Video as Code</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a 1920x1080 stage scaled to fit the window, one slide at a time, keyboard and buttons to move.
+   Look: the same dark stage as the video clips (Shield palette), one rose accent, Inter + JetBrains Mono. */
+:root {
+  --bg: #0d1017;
+  --surface: #161a23;
+  --surface-2: #1d222d;
+  --line: #2a303d;
+  --text: #f2f4f8;
+  --dim: #98a2b3;
+  --faint: #7c8799;
+  --accent: #fb7185;
+  --green: #4ade80;
+  --amber: #fbbf24;
+  --blue: #60a5fa;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow: hidden;
+}
+.app { height: 100%; display: flex; flex-direction: column; }
+.progress { height: 4px; background: var(--surface); flex: none; }
+.progress i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.25s ease; }
+.area { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+.stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; background: var(--bg); }
+.bar { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); color: var(--dim); font-size: 14px; }
+.bar .group { display: flex; align-items: center; gap: 8px; }
+.bar button { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.bar button:hover { background: var(--surface-2); }
+.bar button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bar .count { font-family: var(--mono); min-width: 64px; text-align: center; }
+.bar .hint { font-size: 13px; }
+#notes { flex: none; max-height: 30%; overflow: auto; background: var(--surface); border-top: 1px solid var(--line); padding: 14px 18px; color: var(--text); font-size: 16px; line-height: 1.5; }
+#notes b { color: var(--accent); font-weight: 600; }
+
+.slide { position: absolute; inset: 0; display: none; flex-direction: column; gap: 36px; padding: 96px 128px 112px; box-sizing: border-box; }
+.slide.active { display: flex; }
+.kicker { font-size: 26px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: 168px; font-weight: 800; letter-spacing: -0.035em; line-height: 0.98; text-wrap: balance; }
+h2 { font-size: 76px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.05; text-wrap: balance; }
+h3 { font-size: 36px; font-weight: 600; }
+.lead { font-size: 42px; line-height: 1.35; color: var(--dim); max-width: 1400px; }
+.points { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 26px; font-size: 40px; line-height: 1.3; }
+.points li { position: relative; padding-left: 36px; }
+.points li::before { content: ""; position: absolute; left: 0; top: 0.5em; width: 14px; height: 14px; border-radius: 4px; background: var(--accent); }
+code, .mono { font-family: var(--mono); }
+.points code, .lead code, td code { font-size: 0.86em; color: var(--text); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 2px 10px; }
+
+.split { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.2fr 1fr; gap: 72px; align-items: center; }
+.split.flip { grid-template-columns: 1fr 1.2fr; }
+.col { display: flex; flex-direction: column; gap: 32px; min-width: 0; }
+.media { margin: 0; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.media .frame { border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: #000; }
+.media video { display: block; width: 100%; height: auto; }
+.media figcaption { font-size: 26px; color: var(--faint); }
+
+pre.code { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 36px 44px; font-family: var(--mono); font-size: 31px; line-height: 1.55; color: var(--text); overflow: hidden; white-space: pre; }
+.c { color: var(--faint); } .k { color: var(--blue); } .s { color: var(--green); } .n { color: var(--amber); } .f { color: var(--accent); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 14px; }
+.chip { font-family: var(--mono); font-size: 26px; padding: 8px 20px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--text); }
+.chip.live { color: var(--bg); background: var(--amber); border-color: var(--amber); font-weight: 600; }
+.chip.accent { color: var(--accent); border-color: var(--accent); }
+
+.big { display: flex; gap: 40px; }
+.big div { flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 36px 40px; display: flex; flex-direction: column; gap: 8px; }
+.big b { font-size: 92px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+.big span { font-size: 30px; color: var(--dim); }
+
+table { width: 100%; border-collapse: collapse; font-size: 32px; line-height: 1.35; }
+th { text-align: left; font-size: 24px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); padding: 0 28px 16px 0; }
+td { padding: 24px 28px 24px 0; border-top: 1px solid var(--line); vertical-align: top; }
+td:first-child { font-weight: 600; width: 26%; }
+.note { font-size: 24px; color: var(--faint); }
+
+.flow { display: flex; align-items: stretch; gap: 20px; }
+.step { flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 28px 32px; display: flex; flex-direction: column; gap: 10px; font-size: 32px; line-height: 1.3; }
+.step small { font-size: 24px; color: var(--faint); font-weight: 400; }
+.arrow { align-self: center; font-size: 44px; color: var(--accent); }
+
+.cards { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; gap: 24px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 28px 32px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.card h3 { font-size: 34px; }
+.card p { font-size: 25px; line-height: 1.45; color: var(--dim); font-family: var(--mono); }
+.badge { align-self: flex-start; font-size: 22px; padding: 4px 14px; border-radius: 999px; font-weight: 600; }
+.badge.used { background: #123524; color: var(--green); }
+.badge.part { background: #3a2f0e; color: var(--amber); }
+.badge.none { background: var(--surface-2); color: var(--dim); }
+
+.two { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 40px 44px; display: flex; flex-direction: column; gap: 26px; min-width: 0; }
+.panel .points { font-size: 33px; gap: 20px; }
+.panel h3 { color: var(--accent); }
+
+.center { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 36px; }
+.title-slide { justify-content: center; gap: 48px; }
+.title-slide .sub { font-size: 60px; font-weight: 600; color: var(--accent); }
+.foot { position: absolute; left: 128px; bottom: 44px; font-size: 24px; color: var(--faint); }
+.foot.right { left: auto; right: 128px; }
+@media (prefers-reduced-motion: reduce) { .progress i { transition: none; } }
+</style>
+
+<div class="app">
+  <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+  <main class="area" id="area">
+    <div class="stage" id="stage">
+
+      <!-- 1 -->
+      <section class="slide title-slide" data-notes="<b>Buka.</b> Satu kalimat: kita membuat video Shield 10 scene sepenuhnya dari kode. Hari ini: bagaimana, dan apa saja yang mungkin.">
+        <div class="kicker">Dev sharing session</div>
+        <h1>Video as code</h1>
+        <div class="sub">Claude + Remotion</div>
+        <div class="foot">Press → to start · N for notes · F for full screen</div>
+      </section>
+
+      <!-- 2 -->
+      <section class="slide" data-notes="<b>Kenapa kode.</b> Bandingkan: di editor, setiap revisi naskah berarti potong dan geser manual. Di kode, naskah berubah, audio dibuat ulang, <code>align</code> mengukur, video mengikuti. Plus bisa di-review di git.">
+        <div class="kicker">Why</div>
+        <h2>Change one sentence, render again</h2>
+        <div class="two">
+          <div class="panel">
+            <h3 style="color:var(--dim)">Video editor</h3>
+            <ul class="points"><li>Record the voice again</li><li>Cut and drag every clip to the new timing</li><li>Export, then check by eye</li></ul>
+          </div>
+          <div class="panel">
+            <h3>Code</h3>
+            <ul class="points"><li>Edit <code>narration.json</code></li><li>New audio, then <code>npm run align</code></li><li>Render. The timing follows the voice</li><li>Review the change in git</li></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 -->
+      <section class="slide" data-notes="<b>Apa yang kita buat.</b> Video Shield: 10 scene, rencana sekitar 6:50, narasi, caption, dan animasi, semuanya dari satu repo. Putar klip 12 detik ini (scene 1).">
+        <div class="kicker">What we built</div>
+        <h2>The Shield video</h2>
+        <div class="split">
+          <div class="col">
+            <div class="big">
+              <div><b>10</b><span>scenes</span></div>
+              <div><b>6:50</b><span>planned length</span></div>
+              <div><b>1</b><span>repo</span></div>
+            </div>
+            <p class="lead">Voice-over, captions, timing and animation, all generated from code.</p>
+          </div>
+          <figure class="media"><div class="frame"><video src="clips/shield.mp4" muted loop playsinline preload="auto"></video></div><figcaption>Scene 1, from the real render</figcaption></figure>
+        </div>
+      </section>
+
+      <!-- 4 -->
+      <section class="slide" data-notes="<b>Satu ide.</b> Video adalah fungsi dari nomor frame. Tidak ada state atau timer: frame yang sama selalu menghasilkan gambar yang sama. Kode di kanan adalah helper asli kita (anim.ts).">
+        <div class="kicker">Remotion in one idea</div>
+        <h2>A video is a function of the frame number</h2>
+        <div class="split flip">
+          <ul class="points">
+            <li><code>useCurrentFrame()</code> gives 0, 1, 2 …</li>
+            <li>30 fps: frame 45 is 1.5 seconds</li>
+            <li>No timers, no state</li>
+            <li>Same frame, same picture</li>
+          </ul>
+          <pre class="code"><span class="c">// 0 → 1 between frames a and b</span>
+<span class="k">export const</span> <span class="f">ramp</span> = (f, a, b) =&gt;
+  <span class="f">interpolate</span>(f,
+    [a, Math.<span class="f">max</span>(b, a + <span class="n">1</span>)],
+    [<span class="n">0</span>, <span class="n">1</span>],
+    { extrapolateLeft: <span class="s">"clamp"</span>,
+      extrapolateRight: <span class="s">"clamp"</span> });</pre>
+        </div>
+      </section>
+
+      <!-- 5 -->
+      <section class="slide" data-notes="<b>Dari naskah ke scene.</b> Satu sumber: naskah menjadi narration.json, scene membaca dari situ. Tidak ada salin-tempel teks ke banyak tempat.">
+        <div class="kicker">Project anatomy</div>
+        <h2>From script to scenes</h2>
+        <div class="split flip">
+          <div class="flow" style="flex-direction:column;align-items:stretch">
+            <div class="step"><b>video-script.md</b><small>the plan, scene by scene</small></div>
+            <div class="step"><b>narration.json</b><small>the words, one sentence per line</small></div>
+            <div class="step"><b>scenes/Scene1 … Scene10</b><small>React components that read it</small></div>
+          </div>
+          <pre class="code"><span class="f">video/</span>
+├─ src/scenes/            <span class="c">10 scenes</span>
+├─ src/narration.json     <span class="c">what is said</span>
+├─ src/audioTiming.json   <span class="c">when</span>
+├─ public/audio/          <span class="c">1 file per scene</span>
+└─ scripts/               <span class="c">align · words</span></pre>
+        </div>
+      </section>
+
+      <!-- 6 -->
+      <section class="slide" data-notes="<b>Masalah timing.</b> Suara tidak membawa timestamp, jadi audio yang menentukan jadwal. Tiga langkah di kiri. JSON di kanan adalah data asli scene 1: dimulai frame 15, durasi 718 frame, kalimat mulai di frame 15, 329, 405, dan 'sure: true'.">
+        <div class="kicker">Timing</div>
+        <h2>A voice has no timestamps, so the audio sets the schedule</h2>
+        <div class="split flip">
+          <div class="flow" style="flex-direction:column;align-items:stretch">
+            <div class="step"><b>1 · Record</b><small>text-to-speech or a person</small></div>
+            <div class="step"><b>2 · Measure</b><small><code>npm run align</code> finds each sentence</small></div>
+            <div class="step"><b>3 · Follow</b><small>scenes read <code>audioTiming.json</code></small></div>
+          </div>
+          <pre class="code" style="font-size:28px"><span class="s">"scene1"</span>: {
+  <span class="s">"audio"</span>: <span class="s">"audio/scene1.wav"</span>,
+  <span class="s">"audioStart"</span>: <span class="n">15</span>,
+  <span class="s">"durationFrames"</span>: <span class="n">718</span>,
+  <span class="s">"starts"</span>: [<span class="n">15</span>, <span class="n">329</span>, <span class="n">405</span>],
+  <span class="s">"how"</span>: <span class="s">"transcript (54 words),
+          2/2 snapped to a pause"</span>,
+  <span class="s">"sure"</span>: <span class="k">true</span>
+}</pre>
+        </div>
+      </section>
+
+      <!-- 7 -->
+      <section class="slide" data-notes="<b>Dua cara.</b> Deteksi jeda cepat tapi bisa salah di koma. Transkrip whisper akurat: dalam pengecekan kita setiap batas jatuh di jeda 0,5 sampai 0,8 detik. Suara apa pun boleh, TTS atau manusia. Catatan: modelnya masih khusus Inggris (small.en).">
+        <div class="kicker">Aligning</div>
+        <h2>Two ways to find each sentence, any voice</h2>
+        <table>
+          <thead><tr><th>Method</th><th>Good at</th><th>Watch out</th></tr></thead>
+          <tbody>
+            <tr><td>Pause detection <code>ffmpeg</code></td><td>Fast, no setup</td><td>A pause at a comma looks like the end of a sentence</td></tr>
+            <tr><td>Transcript <code>faster-whisper</code></td><td>Word timestamps, snapped to the pause before each sentence. Every boundary in our check landed on a 0.5 to 0.8 s pause</td><td>One-time setup. English model today (<code>small.en</code>)</td></tr>
+          </tbody>
+        </table>
+        <div class="chips"><span class="chip">TTS (e.g. MiniMax)</span><span class="chip">a human voice</span><span class="chip">.wav · .mp3 · .m4a · .ogg</span></div>
+      </section>
+
+      <!-- 8 -->
+      <section class="slide" data-notes="<b>Motion dasar.</b> Tiga kurva, jarak dan frame mulai sama. Lihat jarak garis tepi: rapat untuk linear, makin menyempit untuk easing, spring melompat lalu kembali. Grafik di kanan tiap jalur adalah kurvanya.">
+        <div class="kicker">Motion basics</div>
+        <h2>Same move, three curves</h2>
+        <div class="split">
+          <figure class="media"><div class="frame"><video src="clips/motion.mp4" muted loop playsinline preload="auto"></video></div><figcaption>Watch the spacing of the outlines</figcaption></figure>
+          <ul class="points">
+            <li><code>interpolate()</code> maps frames to values</li>
+            <li>An easing changes the feel, not the distance</li>
+            <li><code>spring()</code> is physics: it overshoots, then settles</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 9 -->
+      <section class="slide" data-notes="<b>Spring.</b> Dua angka. damping kecil berarti memantul, stiffness besar berarti cepat. Garis putus-putus di grafik adalah target; pantulan terlihat sebagai kurva yang naik di atasnya.">
+        <div class="kicker">Spring</div>
+        <h2>Two numbers decide the feel</h2>
+        <div class="split flip">
+          <div class="col">
+            <ul class="points">
+              <li><code>damping</code>: lower bounces more</li>
+              <li><code>stiffness</code>: higher is faster</li>
+              <li>A bounce is the curve above the dashed target</li>
+            </ul>
+            <pre class="code" style="font-size:27px"><span class="f">spring</span>({ frame, fps,
+  config: { damping: <span class="n">7</span>, stiffness: <span class="n">220</span> } })</pre>
+          </div>
+          <figure class="media"><div class="frame"><video src="clips/spring.mp4" muted loop playsinline preload="auto"></video></div><figcaption>Four settings, each with its response curve</figcaption></figure>
+        </div>
+      </section>
+
+      <!-- 10 -->
+      <section class="slide" data-notes="<b>Kinetic.</b> Kalimat yang sama, dua cara. Atas: satu kalimat sekaligus. Bawah: kata muncul saat diucapkan, kata yang sedang diucapkan berwarna. Ini bukti penyelarasan akurat sampai tingkat kata. Data dari transkrip whisper.">
+        <div class="kicker">Kinetic captions</div>
+        <h2>From a sentence to a word</h2>
+        <div class="split">
+          <figure class="media"><div class="frame"><video src="clips/kinetic.mp4" muted loop playsinline preload="auto"></video></div><figcaption>Real timing from Scene 1</figcaption></figure>
+          <div class="col">
+            <ul class="points">
+              <li>Each word has a start and end frame</li>
+              <li>It pops in with <code>spring()</code> as it is spoken</li>
+              <li>The spoken word is highlighted</li>
+            </ul>
+            <div class="chips"><span class="chip">npm run words</span><span class="chip">wordTiming.json</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 11 -->
+      <section class="slide" data-notes="<b>Transisi.</b> TransitionSeries: dua scene tumpang tindih 20 frame, presentation menentukan caranya. fade, slide, wipe, flip. Efek cube ditandai berbayar di dokumentasi.">
+        <div class="kicker">Between scenes</div>
+        <h2>Scenes overlap, the presentation decides</h2>
+        <div class="split flip">
+          <div class="col">
+            <ul class="points">
+              <li><code>&lt;TransitionSeries&gt;</code> overlaps two scenes</li>
+              <li>fade · slide · wipe · flip</li>
+              <li>The <code>cube</code> effect is marked as paid in the docs</li>
+            </ul>
+            <pre class="code" style="font-size:27px">&lt;<span class="f">TransitionSeries.Transition</span>
+  presentation={<span class="f">fade</span>()}
+  timing={<span class="f">linearTiming</span>({ durationInFrames: <span class="n">20</span> })} /&gt;</pre>
+          </div>
+          <figure class="media"><div class="frame"><video src="clips/transitions.mp4" muted loop playsinline preload="auto"></video></div><figcaption>Five cards, four transitions</figcaption></figure>
+        </div>
+      </section>
+
+      <!-- 12 -->
+      <section class="slide" data-notes="<b>Props dan Studio.</b> Satu komposisi, banyak video. Dengan schema zod, Studio menampilkan panel Props. <b>DEMO LANGSUNG:</b> buka npm run studio, pilih DemoProps, ubah warna dan damping.">
+        <div class="kicker">Props and the Studio</div>
+        <h2>One composition, many videos</h2>
+        <div class="split">
+          <figure class="media"><div class="frame"><video src="clips/props.mp4" muted loop playsinline preload="auto"></video></div><figcaption>The same card with three prop sets</figcaption></figure>
+          <div class="col">
+            <ul class="points">
+              <li>A zod schema gives the Studio a Props panel</li>
+              <li>Sliders, a colour picker, a text field</li>
+              <li>Render from a script with <code>--props</code></li>
+            </ul>
+            <div class="chips"><span class="chip live">LIVE</span><span class="chip">npm run studio → DemoProps</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 13 -->
+      <section class="slide" data-notes="<b>Peta.</b> Ini potensi penuhnya; kita memakai sebagian kecil. Jangan dibacakan satu per satu: sebut kelompoknya. Nama paket sesuai dokumentasi, cek untuk versi yang dipakai (kita 4.0.535).">
+        <div class="kicker">What else is possible</div>
+        <h2>The map</h2>
+        <div class="cards">
+          <div class="card"><h3>Motion</h3><p>interpolate · spring · Easing · interpolateColors</p><span class="badge used">In our video</span></div>
+          <div class="card"><h3>Scenes</h3><p>Series · Sequence · TransitionSeries · Loop · Freeze</p><span class="badge part">Partly</span></div>
+          <div class="card"><h3>Text</h3><p>@remotion/captions · layout-utils · google-fonts</p><span class="badge part">Partly</span></div>
+          <div class="card"><h3>Graphics</h3><p>paths · shapes · noise · motion-blur · lottie</p><span class="badge none">Not used yet</span></div>
+          <div class="card"><h3>3D and camera</h3><p>@remotion/three (Three.js). A 2D camera is a transform on a wrapper</p><span class="badge none">Not used yet</span></div>
+          <div class="card"><h3>Media</h3><p>Video · OffthreadVideo · Audio · media-utils · gif</p><span class="badge part">Partly</span></div>
+          <div class="card"><h3>Ship it</h3><p>@remotion/player · renderMedia · Lambda · codecs · --props</p><span class="badge part">Partly</span></div>
+          <div class="card"><h3>Data</h3><p>calculateMetadata · zod schema · inputProps</p><span class="badge part">Partly</span></div>
+        </div>
+        <div class="foot">Package names as in the Remotion docs. We use version 4.0.535.</div>
+      </section>
+
+      <!-- 14 -->
+      <section class="slide" data-notes="<b>Bekerja dengan Claude.</b> Claude menulis scene, helper, dan skrip, dan memeriksa frame sebagai gambar diam. Anda menulis naskah, memilih suara, dan menilai rasa gerak, karena Claude tidak menonton gerakannya. Kanan: jebakan yang kita temui, termasuk peringatan Version mismatch yang baru kemarin.">
+        <div class="kicker">Working with Claude</div>
+        <h2>Who does what, and what bit us</h2>
+        <div class="two">
+          <div class="panel">
+            <h3>Claude and you</h3>
+            <ul class="points">
+              <li>Claude writes scenes, helpers and scripts</li>
+              <li>Claude checks frames as still images</li>
+              <li>You write the script and choose the voice</li>
+              <li>You judge the motion: it cannot watch it</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>Pitfalls</h3>
+            <ul class="points">
+              <li>TTS misreads names: respell them for the TTS only</li>
+              <li>A comma pause fools pause detection: use the transcript</li>
+              <li>Pin every <code>remotion</code> and <code>@remotion/*</code> version. 4.0.535 needs zod 4.5.4</li>
+              <li><code>npx remotion versions</code> tells you when something is off</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 15 -->
+      <section class="slide" data-notes="<b>Perbandingan.</b> Claude Motion: menurut laporan pihak ketiga, beta untuk Team dan Enterprise, animasi pendek di Artifacts. Cek halaman resmi Anthropic. <b>Isi baris lisensi Remotion setelah dicek di remotion.dev/license.</b>">
+        <div class="kicker">Choosing</div>
+        <h2>Remotion, Claude Motion, or an editor</h2>
+        <table>
+          <thead><tr><th></th><th>Remotion</th><th>Claude Motion *</th><th>Video editor</th></tr></thead>
+          <tbody>
+            <tr><td>Lives in</td><td>Code in your repo</td><td>Inside Claude</td><td>A desktop app</td></tr>
+            <tr><td>Control</td><td>Every frame, audio timing, git</td><td>Prompt-driven, limited</td><td>Full, by hand</td></tr>
+            <tr><td>Available to</td><td>Anyone. Check the license for company use</td><td>Team and Enterprise, beta</td><td>Anyone with the app</td></tr>
+            <tr><td>Best for</td><td>Repeatable, data-driven videos</td><td>Quick short animations</td><td>One-off creative edits</td></tr>
+          </tbody>
+        </table>
+        <div class="chips"><span class="chip live">License</span><span class="chip">check remotion.dev/license before company use</span></div>
+        <div class="foot">* Per third-party reports. Check Anthropic's own page.</div>
+      </section>
+
+      <!-- 16 -->
+      <section class="slide" data-notes="<b>Keluaran dan lanjutan.</b> SRT dari naskah yang sama, video berbasis data lewat calculateMetadata. Yang terakhir hanya ide, belum dibangun.">
+        <div class="kicker">Outputs and next</div>
+        <h2>Beyond one video</h2>
+        <div class="cards" style="grid-template-columns:repeat(3,1fr);grid-template-rows:1fr">
+          <div class="card"><h3>Subtitles</h3><p style="font-family:var(--sans);font-size:30px">A <code style="font-size:26px">.srt</code> from the same script, for accessibility</p><span class="badge part">Done in another project</span></div>
+          <div class="card"><h3>Data-driven</h3><p style="font-family:var(--sans);font-size:30px"><code style="font-size:26px">calculateMetadata</code> sets duration and props from data</p><span class="badge none">Not used yet</span></div>
+          <div class="card"><h3>An idea</h3><p style="font-family:var(--sans);font-size:30px">A weekly video from the design review history</p><span class="badge none">Idea, not built</span></div>
+        </div>
+      </section>
+
+      <!-- 17 -->
+      <section class="slide title-slide" data-notes="<b>Putar video demo</b> dari berkas lokal (di luar slide), lalu kembali ke slide terakhir untuk tanya jawab.">
+        <div class="kicker">Demo</div>
+        <h1 style="font-size:132px">Now: the demo video</h1>
+        <div class="chips"><span class="chip accent">voice</span><span class="chip accent">sound effects</span><span class="chip accent">kinetic captions</span><span class="chip accent">all from Remotion</span></div>
+        <div class="foot">Played from a local file</div>
+      </section>
+
+      <!-- 18 -->
+      <section class="slide title-slide" data-notes="<b>Tanya jawab.</b> Repo: folder video/. Klip contoh ada di video/src/showcase/.">
+        <div class="kicker">Questions</div>
+        <h1>Questions?</h1>
+        <div class="chips"><span class="chip">video/</span><span class="chip">video/src/showcase/</span><span class="chip">npm run studio</span></div>
+      </section>
+
+    </div>
+  </main>
+  <aside id="notes" hidden></aside>
+  <nav class="bar" aria-label="Slides">
+    <div class="group"><button id="prev" type="button" aria-label="Previous slide">←</button><span class="count" id="count">1 / 1</span><button id="next" type="button" aria-label="Next slide">→</button></div>
+    <span class="hint">← → to move · N notes · F full screen</span>
+    <div class="group"><button id="notesBtn" type="button" aria-pressed="false">Notes</button><button id="full" type="button">Full screen</button></div>
+  </nav>
+</div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var stage = document.getElementById("stage");
+  var area = document.getElementById("area");
+  var bar = document.getElementById("bar");
+  var count = document.getElementById("count");
+  var notes = document.getElementById("notes");
+  var notesBtn = document.getElementById("notesBtn");
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var idx = 0;
+
+  function fit() {
+    var w = area.clientWidth, h = area.clientHeight;
+    var s = Math.min(w / 1920, h / 1080);
+    stage.style.transform = "scale(" + s + ")";
+    stage.style.left = Math.max(0, (w - 1920 * s) / 2) + "px";
+    stage.style.top = Math.max(0, (h - 1080 * s) / 2) + "px";
+  }
+
+  // A clip plays (muted, looping) only while its slide is on screen.
+  function play(v) {
+    if (reduce) { v.controls = true; return; }
+    try { v.currentTime = 0; } catch (e) {}
+    var p = v.play();
+    if (p && p.catch) p.catch(function () { v.controls = true; });
+  }
+
+  function show(n) {
+    n = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function (s, i) {
+      var on = i === n;
+      s.classList.toggle("active", on);
+      Array.prototype.forEach.call(s.querySelectorAll("video"), function (v) { if (on) play(v); else v.pause(); });
+    });
+    idx = n;
+    count.textContent = (n + 1) + " / " + slides.length;
+    bar.style.width = ((n + 1) / slides.length * 100) + "%";
+    notes.innerHTML = slides[n].getAttribute("data-notes") || "";
+    var wanted = "slide-" + (n + 1);
+    if (location.hash.slice(1) !== wanted) location.hash = wanted;
+  }
+
+  function fromHash() {
+    var m = /^#slide-(\d+)$/.exec(location.hash);
+    show(m ? parseInt(m[1], 10) - 1 : 0);
+  }
+
+  function toggleNotes() {
+    notes.hidden = !notes.hidden;
+    notesBtn.setAttribute("aria-pressed", String(!notes.hidden));
+    fit();
+  }
+
+  function fullscreen() {
+    try {
+      if (document.fullscreenElement) { var x = document.exitFullscreen(); if (x && x.catch) x.catch(function () {}); }
+      else { var r = document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); if (r && r.catch) r.catch(function () {}); }
+    } catch (e) {}
+  }
+
+  document.getElementById("prev").addEventListener("click", function () { show(idx - 1); });
+  document.getElementById("next").addEventListener("click", function () { show(idx + 1); });
+  notesBtn.addEventListener("click", toggleNotes);
+  document.getElementById("full").addEventListener("click", fullscreen);
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " " || k === "Enter") { e.preventDefault(); show(idx + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp" || k === "Backspace") { e.preventDefault(); show(idx - 1); }
+    else if (k === "Home") { e.preventDefault(); show(0); }
+    else if (k === "End") { e.preventDefault(); show(slides.length - 1); }
+    else if (k === "n" || k === "N") toggleNotes();
+    else if (k === "f" || k === "F") fullscreen();
+  });
+  window.addEventListener("hashchange", fromHash);
+  window.addEventListener("resize", fit);
+  if (window.ResizeObserver) new ResizeObserver(fit).observe(area);
+  fit();
+  fromHash();
+})();
+</script>
