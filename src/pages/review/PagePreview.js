@@ -25,7 +25,7 @@ export default function PagePreview({ route, previewUrl }) {
     return <p className="text-caption typo-regular-text-sm">No preview: add a sample path for {route.path} in figma-tokens.config.json (review.routeSamples).</p>;
   }
   return (
-    <div className="flex flex-col gap-3">
+    <div className="review-enter flex flex-col gap-3">
       <div className="flex flex-col gap-4 md:flex-row">
         <Frame title="Now" url={now} embed={nowEmbed} path={route.path} />
         {after && <Frame title="With the Figma version" url={after} embed={afterEmbed} path={route.path} />}

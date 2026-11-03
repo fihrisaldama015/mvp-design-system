@@ -1,0 +1,10 @@
+/* Things that appear on the review page (a date field, a warning, a saved decision, a new page in the frames) ease in
+   instead of popping. People who asked for less motion get none. */
+@keyframes review-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.review-enter { animation: review-enter 220ms ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .review-enter { animation: none; }
+}

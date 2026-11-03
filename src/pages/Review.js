@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BadgeCheck, BookOpen, CalendarClock, CheckCircle2, ChevronDown, ChevronUp, Eraser, ExternalLink, Gauge, Gavel, History, Hourglass, Info, Layers, ListChecks, LogOut, Monitor, PenLine, RefreshCw, RotateCw, Save, TriangleAlert, Unlink, Upload } from "lucide-react";
+import { BadgeCheck, BookOpen, CalendarClock, CheckCircle2, ChevronDown, Eraser, ExternalLink, Gauge, Gavel, History, Hourglass, Info, Layers, ListChecks, LogOut, Monitor, PenLine, RefreshCw, RotateCw, Save, TriangleAlert, Unlink, Upload } from "lucide-react";
 import { Alert } from "components/alert";
 import { Badge } from "components/badge";
 import { Button } from "components/button";
@@ -13,6 +13,7 @@ import { Select } from "components/select";
 import { Stepper } from "components/stepper";
 import { Tabs } from "components/tabs";
 import { ChoiceCards } from "proposed/choice-cards";
+import { Collapse } from "proposed/collapse";
 import { ProgressRing } from "proposed/progress-ring";
 import { StatCard } from "components/stat-card";
 import { Textarea } from "components/textarea";
@@ -20,6 +21,7 @@ import { previewFor } from "pages/review/previews";
 import PagePreview from "pages/review/PagePreview";
 import { call, changePassword, configured, login, sessionStore } from "app/review/serviceClient";
 import { NOTE_MAX, activityKind, actorLabel, changeSentence, changeText, decisionDetails, developerNote, defaultRoute, deadlineText, eventLabel, itemName, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, previewNotes, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
+import "app/review/motion.css";
 import { usageFor } from "../../scripts/figma/usageCore.mjs";
 import usage from "app/review/usage.json";
 
@@ -166,21 +168,18 @@ function Decision({ doc, item, choice, saved, detail, onChoice, readOnly, date, 
         <AffectedPages doc={doc} item={item} />
       </Section>
       <section className="flex flex-col gap-4 rounded-default border-2 border-primary p-5">
-        <div className="flex items-center gap-4">
-          <Gavel size={52} strokeWidth={1.5} className="shrink-0 text-amber-400/70" />
-          <div className="flex flex-col gap-0.5">
-            <h4 className="typo-semi-bold-text-lg">What should we do?</h4>
-            <p className="text-caption typo-regular-text-sm">Pick one. The developers apply it next.</p>
-          </div>
+        <div className="flex flex-col gap-1">
+          <h4 className="flex items-center gap-2 typo-semi-bold-text-lg"><Gavel size={20} />What should we do?</h4>
+          <p className="text-caption typo-regular-text-sm">Pick one. The developers apply it next.</p>
         </div>
         <ChoiceCards options={CHOICE_CARDS} value={choice ?? ""} disabled={readOnly} onChange={onChoice} />
         {choice === "keep-deprecated" && (
-          <div className="w-72">
+          <div className="review-enter w-72">
             <Input label="Migrate by" type="date" required value={date ?? ""} disabled={readOnly} onChange={(e) => onDate(e.target.value)} status={dateError ? "danger" : "default"} caption={dateError ? "Choose the date the pages should stop using it." : "The date the pages should stop using it."} />
           </div>
         )}
         {saved && (
-          <div className="flex flex-col gap-1 rounded-default border border-success p-3">
+          <div className="review-enter flex flex-col gap-1 rounded-default border border-success p-3">
             <p className="flex items-center gap-2 typo-semi-bold-text-sm"><CheckCircle2 size={16} className="shrink-0 text-success" />Decision saved: {decision?.label ?? saved}</p>
             {detail && (detail.by || detail.at || detail.migrateBy) && (
               <p className="text-caption typo-regular-text-sm">{[detail.by && `by ${detail.by}`, when(detail.at), detail.migrateBy && `migrate by ${detail.migrateBy}`].filter(Boolean).join(" · ")}</p>
@@ -286,21 +285,22 @@ function ReviewCard({ doc, index, total, open, onToggle, onUnsaved, session, onC
       action={
         <div className="flex items-center gap-3">
           <Badge tone={STATUS[doc.status].tone}>{STATUS[doc.status].label}</Badge>
-          {unsaved > 0 && <Badge tone="warning" dot>{unsaved} not saved</Badge>}
+          {unsaved > 0 && <Badge tone="warning" dot className="review-enter">{unsaved} not saved</Badge>}
           {open && story && <Button as="a" href={story} target="_blank" rel="noreferrer" kind="outlined" size="sm" prefixIcon={<BookOpen />}>Open in Storybook</Button>}
           {open && link && <Button as="a" href={link} target="_blank" rel="noreferrer" kind="outlined" size="sm" suffixIcon={<ExternalLink />}>Open in Figma</Button>}
-          <Button kind="text" size="sm" suffixIcon={open ? <ChevronUp /> : <ChevronDown />} onClick={(e) => { e.stopPropagation(); onToggle(); }}>{open ? "Hide" : "Show"}</Button>
+          <Button kind="text" size="sm" suffixIcon={<ChevronDown className={`transition-transform duration-300 ${open ? "rotate-180" : ""}`} />} onClick={(e) => { e.stopPropagation(); onToggle(); }}>{open ? "Hide" : "Show"}</Button>
         </div>
       }
     >
-      {!open ? (
+      <Collapse open={!open}>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 typo-regular-text-sm">
           {needs.length > 0 && !applied && <span>Decisions saved: {savedCount} of {needs.length}</span>}
           {decided.length > 0 && <span className="flex items-center gap-1 text-caption"><CheckCircle2 size={14} className="text-success" />{decisionSummary}</span>}
           {needs.length === 0 && decided.length === 0 && <span className="text-caption">{timeline.details[timeline.current === 3 ? 2 : timeline.current === 2 ? 1 : 0]}</span>}
           <span className="ml-auto flex items-center gap-1 text-caption transition-colors group-hover:text-primary">Click to open<ChevronDown size={16} /></span>
         </div>
-      ) : (
+      </Collapse>
+      <Collapse open={open}>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -326,10 +326,10 @@ function ReviewCard({ doc, index, total, open, onToggle, onUnsaved, session, onC
           </details>
         )}
         {!applied && needs.length > 0 && (
-          <section className={`flex flex-col gap-4 rounded-default border-2 p-5 ${unsaved > 0 ? "border-warning" : "border-default"}`}>
+          <section className={`flex flex-col gap-4 rounded-default border-2 p-5 transition-colors duration-200 ${unsaved > 0 ? "border-warning" : "border-default"}`}>
             <div className="flex flex-col gap-1">
               <h4 className="flex items-center gap-2 typo-semi-bold-text-base"><Save size={18} />Save your answers</h4>
-              {unsaved > 0 && <p className="flex items-center gap-2 typo-medium-text-sm"><TriangleAlert size={16} className="shrink-0 text-warning" />{plural(unsaved, "answer", "answers")} not saved yet. Nothing is sent until you press Save answers.</p>}
+              {unsaved > 0 && <p className="review-enter flex items-center gap-2 typo-medium-text-sm"><TriangleAlert size={16} className="shrink-0 text-warning" />{plural(unsaved, "answer", "answers")} not saved yet. Nothing is sent until you press Save answers.</p>}
             </div>
             <div className="max-w-xl">
               <Field label="Why? (optional)" hint={`${note.length} of ${NOTE_MAX} characters. Shown to the developer and kept in the activity log.`}>
@@ -345,11 +345,11 @@ function ReviewCard({ doc, index, total, open, onToggle, onUnsaved, session, onC
           </section>
         )}
         {doc.status === "answered" && <p className="text-caption typo-regular-text-sm">Nothing changes in the code until the developer applies it.</p>}
-        {error && <Alert status="danger" title="Not saved">{error}</Alert>}
+        {error && <div className="review-enter"><Alert status="danger" title="Not saved">{error}</Alert></div>}
         {doc.audit.length > 0 && (
           <section className="flex flex-col gap-3">
-            <Button kind="text" size="sm" className="self-start" prefixIcon={<History />} suffixIcon={logOpen ? <ChevronUp /> : <ChevronDown />} onClick={() => setLogOpen((v) => !v)}>Activity log ({doc.audit.length})</Button>
-            {logOpen && (
+            <Button kind="text" size="sm" className="self-start" prefixIcon={<History />} suffixIcon={<ChevronDown className={`transition-transform duration-300 ${logOpen ? "rotate-180" : ""}`} />} onClick={() => setLogOpen((v) => !v)}>Activity log ({doc.audit.length})</Button>
+            <Collapse open={logOpen}>
               <ol className="flex flex-col">
                 {[...doc.audit].reverse().map((a, n, all) => {
                   const kind = activityKind(a.action);
@@ -375,11 +375,11 @@ function ReviewCard({ doc, index, total, open, onToggle, onUnsaved, session, onC
                   );
                 })}
               </ol>
-            )}
+            </Collapse>
           </section>
         )}
       </div>
-      )}
+      </Collapse>
     </Card>
     </div>
   );
