@@ -73,3 +73,14 @@ so a slide uses `<video autoplay muted loop playsinline>`.
 `DemoProps` is the same card with a zod schema: open it in `npm run studio` and edit `title`, `accent`, `damping` and
 `stiffness` in the Props panel on the right. Keep every `remotion` and `@remotion/*` package on the same exact version
 (no `^`); Remotion 4.0.535 asks for `zod` 4.5.4 (`npx remotion versions` says when something is off).
+
+## The demo video (a video about making videos)
+
+Script: `src/demo/narration.json` (8 scenes, about 310 words, about 3 minutes). Order of work, so it is rendered once:
+
+1. `npm run narration:demo` writes `narration/demo/sceneN.txt` (one sentence per line) for the TTS.
+2. Generate one voice file per scene (the whole scene in one file, the pause after each sentence kept) and save it as
+   `public/audio/demo/scene1.wav` ... `scene8.wav`.
+3. `npm run sfx` makes the sound effects (`public/audio/demo/sfx/`) and the music bed (`public/audio/demo/music.mp3`)
+   with ffmpeg alone, nothing downloaded. Open `out/sfx/audition.html` to listen.
+4. Transcribe, align and make the word timings for the demo set, then render once.

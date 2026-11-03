@@ -1,0 +1,3 @@
+Claude writes the scenes, the helpers, and the scripts.
+You write the script, choose the voice, and judge the feel.
+That is the whole idea: video as code.

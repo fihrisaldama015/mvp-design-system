@@ -1,0 +1,3 @@
+Props turn one composition into many videos.
+Edit them in the Studio, pass them from a script, or fetch them from data.
+Same template, different story.

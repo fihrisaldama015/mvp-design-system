@@ -1,0 +1,5 @@
+Take one move, and give it three curves.
+A linear move has a constant speed, and it feels flat.
+An easing changes the feel without changing the distance.
+A spring overshoots, then settles.
+Two numbers decide it: damping for the bounce, and stiffness for the speed.

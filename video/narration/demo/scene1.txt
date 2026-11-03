@@ -1,0 +1,3 @@
+This video has no timeline and no editor.
+It is code, written with Claude, and it renders the same way every time.
+Let me show you how it works.

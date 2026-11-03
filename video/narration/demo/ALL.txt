@@ -1,0 +1,45 @@
+# scene1  (3 sentences)
+This video has no timeline and no editor.
+It is code, written with Claude, and it renders the same way every time.
+Let me show you how it works.
+
+# scene2  (4 sentences)
+Remotion treats a video as a function of the frame number.
+At thirty frames per second, frame forty-five is one and a half seconds.
+There are no timers and no hidden state.
+The same frame always produces the same picture.
+
+# scene3  (5 sentences)
+Take one move, and give it three curves.
+A linear move has a constant speed, and it feels flat.
+An easing changes the feel without changing the distance.
+A spring overshoots, then settles.
+Two numbers decide it: damping for the bounce, and stiffness for the speed.
+
+# scene4  (4 sentences)
+Now the part that surprised us most: the voice comes first.
+A voice has no timestamps, so we record it, measure it, and let the video follow.
+A transcript gives every word a start and an end, and each sentence snaps to the pause before it.
+The result is a small file that tells every scene exactly when to act.
+
+# scene5  (3 sentences)
+That is how these captions work.
+Each word pops in the moment it is spoken, and the word being spoken lights up.
+Change the spring settings, and the whole feel changes with it.
+
+# scene6  (4 sentences)
+Scenes can overlap, with a transition between each pair.
+Sound is just another layer.
+There is a voice, there are effects, and there is music that ducks under the voice, so you can always hear it.
+All of it is placed by frame number, like everything else.
+
+# scene7  (3 sentences)
+Props turn one composition into many videos.
+Edit them in the Studio, pass them from a script, or fetch them from data.
+Same template, different story.
+
+# scene8  (3 sentences)
+Claude writes the scenes, the helpers, and the scripts.
+You write the script, choose the voice, and judge the feel.
+That is the whole idea: video as code.
+

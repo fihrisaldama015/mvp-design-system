@@ -1,0 +1,4 @@
+Remotion treats a video as a function of the frame number.
+At thirty frames per second, frame forty-five is one and a half seconds.
+There are no timers and no hidden state.
+The same frame always produces the same picture.

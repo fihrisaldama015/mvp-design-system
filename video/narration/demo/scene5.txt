@@ -1,0 +1,3 @@
+That is how these captions work.
+Each word pops in the moment it is spoken, and the word being spoken lights up.
+Change the spring settings, and the whole feel changes with it.

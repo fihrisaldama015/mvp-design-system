@@ -1,0 +1,4 @@
+Scenes can overlap, with a transition between each pair.
+Sound is just another layer.
+There is a voice, there are effects, and there is music that ducks under the voice, so you can always hear it.
+All of it is placed by frame number, like everything else.

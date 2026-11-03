@@ -3,3 +3,5 @@ out/
 public/assets/
 .venv/
 .align/
+public/audio/demo/sfx/
+public/audio/demo/music.mp3

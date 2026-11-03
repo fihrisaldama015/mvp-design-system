@@ -1,0 +1,4 @@
+Now the part that surprised us most: the voice comes first.
+A voice has no timestamps, so we record it, measure it, and let the video follow.
+A transcript gives every word a start and an end, and each sentence snaps to the pause before it.
+The result is a small file that tells every scene exactly when to act.
