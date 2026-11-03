@@ -7,6 +7,8 @@ import { KineticContext } from "./timing";
 import { Motion } from "./showcase/Motion";
 import { SpringGrid } from "./showcase/SpringGrid";
 import { KineticCompare } from "./showcase/KineticCompare";
+import { Transitions, TRANSITIONS_FRAMES } from "./showcase/Transitions";
+import { PROPS_CLIP_FRAMES, PropsCard, PropsClip, defaultCardProps, propsSchema } from "./showcase/PropsCard";
 
 const TOTAL = SCENES.reduce((n, s) => n + sceneFrames(s.id, s.seconds), 0);
 
@@ -32,6 +34,10 @@ export const Root: React.FC = () => (
     {/* Short clips for the tech-sharing slides (1280x720, muted). Render: see the README, "Showcase clips". */}
     <Composition id="DemoMotion" component={Motion} durationInFrames={180} fps={FPS} width={1280} height={720} />
     <Composition id="DemoSpring" component={SpringGrid} durationInFrames={220} fps={FPS} width={1280} height={720} />
+    <Composition id="DemoTransitions" component={Transitions} durationInFrames={TRANSITIONS_FRAMES} fps={FPS} width={1280} height={720} />
+    {/* DemoProps has a schema: open it in the Studio and edit the props in the side panel. DemoPropsClip is the slide's clip. */}
+    <Composition id="DemoProps" component={PropsCard} schema={propsSchema} defaultProps={defaultCardProps} durationInFrames={90} fps={FPS} width={1280} height={720} />
+    <Composition id="DemoPropsClip" component={PropsClip} durationInFrames={PROPS_CLIP_FRAMES} fps={FPS} width={1280} height={720} />
     <Composition id="DemoKinetic" component={KineticCompare} durationInFrames={230} fps={FPS} width={1280} height={720} />
     {SCENES.map(({ id, seconds, Component }) => {
       const Alone: React.FC<{ kinetic?: boolean }> = ({ kinetic = false }) => (

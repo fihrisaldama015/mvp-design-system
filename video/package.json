@@ -13,11 +13,14 @@
     "transcribe": "[ -x .venv/bin/python ] && .venv/bin/python scripts/transcribe.py || echo 'Setup once: python3 -m venv .venv && .venv/bin/pip install faster-whisper'"
   },
   "dependencies": {
-    "@remotion/cli": "^4.0.0",
-    "@remotion/google-fonts": "^4.0.0",
+    "@remotion/cli": "4.0.535",
+    "@remotion/google-fonts": "4.0.535",
+    "@remotion/transitions": "4.0.535",
+    "@remotion/zod-types": "4.0.535",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "remotion": "^4.0.0"
+    "remotion": "4.0.535",
+    "zod": "4.5.4"
   },
   "devDependencies": {
     "@types/react": "^18.3.0",

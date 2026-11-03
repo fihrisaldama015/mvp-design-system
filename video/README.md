@@ -63,7 +63,13 @@ r() { npx remotion render src/index.ts "$@"; }
 r DemoMotion out/clips/motion.mp4 --codec=h264 --crf=26 --muted      # one move, three curves, trails and charts
 r DemoSpring out/clips/spring.mp4 --codec=h264 --crf=26 --muted      # four spring() settings with their response charts
 r DemoKinetic out/clips/kinetic.mp4 --codec=h264 --crf=26 --muted   # captions: sentence vs word (needs npm run words)
+r DemoTransitions out/clips/transitions.mp4 --codec=h264 --crf=26 --muted   # TransitionSeries: fade, slide, wipe, flip
+r DemoPropsClip out/clips/props.mp4 --codec=h264 --crf=26 --muted   # one composition, three prop sets
 ```
 
 The compositions live in `src/showcase/` and are registered in `src/Root.tsx`. Browsers only autoplay a video that is muted,
 so a slide uses `<video autoplay muted loop playsinline>`.
+
+`DemoProps` is the same card with a zod schema: open it in `npm run studio` and edit `title`, `accent`, `damping` and
+`stiffness` in the Props panel on the right. Keep every `remotion` and `@remotion/*` package on the same exact version
+(no `^`); Remotion 4.0.535 asks for `zod` 4.5.4 (`npx remotion versions` says when something is off).
