@@ -19,6 +19,9 @@ import { Scene6 } from "./demo/scenes/Scene6";
 import { Scene7 } from "./demo/scenes/Scene7";
 import { Scene8 } from "./demo/scenes/Scene8";
 import { Scene9 } from "./demo/scenes/Scene9";
+import { Scene10 } from "./demo/scenes/Scene10";
+import { Scene11 } from "./demo/scenes/Scene11";
+import { Scene12 } from "./demo/scenes/Scene12";
 import { PROPS_CLIP_FRAMES, PropsCard, PropsClip, defaultCardProps, propsSchema } from "./showcase/PropsCard";
 
 const TOTAL = SCENES.reduce((n, s) => n + sceneFrames(s.id, s.seconds), 0);
@@ -48,6 +51,9 @@ const DEMO: { id: string; Component: React.FC }[] = [
   { id: "scene7", Component: Scene7 },
   { id: "scene8", Component: Scene8 },
   { id: "scene9", Component: Scene9 },
+  { id: "scene10", Component: Scene10 },
+  { id: "scene11", Component: Scene11 },
+  { id: "scene12", Component: Scene12 },
 ];
 const DEMO_FRAMES = DEMO.reduce((n, d) => n + demoFrames(d.id), 0);
 const DemoVideo: React.FC = () => (
