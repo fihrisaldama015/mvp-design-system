@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText, eventLabel, timelineSteps, defaultRoute } from "../helpers.js";
+import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText, eventLabel, timelineSteps, defaultRoute, previewProps } from "../helpers.js";
 
 test("frame urls join the origin and the route", () => {
   const r = frameUrls({ url: "/reservations" }, "https://x-abc.vercel.app/", "http://localhost:5002");
@@ -201,4 +201,44 @@ test("defaultRoute skips malformed entries", () => {
   const first = { path: "/a", url: "/a" };
   assert.equal(defaultRoute([null, first]), first);
   assert.equal(defaultRoute([null, 3]), undefined);
+});
+
+test("previewProps uses an example for a removed prop", () => {
+  const ex = { with: { a: 1 }, without: {} };
+  assert.deepEqual(previewProps({ examples: { action: ex } }, { kind: "removed-prop", prop: "action", default: "true" }), { with: { a: 1 }, without: {} });
+});
+
+test("previewProps renders a boolean removed prop on and off", () => {
+  assert.deepEqual(previewProps({}, { kind: "removed-prop", prop: "invert", default: "false" }), { with: { invert: true }, without: { invert: false } });
+  assert.deepEqual(previewProps({}, { kind: "removed-prop", prop: "x", default: "true" }), { with: { x: true }, without: { x: false } });
+});
+
+test("previewProps returns null for a removed prop with no example and no boolean default", () => {
+  assert.equal(previewProps({}, { kind: "removed-prop", prop: "size", default: "md" }), null);
+  assert.equal(previewProps({ examples: {} }, { kind: "removed-prop", prop: "size" }), null);
+});
+
+test("previewProps uses the prop=option example for a removed option", () => {
+  const spec = { examples: { "kind=outlined": { with: { kind: "outlined" }, without: { kind: "filled" } } } };
+  assert.deepEqual(previewProps(spec, { kind: "removed-option", prop: "kind", option: "outlined" }), { with: { kind: "outlined" }, without: { kind: "filled" } });
+});
+
+test("previewProps returns null for a removed option without an example", () => {
+  assert.equal(previewProps({ examples: { kind: { with: {}, without: {} } } }, { kind: "removed-option", prop: "kind", option: "outlined" }), null);
+  assert.equal(previewProps({}, { kind: "removed-option", prop: "kind", option: "outlined" }), null);
+});
+
+test("previewProps carries the example hint", () => {
+  const spec = { examples: { "kind=outlined": { with: {}, without: {}, hint: "Compare." }, action: { with: {}, without: {} } } };
+  assert.equal(previewProps(spec, { kind: "removed-option", prop: "kind", option: "outlined" }).hint, "Compare.");
+  assert.equal("hint" in previewProps(spec, { kind: "removed-prop", prop: "action" }), false);
+});
+
+test("previewProps returns null for other kinds and malformed input", () => {
+  assert.equal(previewProps({}, { kind: "removed-component" }), null);
+  assert.equal(previewProps(null, { kind: "removed-prop", prop: "a", default: "true" }), null);
+  assert.equal(previewProps({}, null), null);
+  assert.equal(previewProps(undefined, undefined), null);
+  assert.equal(previewProps("x", 3), null);
+  assert.equal(previewProps({ examples: { a: null } }, { kind: "removed-prop", prop: "a" }), null);
 });

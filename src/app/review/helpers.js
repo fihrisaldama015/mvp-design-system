@@ -134,3 +134,19 @@ export function timelineSteps(audit, status, format = defaultFormat) {
 function safe(format, when) {
   try { return when ? String(format(when) ?? "") : ""; } catch { return ""; }
 }
+
+// The two prop sets the preview renders for a review item, { with, without, hint? }, or null when there is nothing to show.
+// A removed prop uses spec.examples[prop], else is rendered on and off when its default is a boolean.
+// A removed option needs spec.examples["prop=option"]. Any other kind, or malformed input, gives null.
+export function previewProps(spec, item) {
+  if (!spec || typeof spec !== "object" || !item || typeof item !== "object") return null;
+  const from = (example) => (example && typeof example === "object" ? { with: example.with, without: example.without, ...(example.hint ? { hint: example.hint } : {}) } : null);
+  if (item.kind === "removed-prop") {
+    const example = from(spec.examples?.[item.prop]);
+    if (example) return example;
+    if (item.default === "true" || item.default === "false") return { with: { [item.prop]: true }, without: { [item.prop]: false } };
+    return null;
+  }
+  if (item.kind === "removed-option") return from(spec.examples?.[`${item.prop}=${item.option}`]);
+  return null;
+}

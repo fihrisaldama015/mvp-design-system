@@ -63,7 +63,7 @@ function Preview({ preview, prop }) {
         {panel("Without it", "How the component looks in Figma", preview.without)}
         {panel("With it", `The current code, with ${prop} on`, preview.with)}
       </div>
-      {preview.spec.hint && <p className="text-caption typo-regular-text-sm">{preview.spec.hint}</p>}
+      {(preview.hint ?? preview.spec.hint) && <p className="text-caption typo-regular-text-sm">{preview.hint ?? preview.spec.hint}</p>}
     </div>
   );
 }
