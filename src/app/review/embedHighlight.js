@@ -7,8 +7,8 @@ import { componentTypes, findComponentNodes } from "app/review/highlightCore";
 
 const ATTR = "data-review-highlight";
 const STYLE_ID = "review-highlight-style";
-// The padding is the outline offset: nothing moves in the layout.
-const CSS = `[${ATTR}] { outline: 2px solid rgb(var(--theme-color-border-invert-danger, 220 38 38)); outline-offset: 6px; border-radius: 4px; }`;
+// A strong red (danger 600; the border token is a pale 200 and looked transparent). The padding is the outline offset: nothing moves in the layout.
+const CSS = `[${ATTR}] { outline: 3px solid rgb(var(--brand-danger-600, 220 38 38)); outline-offset: 6px; border-radius: 4px; }`;
 
 let types = null;
 let observer = null;
