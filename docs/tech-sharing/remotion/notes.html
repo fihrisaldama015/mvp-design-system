@@ -94,7 +94,7 @@ td.num { font-family: var(--mono); white-space: nowrap; }
     <div class="label">Katakan</div>
     <ul>
       <li>"Hari ini kita bahas membuat video dari kode, dengan Claude dan Remotion."</li>
-      <li>"Kita membuat video Shield 10 scene, dan satu video demo ±3 menit yang saya putar di akhir. Semua bagian video itu dipakai juga di video-nya sendiri."</li>
+      <li>"Saya membuat satu video demo ±3 menit yang saya putar di akhir. Video itu dibuat sepenuhnya dari kode, dan setiap fitur yang saya bahas dipakai di dalam video itu sendiri."</li>
     </ul>
   </article>
 
@@ -109,11 +109,12 @@ td.num { font-family: var(--mono); white-space: nowrap; }
   </article>
 
   <article class="card">
-    <h3><span class="n">3</span>The Shield video <span class="t">1 menit</span></h3>
+    <h3><span class="n">3</span>The demo video <span class="t">1 menit</span></h3>
     <div class="label">Katakan</div>
     <ul>
-      <li>10 scene. Panjang yang direncanakan 6:50, tetapi hasil render sebenarnya <b>4 menit 57 detik</b>, karena durasi mengikuti audio, bukan rencana.</li>
-      <li>Suara, caption, timing, dan animasi, semuanya dihasilkan dari kode.</li>
+      <li>12 scene, <b>2 menit 56 detik</b> (5288 frame), 1920x1080 pada 30 fps, dari satu repo. Panjangnya ditentukan audio, bukan ditentukan duluan.</li>
+      <li>Suara, caption, timing, efek, kamera, dan 3D, semuanya dihasilkan dari kode.</li>
+      <li>Jelaskan sekali: "slide-slide berikut memakai video ini sebagai contoh, jadi kalau ada yang belum jelas, nanti kita lihat hasilnya di akhir."</li>
     </ul>
     <div class="label act">Aksi</div>
     <ul><li>Klip 12 detik berputar sendiri. Biarkan satu putaran.</li></ul>
@@ -143,7 +144,7 @@ td.num { font-family: var(--mono); white-space: nowrap; }
     <div class="label">Katakan</div>
     <ul>
       <li>Suara tidak membawa timestamp. Jadi urutannya terbalik: rekam dulu, ukur dengan <code>npm run align</code>, lalu scene membaca <code>audioTiming.json</code>.</li>
-      <li>Tunjuk JSON di kanan: scene 1 dimulai di frame 15, durasi 718 frame, kalimat mulai di 15, 329, dan 405, <code>sure: true</code>.</li>
+      <li>Tunjuk JSON di kanan (data asli scene 1 video demo): dimulai di frame 15, durasi 337 frame (11,2 detik), kalimat mulai di 15, 110, dan 261, <code>sure: true</code>.</li>
       <li>Ada jeda 15 frame sebelum suara dan 36 frame sesudahnya.</li>
     </ul>
   </article>
@@ -298,7 +299,7 @@ td.num { font-family: var(--mono); white-space: nowrap; }
 
   <section class="card">
     <div class="label ask">Kenapa bukan Claude Motion?</div>
-    <p>Beda tujuan. Claude Motion membuat animasi pendek di dalam percakapan dan hanya tersedia di paket Team dan Enterprise (beta). Remotion kode di repo kita: bisa di-git, diatur sampai frame dan audio, dan dijalankan berulang. Untuk video Shield dengan narasi dan timing presisi, Remotion yang cocok.</p>
+    <p>Beda tujuan. Claude Motion membuat animasi pendek di dalam percakapan dan hanya tersedia di paket Team dan Enterprise (beta). Remotion kode di repo kita: bisa di-git, diatur sampai frame dan audio, dan dijalankan berulang. Untuk video dengan narasi dan timing presisi seperti video demo ini, Remotion yang cocok.</p>
     <div class="label ask">Berapa lama render?</div>
     <p>Video demo 2:56 (5288 frame) di 1920x1080 selesai sekitar <b>5 menit</b> di laptop ini. Itu satu kali pengukuran, di mesin saya; di mesin lain bisa berbeda. Scene 3D dan motion blur yang paling berat.</p>
     <div class="label ask">Apakah Claude "menonton" videonya?</div>
@@ -320,8 +321,7 @@ td.num { font-family: var(--mono); white-space: nowrap; }
   <section class="card">
     <h2 style="margin:0">Angka untuk diingat</h2>
     <ul>
-      <li>Video demo: 12 scene, 2:56, 5288 frame, 1920x1080, 30 fps.</li>
-      <li>Video Shield: 10 scene, rencana 6:50, hasil 4:57.</li>
+      <li>Video demo: 12 scene, 2:56, 5288 frame, 1920x1080, 30 fps. Render penuh ±5 menit (satu pengukuran di laptop ini).</li>
       <li>Versi: Remotion 4.0.535, zod 4.5.4, three 0.170.0, @react-three/fiber 8.18.0.</li>
       <li>Motion blur: bawaan 10 sampel dan shutter 180°.</li>
       <li>Loudness akhir: −16 LUFS, puncak −1,4 dB. Musik di bawah suara: level 0,2, di sela 0,75.</li>

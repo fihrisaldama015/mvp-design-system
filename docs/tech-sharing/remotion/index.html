@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 /* Layout: a 1920x1080 stage scaled to fit the window, one slide at a time, keyboard and buttons to move.
-   Look: the same dark stage as the video clips (Shield palette), one rose accent, Inter + JetBrains Mono. */
+   Look: the same dark stage as the video clips, one rose accent, Inter + JetBrains Mono. */
 :root {
   --bg: #0d1017;
   --surface: #161a23;
@@ -121,7 +121,7 @@ td:first-child { font-weight: 600; width: 17%; }
     <div class="stage" id="stage">
 
       <!-- 1 -->
-      <section class="slide title-slide" data-notes="<b>Buka.</b> Satu kalimat: kita membuat video Shield 10 scene sepenuhnya dari kode. Hari ini: bagaimana, dan apa saja yang mungkin.">
+      <section class="slide title-slide" data-notes="<b>Buka.</b> Satu kalimat: video demo ±3 menit yang saya putar di akhir dibuat sepenuhnya dari kode. Hari ini: bagaimana, dan apa saja yang mungkin.">
         <div class="kicker">Dev sharing session</div>
         <h1>Video as code</h1>
         <div class="sub">Claude + Remotion</div>
@@ -145,19 +145,19 @@ td:first-child { font-weight: 600; width: 17%; }
       </section>
 
       <!-- 3 -->
-      <section class="slide" data-notes="<b>Apa yang kita buat.</b> Video Shield: 10 scene, rencana sekitar 6:50, narasi, caption, dan animasi, semuanya dari satu repo. Putar klip 12 detik ini (scene 1).">
+      <section class="slide" data-notes="<b>Apa yang kita buat.</b> Video demo yang akan diputar di akhir: 12 scene, 2 menit 56 detik, semuanya dihasilkan dari satu repo. Klip 11 detik ini adalah scene 1-nya. Slide-slide berikut memakai video ini sebagai contoh.">
         <div class="kicker">What we built</div>
-        <h2>The Shield video</h2>
+        <h2>The demo video</h2>
         <div class="split">
           <div class="col">
             <div class="big">
-              <div><b>10</b><span>scenes</span></div>
-              <div><b>6:50</b><span>planned length</span></div>
+              <div><b>12</b><span>scenes</span></div>
+              <div><b>2:56</b><span>length</span></div>
               <div><b>1</b><span>repo</span></div>
             </div>
-            <p class="lead">Voice-over, captions, timing and animation, all generated from code.</p>
+            <p class="lead">Voice-over, captions, sound, camera and 3D, all generated from code. You see it in full at the end.</p>
           </div>
-          <figure class="media"><div class="frame"><video src="clips/shield.mp4" muted loop playsinline preload="auto"></video></div><figcaption>Scene 1, from the real render</figcaption></figure>
+          <figure class="media"><div class="frame"><video src="clips/demo.mp4" muted loop playsinline preload="auto"></video></div><figcaption>Scene 1, from the real render</figcaption></figure>
         </div>
       </section>
 
@@ -188,21 +188,21 @@ td:first-child { font-weight: 600; width: 17%; }
         <h2>From script to scenes</h2>
         <div class="split flip">
           <div class="flow" style="flex-direction:column;align-items:stretch">
-            <div class="step"><b>video-script.md</b><small>the plan, scene by scene</small></div>
+            <div class="step"><b>The script</b><small>plain text, scene by scene</small></div>
             <div class="step"><b>narration.json</b><small>the words, one sentence per line</small></div>
-            <div class="step"><b>scenes/Scene1 … Scene10</b><small>React components that read it</small></div>
+            <div class="step"><b>scenes/Scene1 … Scene12</b><small>React components that read it</small></div>
           </div>
           <pre class="code"><span class="f">video/</span>
-├─ src/scenes/            <span class="c">10 scenes</span>
-├─ src/narration.json     <span class="c">what is said</span>
-├─ src/audioTiming.json   <span class="c">when</span>
-├─ public/audio/          <span class="c">1 file per scene</span>
-└─ scripts/               <span class="c">align · words</span></pre>
+├─ src/demo/scenes/        <span class="c">12 scenes</span>
+├─ src/demo/narration.json <span class="c">what is said</span>
+├─ src/demo/audioTiming.json <span class="c">when</span>
+├─ public/audio/demo/      <span class="c">1 file per scene</span>
+└─ scripts/                <span class="c">align · words</span></pre>
         </div>
       </section>
 
       <!-- 6 -->
-      <section class="slide" data-notes="<b>Masalah timing.</b> Suara tidak membawa timestamp, jadi audio yang menentukan jadwal. Tiga langkah di kiri. JSON di kanan adalah data asli scene 1: dimulai frame 15, durasi 718 frame, kalimat mulai di frame 15, 329, 405, dan 'sure: true'.">
+      <section class="slide" data-notes="<b>Masalah timing.</b> Suara tidak membawa timestamp, jadi audio yang menentukan jadwal. Tiga langkah di kiri. JSON di kanan adalah data asli scene 1 video demo: dimulai frame 15, durasi 337 frame (11,2 detik), kalimat mulai di frame 15, 110, 261, dan 'sure: true'.">
         <div class="kicker">Timing</div>
         <h2>A voice has no timestamps, so the audio sets the schedule</h2>
         <div class="split flip">
@@ -212,11 +212,11 @@ td:first-child { font-weight: 600; width: 17%; }
             <div class="step"><b>3 · Follow</b><small>scenes read <code>audioTiming.json</code></small></div>
           </div>
           <pre class="code" style="font-size:28px"><span class="s">"scene1"</span>: {
-  <span class="s">"audio"</span>: <span class="s">"audio/scene1.wav"</span>,
+  <span class="s">"audio"</span>: <span class="s">"audio/demo/scene1.wav"</span>,
   <span class="s">"audioStart"</span>: <span class="n">15</span>,
-  <span class="s">"durationFrames"</span>: <span class="n">718</span>,
-  <span class="s">"starts"</span>: [<span class="n">15</span>, <span class="n">329</span>, <span class="n">405</span>],
-  <span class="s">"how"</span>: <span class="s">"transcript (54 words),
+  <span class="s">"durationFrames"</span>: <span class="n">337</span>,
+  <span class="s">"starts"</span>: [<span class="n">15</span>, <span class="n">110</span>, <span class="n">261</span>],
+  <span class="s">"how"</span>: <span class="s">"transcript (29 words),
           2/2 snapped to a pause"</span>,
   <span class="s">"sure"</span>: <span class="k">true</span>
 }</pre>
@@ -274,7 +274,7 @@ td:first-child { font-weight: 600; width: 17%; }
         <div class="kicker">Kinetic captions</div>
         <h2>From a sentence to a word</h2>
         <div class="split">
-          <figure class="media"><div class="frame"><video src="clips/kinetic.mp4" muted loop playsinline preload="auto"></video></div><figcaption>Real timing from Scene 1</figcaption></figure>
+          <figure class="media"><div class="frame"><video src="clips/kinetic.mp4" muted loop playsinline preload="auto"></video></div><figcaption>Real timing from the demo video</figcaption></figure>
           <div class="col">
             <ul class="points">
               <li>Each word has a start and end frame</li>
@@ -353,8 +353,8 @@ td:first-child { font-weight: 600; width: 17%; }
         <div class="kicker">What else is possible</div>
         <h2>The map</h2>
         <div class="cards">
-          <div class="card"><h3>Motion</h3><p>interpolate · spring · Easing · interpolateColors</p><span class="badge used">In our videos</span></div>
-          <div class="card"><h3>Scenes</h3><p>Series · Sequence · TransitionSeries · Loop</p><span class="badge used">In our videos</span></div>
+          <div class="card"><h3>Motion</h3><p>interpolate · spring · Easing · interpolateColors</p><span class="badge used">In the demo video</span></div>
+          <div class="card"><h3>Scenes</h3><p>Series · Sequence · TransitionSeries · Loop</p><span class="badge used">In the demo video</span></div>
           <div class="card"><h3>Text</h3><p>@remotion/captions · layout-utils · google-fonts</p><span class="badge part">Partly</span></div>
           <div class="card"><h3>Graphics</h3><p>paths · shapes · noise · motion-blur</p><span class="badge used">In the demo video</span></div>
           <div class="card"><h3>3D and camera</h3><p>@remotion/three (Three.js). A 2D camera is a transform on a wrapper</p><span class="badge used">In the demo video</span></div>

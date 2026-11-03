@@ -2,14 +2,14 @@ import React from "react";
 import { c, inter } from "../theme";
 import { Caption } from "../components/Caption";
 import { KineticContext, StartsContext, WordsContext, WordTiming } from "../timing";
-import timing from "../audioTiming.json";
-import wordTiming from "../wordTiming.json";
-import narration from "../narration.json";
+import timing from "../demo/audioTiming.json";
+import wordTiming from "../demo/wordTiming.json";
+import narration from "../demo/narration.json";
 import { Stage } from "./Stage";
 import { useCurrentFrame } from "remotion";
 
 /** Showcase clip: the same narration as captions the old way (a sentence at a time) and the new way (word by word, the
- *  spoken word highlighted). Real timing from Scene 1 (the voice-over's word timestamps). The captions are the real
+ *  spoken word highlighted). Real timing from scene 1 of the demo video (the voice-over's word timestamps). The captions are the real
  *  components, drawn at 1920x380 and scaled down into each panel. */
 const SENTENCES = (narration as Record<string, string[]>).scene1;
 const STARTS = (timing as Record<string, { starts: number[] }>).scene1.starts;
