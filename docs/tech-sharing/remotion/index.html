@@ -101,7 +101,7 @@ td:first-child { font-weight: 600; width: 17%; }
 .badge.part { background: #3a2f0e; color: var(--amber); }
 .badge.none { background: var(--surface-2); color: var(--dim); }
 
-.two { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; }
+.two { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; align-content: center; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 40px 44px; display: flex; flex-direction: column; gap: 26px; min-width: 0; }
 .panel .points { font-size: 33px; gap: 20px; }
 .panel h3 { color: var(--accent); }
@@ -261,7 +261,7 @@ td:first-child { font-weight: 600; width: 17%; }
               <li><code>stiffness</code>: higher is faster</li>
               <li>A bounce is the curve above the dashed target</li>
             </ul>
-            <pre class="code" style="font-size:27px"><span class="f">spring</span>({ frame, fps,
+            <pre class="code" style="font-size:25px"><span class="f">spring</span>({ frame, fps,
   config: { damping: <span class="n">7</span>, stiffness: <span class="n">220</span> } })</pre>
           </div>
           <figure class="media"><div class="frame"><video src="clips/spring.mp4" muted loop playsinline preload="auto"></video></div><figcaption>Four settings, each with its response curve</figcaption></figure>
@@ -296,9 +296,10 @@ td:first-child { font-weight: 600; width: 17%; }
               <li>fade · slide · wipe · flip</li>
               <li>The <code>cube</code> effect is marked as paid in the docs</li>
             </ul>
-            <pre class="code" style="font-size:27px">&lt;<span class="f">TransitionSeries.Transition</span>
+            <pre class="code" style="font-size:25px">&lt;<span class="f">TransitionSeries.Transition</span>
   presentation={<span class="f">fade</span>()}
-  timing={<span class="f">linearTiming</span>({ durationInFrames: <span class="n">20</span> })} /&gt;</pre>
+  timing={<span class="f">linearTiming</span>({
+    durationInFrames: <span class="n">20</span> })} /&gt;</pre>
           </div>
           <figure class="media"><div class="frame"><video src="clips/transitions.mp4" muted loop playsinline preload="auto"></video></div><figcaption>Five cards, four transitions</figcaption></figure>
         </div>
@@ -384,7 +385,7 @@ td:first-child { font-weight: 600; width: 17%; }
       <section class="slide" data-notes="<b>Keluaran dan lanjutan.</b> SRT dari naskah yang sama, video berbasis data lewat calculateMetadata. Yang terakhir hanya ide, belum dibangun.">
         <div class="kicker">Outputs and next</div>
         <h2>Beyond one video</h2>
-        <div class="cards" style="grid-template-columns:repeat(3,1fr);grid-template-rows:1fr">
+        <div class="cards" style="grid-template-columns:repeat(3,1fr);grid-template-rows:auto;align-items:start;align-content:center">
           <div class="card"><h3>Subtitles</h3><p style="font-family:var(--sans);font-size:30px">A <code style="font-size:26px">.srt</code> from the same script, for accessibility</p><span class="badge part">Done in another project</span></div>
           <div class="card"><h3>Data-driven</h3><p style="font-family:var(--sans);font-size:30px"><code style="font-size:26px">calculateMetadata</code> sets duration and props from data</p><span class="badge none">Not used yet</span></div>
           <div class="card"><h3>An idea</h3><p style="font-family:var(--sans);font-size:30px">A weekly video from the design review history</p><span class="badge none">Idea, not built</span></div>
