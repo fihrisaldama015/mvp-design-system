@@ -75,5 +75,74 @@
     ],
     "how": "transcript (47 words), 3/3 snapped to a pause",
     "sure": true
+  },
+  "scene10": {
+    "audio": "audio/demo/scene10.wav",
+    "audioStart": 15,
+    "durationFrames": 336,
+    "starts": [
+      15,
+      61,
+      169
+    ],
+    "how": "transcript (26 words), 2/2 snapped to a pause",
+    "sure": true
+  },
+  "scene11": {
+    "audio": "audio/demo/scene11.wav",
+    "audioStart": 15,
+    "durationFrames": 299,
+    "starts": [
+      15,
+      163
+    ],
+    "how": "transcript (28 words), 1/1 snapped to a pause",
+    "sure": true
+  },
+  "scene12": {
+    "audio": "audio/demo/scene12.wav",
+    "audioStart": 15,
+    "durationFrames": 398,
+    "starts": [
+      15,
+      132,
+      258
+    ],
+    "how": "transcript (28 words), 2/2 snapped to a pause",
+    "sure": true
+  },
+  "scene7": {
+    "audio": "audio/demo/scene7.wav",
+    "audioStart": 15,
+    "durationFrames": 466,
+    "starts": [
+      15,
+      94,
+      306
+    ],
+    "how": "transcript (35 words), 2/2 snapped to a pause",
+    "sure": true
+  },
+  "scene8": {
+    "audio": "audio/demo/scene8.wav",
+    "audioStart": 15,
+    "durationFrames": 345,
+    "starts": [
+      15,
+      203
+    ],
+    "how": "transcript (27 words), 1/1 snapped to a pause",
+    "sure": true
+  },
+  "scene9": {
+    "audio": "audio/demo/scene9.wav",
+    "audioStart": 15,
+    "durationFrames": 337,
+    "starts": [
+      15,
+      170
+    ],
+    "how": "transcript (25 words), 1/1 snapped to a pause",
+    "sure": true
   }
 }
