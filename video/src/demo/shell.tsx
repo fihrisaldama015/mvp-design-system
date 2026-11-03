@@ -25,6 +25,7 @@ export const sceneOrder = Object.keys(text);
 export const demoFrames = (id: string) => table[id].durationFrames;
 export const demoSentences = (id: string) => text[id];
 export const sceneTiming = (id: string) => table[id];
+export const sceneWords = (id: string) => wordTable[id] ?? [];
 export const DEMO_TOTAL = sceneOrder.reduce((n, id) => n + (table[id]?.durationFrames ?? 0), 0);
 
 /** The frame (inside the scene) at which the first spoken word that matches `re` starts, or `fallback`. */
