@@ -161,7 +161,6 @@ export default function Reservations() {
               }}
             />
             <Select
-              searchable
               className="w-40"
               placeholder="All teams"
               options={TEAM_OPTIONS}

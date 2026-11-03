@@ -155,7 +155,7 @@ export default function ReservationDetail() {
       />
 
       {conflicts.length > 0 && (
-        <Alert status="warning" kind="outlined" title="This equipment is booked twice">
+        <Alert status="warning" kind="filled" title="This equipment is booked twice">
           {conflicts.map((c) => `${c.id} (${c.requester.name}, ${formatDate(c.start)} to ${formatDate(c.end)})`).join("; ")} books the same equipment in an overlapping period.
         </Alert>
       )}
