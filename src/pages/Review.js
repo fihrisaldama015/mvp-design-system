@@ -21,6 +21,7 @@ import { previewFor } from "pages/review/previews";
 import PagePreview from "pages/review/PagePreview";
 import LoginScreen from "pages/review/LoginScreen";
 import PasswordScreen from "pages/review/PasswordScreen";
+import UserChip from "pages/review/UserChip";
 import { call, configured, login, sessionStore } from "app/review/serviceClient";
 import { NOTE_MAX, activityKind, actorLabel, changeSentence, changeText, decisionDetails, developerNote, defaultRoute, deadlineText, eventLabel, itemName, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, previewNotes, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
 import "app/review/motion.css";
@@ -435,9 +436,12 @@ function Header({ session, onLogout, onRefresh, description }) {
       title="Design system review"
       description={description ?? "Decide what happens to component features that the design no longer has."}
       actions={session && (
-        <div className="flex items-center gap-2">
-          {onRefresh && <Button kind="outlined" size="sm" prefixIcon={<RefreshCw />} onClick={onRefresh}>Refresh</Button>}
-          <Button kind="outlined" size="sm" prefixIcon={<LogOut />} onClick={onLogout}>Log out</Button>
+        <div className="flex flex-wrap items-center justify-start gap-x-4 gap-y-2 md:justify-end">
+          <UserChip user={session.user} />
+          <div className="flex items-center gap-2">
+            {onRefresh && <Button kind="outlined" size="sm" prefixIcon={<RefreshCw />} onClick={onRefresh}>Refresh</Button>}
+            <Button kind="outlined" size="sm" prefixIcon={<LogOut />} onClick={onLogout}>Log out</Button>
+          </div>
         </div>
       )}
     />
