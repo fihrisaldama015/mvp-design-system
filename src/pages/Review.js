@@ -20,7 +20,8 @@ import { Textarea } from "components/textarea";
 import { previewFor } from "pages/review/previews";
 import PagePreview from "pages/review/PagePreview";
 import LoginScreen from "pages/review/LoginScreen";
-import { call, changePassword, configured, login, sessionStore } from "app/review/serviceClient";
+import PasswordScreen from "pages/review/PasswordScreen";
+import { call, configured, login, sessionStore } from "app/review/serviceClient";
 import { NOTE_MAX, activityKind, actorLabel, changeSentence, changeText, decisionDetails, developerNote, defaultRoute, deadlineText, eventLabel, itemName, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, previewNotes, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
 import "app/review/motion.css";
 import { usageFor } from "../../scripts/figma/usageCore.mjs";
@@ -419,35 +420,6 @@ function LoginForm({ onLogin, message, expired }) {
   );
 }
 
-function ChangePasswordForm({ session, onDone, onExpired }) {
-  const [current, setCurrent] = useState("");
-  const [next, setNext] = useState("");
-  const [again, setAgain] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(null);
-  const tooShort = next.length > 0 && next.length < 10;
-  const mismatch = again.length > 0 && again !== next;
-  const save = async () => {
-    setBusy(true);
-    setError(null);
-    try { await changePassword(session, current, next); onDone(); } catch (e) {
-      if (e.status === 401) onExpired(e.message);
-      else setError(e.message);
-    }
-    setBusy(false);
-  };
-  return (
-    <div className="flex max-w-md flex-col gap-4">
-      <Alert status="info" title="Choose a new password">You are using a temporary password. Set your own before you continue.</Alert>
-      {error && <Alert status="danger" title="Not changed">{error}</Alert>}
-      <Input label="Current password" type="password" value={current} onChange={(e) => setCurrent(e.target.value)} />
-      <Input label="New password" type="password" value={next} onChange={(e) => setNext(e.target.value)} status={tooShort ? "danger" : "default"} caption="At least 10 characters." />
-      <Input label="New password again" type="password" value={again} onChange={(e) => setAgain(e.target.value)} status={mismatch ? "danger" : "default"} caption={mismatch ? "The two passwords differ." : undefined} />
-      <Button status="primary" loading={busy} disabled={!current || next.length < 10 || again !== next} onClick={save}>Change password</Button>
-    </div>
-  );
-}
-
 // The page has no app sidebar (see App.js) and uses the full width; forms keep their own narrow width.
 function Shell({ children }) {
   return (
@@ -475,11 +447,12 @@ function Header({ session, onLogout, onRefresh, description }) {
 export default function Review() {
   const [session, setSession] = useState(() => sessionStore.get());
   const [expired, setExpired] = useState(null); // the service's message when the session ended
+  const [tempPassword, setTempPassword] = useState(null); // the password just typed to log in, kept in memory only: a new account then needs no second field
   const [docs, setDocs] = useState(null); // null: not loaded; { [component]: doc }
   const [problem, setProblem] = useState(null);
   const locked = Boolean(session?.user?.mustChangePassword);
 
-  const logout = () => { sessionStore.set(null); setSession(null); setExpired(null); setDocs(null); setProblem(null); };
+  const logout = () => { sessionStore.set(null); setTempPassword(null); setSession(null); setExpired(null); setDocs(null); setProblem(null); };
   // The account must set its own password before anything else works.
   const lock = useCallback(() => setSession((s) => {
     if (!s) return s;
@@ -574,10 +547,13 @@ export default function Review() {
 
   if (locked) {
     return (
-      <Shell>
-        <Header session={session} onLogout={logout} />
-        <ChangePasswordForm session={session} onExpired={expire} onDone={() => start({ ...session, user: { ...session.user, mustChangePassword: false } })} />
-      </Shell>
+      <PasswordScreen
+        session={session}
+        knownCurrent={tempPassword}
+        onExpired={expire}
+        onLogout={logout}
+        onDone={() => { setTempPassword(null); start({ ...session, user: { ...session.user, mustChangePassword: false } }); }}
+      />
     );
   }
 
@@ -585,7 +561,11 @@ export default function Review() {
     return (
       <LoginScreen
         notice={expired ? { title: "Log in again", text: expired } : null}
-        onSubmit={async (email, password) => start(await login(email, password))}
+        onSubmit={async (email, password) => {
+          const next = await login(email, password);
+          setTempPassword(next.user?.mustChangePassword ? password : null);
+          start(next);
+        }}
       />
     );
   }
