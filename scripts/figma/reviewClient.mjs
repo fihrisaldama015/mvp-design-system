@@ -1,5 +1,5 @@
 // How the scripts (reviewSync, reviewState) reach the review store. One interface, two backends:
-//   service   env REVIEW_API_URL + REVIEW_PROJECT + REVIEW_API_KEY, or the file .figma-dump/review-api.json
+//   service   env REVIEW_API_URL + REVIEW_PROJECT + REVIEW_API_KEY (in the shell, .env.local or .env), or the file .figma-dump/review-api.json
 //             { "url": "https://<service>/api/v1", "project": "mvp", "token": "drp_...", "reviewPage": "https://<app>/review" }
 //             (per machine, never in git). `token` is a project token made in the service UI (starts with drp_). Requests go to
 //             ${url}/projects/${project}/reviews with `Authorization: Bearer <project token>`.
@@ -17,14 +17,41 @@ const HOW = `The token is a project token created in the service UI (it starts w
 const NEEDS = `${FILE} needs ${TEMPLATE}. ${HOW}`;
 const badToken = (where) => new Error(`The review token in ${where} is not a project token (a project token starts with drp_). Create a project token in the service UI and use it as \`token\`. ${NEEDS}`);
 
+// KEY=VALUE lines of a .env file. Blank lines, # comments and lines that are not a setting are skipped; "export " is allowed; a value may be
+// in single or double quotes (then # inside it is text), otherwise a trailing " # comment" is dropped. No variable expansion.
+export function parseEnvFile(text) {
+  const out = {};
+  for (const raw of String(text ?? "").split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || line.startsWith("#")) continue;
+    const m = line.match(/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+    if (!m) continue;
+    let v = m[2].trim();
+    const q = v[0];
+    if ((q === '"' || q === "'") && v.indexOf(q, 1) > 0) v = v.slice(1, v.indexOf(q, 1));
+    else v = v.replace(/\s+#.*$/, "");
+    out[m[1]] = v;
+  }
+  return out;
+}
+
+// The three settings can sit in the shell, or in a .env file of the project folder next to the app's PUBLIC_ ones: .env.local (git-ignored)
+// or .env. Per setting the first one found wins: the shell, then .env.local, then .env. Only these names are read; nothing is put into process.env.
+const ENV_FILES = [".env.local", ".env"];
+const KEYS = ["REVIEW_API_URL", "REVIEW_PROJECT", "REVIEW_API_KEY"];
+function envValues() {
+  const files = ENV_FILES.map((f) => { try { return parseEnvFile(fs.readFileSync(f, "utf8")); } catch { return {}; } });
+  return Object.fromEntries(KEYS.map((k) => [k, [process.env[k], ...files.map((o) => o[k])].map((x) => x?.trim()).find(Boolean)])); // whitespace-only counts as not set
+}
+
 // null only when nothing is configured at all; a partial or old-format config throws, so it is never mistaken for "no review".
 export function reviewConfig() {
-  const e = Object.fromEntries(["REVIEW_API_URL", "REVIEW_PROJECT", "REVIEW_API_KEY"].map((k) => [k, process.env[k]?.trim()])); // whitespace-only counts as not set
+  const e = envValues();
   const oldApi = (url) => { if (/\/api\/review\/?$/.test(url)) throw new Error(`The review URL ${url} is the old /api/review API, which is gone: the design review service lives at a url ending in /api/v1.`); };
   const finish = (url, project, token, reviewPage, where) => { oldApi(url); if (!String(token).startsWith("drp_")) throw badToken(where); return { url: trim(url), project, token, ...(reviewPage ? { reviewPage } : {}) }; };
   if (e.REVIEW_API_URL || e.REVIEW_PROJECT || e.REVIEW_API_KEY) {
     const missing = [["REVIEW_API_URL", e.REVIEW_API_URL], ["REVIEW_PROJECT", e.REVIEW_PROJECT], ["REVIEW_API_KEY", e.REVIEW_API_KEY]].filter(([, v]) => !v).map(([k]) => k);
-    if (missing.length) throw new Error(`Review config is incomplete: ${missing.join(", ")} not set (all of REVIEW_API_URL, REVIEW_PROJECT, REVIEW_API_KEY are needed).`);
+    if (missing.length) throw new Error(`Review config is incomplete: ${missing.join(", ")} not set (all of REVIEW_API_URL, REVIEW_PROJECT, REVIEW_API_KEY are needed, in the shell, .env.local or .env).`);
     return finish(e.REVIEW_API_URL, e.REVIEW_PROJECT, e.REVIEW_API_KEY, undefined, "REVIEW_API_KEY");
   }
   let text;

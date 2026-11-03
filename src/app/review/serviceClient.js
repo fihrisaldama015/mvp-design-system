@@ -1,6 +1,8 @@
 // Client of the design review service (login, password change, the project's reviews).
 // Set PUBLIC_REVIEW_SERVICE_URL and PUBLIC_REVIEW_PROJECT (see .env.example).
-export const SERVICE = (import.meta.env.PUBLIC_REVIEW_SERVICE_URL ?? "").trim().replace(/\/$/, "");
+import { serviceOrigin } from "app/review/helpers";
+
+export const SERVICE = serviceOrigin(import.meta.env.PUBLIC_REVIEW_SERVICE_URL);
 export const PROJECT = (import.meta.env.PUBLIC_REVIEW_PROJECT ?? "").trim();
 export const configured = Boolean(SERVICE && PROJECT);
 

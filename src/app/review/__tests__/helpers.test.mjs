@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText, eventLabel, timelineSteps, defaultRoute, previewProps, previewNotes, activityKind, actorLabel, itemName, decisionDetails, changeSentence, developerNote } from "../helpers.js";
+import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText, eventLabel, timelineSteps, defaultRoute, previewProps, previewNotes, activityKind, actorLabel, itemName, decisionDetails, changeSentence, developerNote, serviceOrigin } from "../helpers.js";
 
 test("frame urls join the origin and the route", () => {
   const r = frameUrls({ url: "/reservations" }, "https://x-abc.vercel.app/", "http://localhost:5002");
@@ -308,4 +308,13 @@ test("developerNote drops the @deprecated tag and survives non-text", () => {
   assert.equal(developerNote("@deprecated Not in the SHIELD design. Still works."), "Not in the SHIELD design. Still works.");
   assert.equal(developerNote("Shows a search box."), "Shows a search box.");
   assert.equal(developerNote(undefined), "");
+});
+
+test("serviceOrigin keeps the origin only: a trailing slash or /api/v1 is dropped, because the page adds /api/v1 itself", () => {
+  assert.equal(serviceOrigin("https://design-review.vercel.app"), "https://design-review.vercel.app");
+  assert.equal(serviceOrigin(" https://design-review.vercel.app/ "), "https://design-review.vercel.app");
+  assert.equal(serviceOrigin("https://design-review.vercel.app/api/v1"), "https://design-review.vercel.app");
+  assert.equal(serviceOrigin("http://localhost:9300/api/v1/"), "http://localhost:9300");
+  assert.equal(serviceOrigin(undefined), "");
+  assert.equal(serviceOrigin(""), "");
 });

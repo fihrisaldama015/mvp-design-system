@@ -39,7 +39,10 @@ The list `summary` has `slug, component, status, removals, unanswered, additions
 
 ## Config (per machine, never in git)
 
-Environment `REVIEW_API_URL`, `REVIEW_PROJECT`, `REVIEW_API_KEY`, or the git-ignored file `.figma-dump/review-api.json`:
+Environment `REVIEW_API_URL`, `REVIEW_PROJECT`, `REVIEW_API_KEY`, or the git-ignored file `.figma-dump/review-api.json`. The three variables can be exported in the shell or
+written in a `.env.local` (git-ignored; recommended) or `.env` file in the project folder, next to the app's `PUBLIC_REVIEW_*` lines. Per setting the first one found wins: the
+shell, then `.env.local`, then `.env`; if none of the three is set anywhere the file is read. Never put the token in a file that is committed (`.env.development`, `.env.example`).
+Note the difference: the tool's `REVIEW_API_URL` (and the file's `url`) **ends in `/api/v1`**; the app's `PUBLIC_REVIEW_SERVICE_URL` is the **origin only**, the page adds `/api/v1` itself.
 
 ```json
 { "url": "https://<service>/api/v1", "project": "mvp", "token": "drp_...", "reviewPage": "https://<app>/review" }

@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { reviewApi, reviewConfig } from "../reviewClient.mjs";
+import { parseEnvFile, reviewApi, reviewConfig } from "../reviewClient.mjs";
 import { doneGate } from "../reviewGate.mjs";
 
 // A stub service: records each request, answers with `reply(req)` -> { status, headers?, body? }.
@@ -91,6 +91,56 @@ test("reviewConfig reads env and the file", () => {
     Object.assign(process.env, { REVIEW_API_URL: "https://e.example/api/v1", REVIEW_PROJECT: "p", REVIEW_API_KEY: "drp_t2" });
     assert.deepEqual(reviewConfig(), { url: "https://e.example/api/v1", project: "p", token: "drp_t2" });
   } finally { process.chdir(cwd); process.env = keep; fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+// .env files: one file with the tool's settings and the app's PUBLIC_ ones
+test("parseEnvFile reads KEY=VALUE lines, quotes, export, comments and CRLF, and ignores the rest", () => {
+  const text = [
+    "# a comment", "", "REVIEW_PROJECT=mvp", "export REVIEW_API_URL = http://localhost:9300/api/v1 ", 'REVIEW_API_KEY="drp_abc # not a comment"',
+    "PLAIN=value # a trailing comment", "SINGLE='quoted value'", "WITH_EQUALS=a=b=c", "EMPTY=", "not a setting", "1BAD=x",
+  ].join("\r\n");
+  assert.deepEqual(parseEnvFile(text), {
+    REVIEW_PROJECT: "mvp", REVIEW_API_URL: "http://localhost:9300/api/v1", REVIEW_API_KEY: "drp_abc # not a comment",
+    PLAIN: "value", SINGLE: "quoted value", WITH_EQUALS: "a=b=c", EMPTY: "",
+  });
+  assert.deepEqual(parseEnvFile(undefined), {});
+});
+
+function inProject(files, env, fn) {
+  const keep = { ...process.env }, cwd = process.cwd();
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "review-env-"));
+  try {
+    for (const k of ["REVIEW_API_URL", "REVIEW_PROJECT", "REVIEW_API_KEY"]) delete process.env[k];
+    Object.assign(process.env, env);
+    process.chdir(dir);
+    for (const [name, text] of Object.entries(files)) { fs.mkdirSync(path.dirname(name), { recursive: true }); fs.writeFileSync(name, text); }
+    return fn();
+  } finally { process.chdir(cwd); process.env = keep; fs.rmSync(dir, { recursive: true, force: true }); }
+}
+const ENV3 = (url, project, key) => `REVIEW_API_URL=${url}\nREVIEW_PROJECT=${project}\nREVIEW_API_KEY=${key}\n`;
+
+test("reviewConfig reads the three settings from .env.local, next to the app's PUBLIC_ ones", () => {
+  const files = { ".env.local": `PUBLIC_REVIEW_SERVICE_URL=http://localhost:9300\nPUBLIC_REVIEW_PROJECT=mvp\n${ENV3("http://localhost:9300/api/v1/", "mvp", "drp_k1")}` };
+  assert.deepEqual(inProject(files, {}, () => reviewConfig()), { url: "http://localhost:9300/api/v1", project: "mvp", token: "drp_k1" });
+});
+
+test("reviewConfig order: the shell, then .env.local, then .env, then the .figma-dump file, key by key", () => {
+  const file = JSON.stringify({ url: "https://file.example/api/v1", project: "from-file", token: "drp_file" });
+  // .env.local beats .env, and a missing key falls through to the next place
+  const files = { ".env.local": "REVIEW_PROJECT=local\nREVIEW_API_KEY=drp_local\n", ".env": "REVIEW_PROJECT=plain\nREVIEW_API_URL=https://env.example/api/v1\nREVIEW_API_KEY=drp_plain\n", ".figma-dump/review-api.json": file };
+  assert.deepEqual(inProject(files, {}, () => reviewConfig()), { url: "https://env.example/api/v1", project: "local", token: "drp_local" });
+  // the shell beats both files
+  assert.deepEqual(inProject(files, { REVIEW_API_KEY: "drp_shell" }, () => reviewConfig()), { url: "https://env.example/api/v1", project: "local", token: "drp_shell" });
+});
+
+test("a .env with only PUBLIC_ lines leaves the .figma-dump file in charge", () => {
+  const files = { ".env": "PUBLIC_REVIEW_SERVICE_URL=http://localhost:9300\nPUBLIC_REVIEW_PROJECT=mvp\n", ".figma-dump/review-api.json": JSON.stringify({ url: "https://file.example/api/v1", project: "mvp", token: "drp_file" }) };
+  assert.deepEqual(inProject(files, {}, () => reviewConfig()), { url: "https://file.example/api/v1", project: "mvp", token: "drp_file" });
+});
+
+test("a .env that sets only some of the three fails loudly, and a token that is not a project token is refused", () => {
+  assert.throws(() => inProject({ ".env.local": "REVIEW_PROJECT=mvp\n" }, {}, () => reviewConfig()), /incomplete: REVIEW_API_URL, REVIEW_API_KEY/);
+  assert.throws(() => inProject({ ".env": ENV3("http://x/api/v1", "mvp", "not-a-token") }, {}, () => reviewConfig()), /not a project token/);
 });
 
 // --done gates

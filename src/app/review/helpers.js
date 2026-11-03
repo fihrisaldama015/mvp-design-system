@@ -216,3 +216,7 @@ export function changeSentence(component, item) {
 
 // The developer's comment on a property, without the @deprecated tag (the page shows that as its own badge).
 export const developerNote = (description) => (typeof description === "string" ? description.replace(/^@deprecated\s*/i, "").trim() : "");
+
+// The service's address as the review page needs it: the origin only. The page adds /api/v1 itself, so a trailing slash or an
+// /api/v1 pasted from the sync tool's settings (where it belongs) is dropped instead of breaking every request.
+export const serviceOrigin = (raw) => String(raw ?? "").trim().replace(/\/+$/, "").replace(/\/api\/v1$/, "");
