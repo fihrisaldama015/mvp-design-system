@@ -15,6 +15,8 @@ const table = timing as Record<string, T>;
 const wordTable = wordTiming as unknown as Record<string, WordTiming[]>;
 const text = narration as Record<string, string[]>;
 
+// The music bed: "music.mp3" (bright, with a light beat) or "music-soft.mp3" (no drums). Made by `npm run sfx`.
+export const MUSIC_FILE = "music.mp3";
 export const FPS = 30;
 export const TAIL = 36; // frames after the voice ends (set by scripts/align.mjs)
 export const SCALE = 1.3;
@@ -80,5 +82,5 @@ export const Music: React.FC<{ scenes: string[] }> = ({ scenes }) => {
     for (const [a, b] of voice) v = Math.min(v, interpolate(f, [a - 12, a + 6, b - 6, b + 18], [0.75, 0.2, 0.2, 0.75], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }));
     return v * interpolate(f, [0, 45, total - 120, total], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   };
-  return <Audio src={staticFile("audio/demo/music.mp3")} volume={volume} />;
+  return <Audio src={staticFile(`audio/demo/${MUSIC_FILE}`)} volume={volume} />;
 };

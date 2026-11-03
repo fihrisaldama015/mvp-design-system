@@ -1,6 +1,6 @@
 // Make the sound effects and the music bed of the demo video with ffmpeg alone: sine waves, shaped noise and filters.
 // Nothing is downloaded, so there is no license to check. Output (44.1 kHz):
-//   public/audio/demo/sfx/<name>.wav   short effects          public/audio/demo/music.mp3   a quiet ambient pad, about 3:20
+//   public/audio/demo/sfx/<name>.wav   short effects          public/audio/demo/music.mp3 and music-soft.mp3   a bright C major bed, about 3:30
 // Run: npm run sfx   (needs ffmpeg on the PATH). The files are generated, so they are not committed; re-run to get them.
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -36,25 +36,56 @@ effect("chime", "'0.33*(sin(2*PI*880*t)*exp(-t*2.2)+0.6*sin(2*PI*1318.5*t)*exp(-
 // A riser: noise and a rising tone that swell.
 effect("riser", "'(random(0)*2-1)*pow(t/2.4,2)*0.45+0.25*sin(2*PI*(200*t+250*t*t))*(t/2.4)'", 2.4, "lowpass=f=9000");
 
-// Music: four chords, A minor 9, F major 7, C major 7, G, looped to nine chords; each is a pad of slightly detuned sines.
-const chords = {
-  Am9: [110, 164.81, 220, 261.63, 329.63, 493.88],
-  Fmaj7: [87.31, 130.81, 220, 261.63, 329.63],
-  Cmaj7: [130.81, 196, 246.94, 329.63, 392],
-  G: [98, 146.83, 196, 220, 293.66],
+// Music: a bright, friendly bed in C major at 100 bpm. Four chords (C, G, Am, F), two bars each, looped to cover the video:
+// a warm pad, a soft bass, an eighth-note pluck arpeggio, and (in music.mp3 only) a very light kick and hat.
+// Two versions: music.mp3 (with the light beat) and music-soft.mp3 (pad, bass and plucks only). Pick one in src/demo/shell.tsx.
+const EIGHTH = 0.3, BAR = 2.4, CHORD = 4.8, LOOPS = 11, TARGET_MEAN_DB = -28;
+const prog = [
+  { name: "C", pad: [261.63, 329.63, 392.0], arp: [523.25, 659.25, 783.99, 1046.5], bass: 130.81 },
+  { name: "G", pad: [196.0, 246.94, 293.66], arp: [392.0, 493.88, 587.33, 783.99], bass: 98.0 },
+  { name: "Am", pad: [220.0, 261.63, 329.63], arp: [440.0, 523.25, 659.25, 880.0], bass: 110.0 },
+  { name: "F", pad: [174.61, 220.0, 261.63], arp: [349.23, 440.0, 523.25, 698.46], bass: 87.31 },
+];
+const pattern = [0, 1, 2, 3, 2, 1, 2, 3, 0, 1, 2, 3, 2, 1, 3, 2];
+const env = `min(1,t/0.25)*min(1,(${CHORD}-t)/0.25)`;
+const tonal = (ch, pluckGain) => {
+  const pad = ch.pad.map((f) => `sin(2*PI*${f}*t)+sin(2*PI*${(f * 1.002).toFixed(3)}*t)`).join("+");
+  const plucks = pattern.map((idx, k) => {
+    const f = ch.arp[idx], t0 = (k * EIGHTH).toFixed(2);
+    return `gte(t,${t0})*lt(t,${(k * EIGHTH + 0.7).toFixed(2)})*min(1,(t-${t0})*300)*(sin(2*PI*${f}*(t-${t0}))+0.35*sin(4*PI*${f}*(t-${t0})))*exp(-(t-${t0})*7)`;
+  }).join("+");
+  return `'(0.05*(${pad}))*${env}+0.09*sin(2*PI*${ch.bass}*t)*${env}+${pluckGain}*(${plucks})'`;
 };
-const order = ["Am9", "Fmaj7", "Cmaj7", "G", "Am9", "Fmaj7", "Cmaj7", "G", "Am9"];
-const CHORD = 26, XFADE = 4;
-const pad = (freqs) => `'0.07*(${freqs.map((f) => `sin(2*PI*${f}*t)+sin(2*PI*${(f * 1.004).toFixed(2)}*t)`).join("+")})'`;
-for (const [name, freqs] of Object.entries(chords)) {
-  ff(["-f", "lavfi", "-i", `aevalsrc=${pad(freqs)}:s=${SR}:d=${CHORD}`, "-af", "lowpass=f=1500,tremolo=f=0.18:d=0.25,aecho=0.7:0.5:700|1100:0.25|0.18", "-ac", "2", `${dir}/chord-${name}.wav`]);
+const drums = () => {
+  const kicks = [0, 1.2, 2.4, 3.6].map((k) => `gte(t,${k})*lt(t,${k + 0.3})*0.42*sin(2*PI*(120*(t-${k})-200*(t-${k})*(t-${k})))*exp(-(t-${k})*13)`).join("+");
+  const hats = pattern.map((_, k) => { const h = (k * EIGHTH + 0.15).toFixed(2); return `gte(t,${h})*lt(t,${(k * EIGHTH + 0.21).toFixed(2)})*0.07*(random(0)*2-1)*exp(-(t-${h})*70)`; }).join("+");
+  return `'${kicks}+${hats}'`;
+};
+function music(file, withDrums) {
+  const parts = [];
+  for (const ch of prog) {
+    const t = `${dir}/m-${ch.name}-tonal.wav`;
+    ff(["-f", "lavfi", "-i", `aevalsrc=${tonal(ch, 0.17)}:s=${SR}:d=${CHORD}`, "-af", "lowpass=f=5200", "-ac", "2", t]);
+    if (withDrums) {
+      const d = `${dir}/m-${ch.name}-drums.wav`, mix = `${dir}/m-${ch.name}.wav`;
+      ff(["-f", "lavfi", "-i", `aevalsrc=${drums()}:s=${SR}:d=${CHORD}`, "-af", "lowpass=f=9000", "-ac", "2", d]);
+      ff(["-i", t, "-i", d, "-filter_complex", "amix=inputs=2:normalize=0", mix]);
+      fs.rmSync(t); fs.rmSync(d); parts.push(mix);
+    } else parts.push(t);
+  }
+  const loop = `${dir}/m-loop.wav`;
+  ff([...parts.flatMap((p) => ["-i", p]), "-filter_complex", `${parts.map((_, i) => `[${i}]`).join("")}concat=n=${parts.length}:v=0:a=1`, loop]);
+  parts.forEach((p) => fs.rmSync(p));
+  // Level: bring the loop to the same mean level for both versions, so the ducking in the video behaves the same.
+  const probe = spawnSync("ffmpeg", ["-hide_banner", "-i", loop, "-af", "volumedetect", "-f", "null", "-"], { encoding: "utf8" }).stderr;
+  const mean = parseFloat(/mean_volume: (-?[\d.]+) dB/.exec(probe)[1]);
+  const total = BAR * 2 * prog.length * LOOPS;
+  const length = Math.round(total);
+  ff(["-stream_loop", String(LOOPS - 1), "-i", loop, "-t", String(length), "-af", `volume=${(TARGET_MEAN_DB - mean).toFixed(2)}dB,alimiter=limit=0.8,afade=t=in:d=3,afade=t=out:st=${length - 6}:d=6`, "-c:a", "libmp3lame", "-b:a", "128k", `${dir}/${file}`]);
+  fs.rmSync(loop);
+  return length;
 }
-const inputs = order.flatMap((n) => ["-i", `${dir}/chord-${n}.wav`]);
-let graph = "";
-let last = "[0]";
-for (let i = 1; i < order.length; i += 1) { graph += `${last}[${i}]acrossfade=d=${XFADE}[x${i}];`; last = `[x${i}]`; }
-const total = order.length * CHORD - (order.length - 1) * XFADE;
-graph += `${last}volume=0.9,afade=t=in:d=3,afade=t=out:st=${total - 6}:d=6,alimiter=limit=0.8[out]`;
-ff([...inputs, "-filter_complex", graph, "-map", "[out]", "-c:a", "libmp3lame", "-b:a", "128k", `${dir}/music.mp3`]);
-for (const n of Object.keys(chords)) fs.rmSync(`${dir}/chord-${n}.wav`);
-console.log(`sfx: ${fs.readdirSync(`${dir}/sfx`).join(", ")}\nmusic: ${dir}/music.mp3 (${total} s)`);
+const secondsA = music("music.mp3", true);
+const secondsB = music("music-soft.mp3", false);
+for (const old of ["chord-Am9.wav", "chord-Fmaj7.wav", "chord-Cmaj7.wav", "chord-G.wav"]) fs.rmSync(`${dir}/${old}`, { force: true });
+console.log(`sfx: ${fs.readdirSync(`${dir}/sfx`).join(", ")}\nmusic: ${dir}/music.mp3 (${secondsA} s, light beat), ${dir}/music-soft.mp3 (${secondsB} s, no drums)`);
