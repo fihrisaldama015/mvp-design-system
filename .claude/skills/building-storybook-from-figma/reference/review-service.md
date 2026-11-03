@@ -115,6 +115,15 @@ reviewer would see a page without the component. `review.howToSee` in `figma-tok
 list above the frames when that route is selected. Rules (`cleanHowToSee`): 1 to 8 steps per route, each plain text of at most 200 characters; an entry that
 breaks them is dropped with a `usage: ignored howToSee ...` line and never fails the build or a review. The steps live in the project, not in the service.
 
+## Highlight in the preview frames
+
+Under each frame of "See it on a page" the toggle **Highlight <Component>** outlines every instance of the component under review inside the frame (red outline with
+an offset, so nothing moves). The page sends a `postMessage` (`{ type: "review-highlight", on, folder }`, `folder` = the folder in `src/components`) to the frame; the app
+inside it (`src/index.js` calls `installHighlight` from `src/app/review/embedHighlight.js`, which does nothing outside a frame) imports that component folder, walks
+React's fiber tree (`highlightCore.js`, matching by component identity, so a minified build works) and sets `data-review-highlight` on the elements. A MutationObserver
+keeps it current, so an instance that shows later (a step done, a menu opened) is outlined as it appears. Nothing in the design-system components changes. Both frames need
+the code: the candidate branch must contain it too. It relies on React 18 fiber internals (the `__reactContainer$` key, tag 5 for DOM elements).
+
 ## Limits of page-level before/after
 
 The page shows a route twice (current app and `previewUrl`) only for projects with preview builds (the MVP on Vercel). swt has no preview builds: there the

@@ -95,6 +95,8 @@ function Section({ icon, title, hint, children }) {
 function AffectedPages({ doc, item }) {
   const found = useMemo(() => usageFor(usage, doc.jsxName, item), [doc.jsxName, item]);
   const [path, setPath] = useState(null);
+  const [highlight, setHighlight] = useState(false); // outlines the component in both frames; kept when another page is picked
+  const folder = doc.code?.match(/components\/([^/]+)\//)?.[1];
   const note = publishedNote(found.routes.length, doc.usage?.byItem?.[item.id]);
   const route = found.routes.find((r) => r.path === path) ?? defaultRoute(found.routes);
   if (!route) return <p className="text-caption typo-regular-text-sm">No page in the app uses it today.</p>;
@@ -114,7 +116,7 @@ function AffectedPages({ doc, item }) {
           <ol className="flex list-decimal flex-col gap-1 pl-5 typo-regular-text-sm">{route.steps.map((st, i) => <li key={i} className="break-words">{st}</li>)}</ol>
         </div>
       )}
-      <PagePreview key={route.path} route={route} previewUrl={doc.previewUrl} />
+      <PagePreview key={route.path} route={route} previewUrl={doc.previewUrl} folder={folder} name={doc.jsxName ?? doc.component} highlight={highlight} onHighlight={setHighlight} />
       {note && <p className="text-caption typo-regular-text-sm">{note}.</p>}
     </div>
   );
