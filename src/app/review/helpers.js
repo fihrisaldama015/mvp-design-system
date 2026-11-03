@@ -79,3 +79,50 @@ export function usageTrend(usageHistory, itemId) {
 export const trendText = (counts) => (Array.isArray(counts) && counts.length >= 2 ? counts.join(" -> ") : "");
 
 export const NOTE_MAX = 500;
+
+// The audit action in plain English (same strings as the service). Unknown text passes through; non-strings give "".
+const EVENT_LABELS = {
+  published: "Published for review",
+  "published (new cycle)": "Published again, new review",
+  "Figma changed: earlier answers dropped": "Figma changed: earlier answers were cleared, please answer again",
+  "republished (same Figma state, answers kept)": "Synced again, nothing changed",
+  decided: "Answered",
+  applied: "Applied by the developer",
+};
+export const eventLabel = (action) => (typeof action !== "string" ? "" : Object.hasOwn(EVENT_LABELS, action) ? EVENT_LABELS[action] : action);
+
+// The same local date text the page shows; "" for a missing or invalid date.
+export function defaultFormat(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "" : d.toLocaleString();
+}
+
+// Where a review stands: three steps (`current` = how many are finished) and a line for each, from the current cycle of the audit.
+export function timelineSteps(audit, status, format = defaultFormat) {
+  const entries = Array.isArray(audit) ? audit.filter((a) => a && typeof a === "object") : [];
+  const starts = (a, text) => typeof a.action === "string" && a.action.startsWith(text);
+  const isMarker = (a) => starts(a, "published") || starts(a, "Figma changed");
+  const at = entries.findLastIndex(isMarker);
+  const marker = at >= 0 ? entries[at] : null;
+  const cycle = at >= 0 ? entries.slice(at) : entries;
+  const last = (action) => cycle.findLast((a) => a.action === action);
+  const text = (label, when) => [label, safe(format, when)].filter(Boolean).join(" ");
+  const current = { pending: 1, answered: 2, applied: 3 }[status] ?? 1;
+
+  const decided = last("decided");
+  const applied = last("applied");
+  return {
+    labels: ["Published", "Answered", "Applied"],
+    current,
+    details: [
+      marker ? (starts(marker, "Figma changed") ? `${text("Figma changed", marker.at)}, review reopened` : text("Published", marker.at)) : "",
+      current >= 2 ? (decided ? [decided.by ? `Answered by ${decided.by}` : "Answered", safe(format, decided.at)].filter(Boolean).join(", ") : "Answered") : "Waiting for the reviewers",
+      current === 3 ? (applied ? text("Applied", applied.at) : "Applied") : "Waiting for the developer",
+    ],
+  };
+}
+
+function safe(format, when) {
+  try { return when ? String(format(when) ?? "") : ""; } catch { return ""; }
+}

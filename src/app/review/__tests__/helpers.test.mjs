@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText } from "../helpers.js";
+import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText, eventLabel, timelineSteps } from "../helpers.js";
 
 test("frame urls join the origin and the route", () => {
   const r = frameUrls({ url: "/reservations" }, "https://x-abc.vercel.app/", "http://localhost:5002");
@@ -116,4 +116,65 @@ test("trend text needs two points", () => {
   assert.equal(trendText([2]), "");
   assert.equal(trendText([]), "");
   assert.equal(trendText(undefined), "");
+});
+
+const fmt = (at) => (at ? `<${at}>` : "");
+
+test("eventLabel maps every known audit action and passes unknown text through", () => {
+  assert.equal(eventLabel("published"), "Published for review");
+  assert.equal(eventLabel("published (new cycle)"), "Published again, new review");
+  assert.equal(eventLabel("Figma changed: earlier answers dropped"), "Figma changed: earlier answers were cleared, please answer again");
+  assert.equal(eventLabel("republished (same Figma state, answers kept)"), "Synced again, nothing changed");
+  assert.equal(eventLabel("decided"), "Answered");
+  assert.equal(eventLabel("applied"), "Applied by the developer");
+  assert.equal(eventLabel("something else"), "something else");
+  assert.equal(eventLabel(undefined), "");
+  assert.equal(eventLabel(5), "");
+});
+
+test("timelineSteps pending: published done, answered waiting", () => {
+  const t = timelineSteps([{ at: "A", action: "published", by: "x" }], "pending", fmt);
+  assert.deepEqual(t, { labels: ["Published", "Answered", "Applied"], current: 1, details: ["Published <A>", "Waiting for the reviewers", "Waiting for the developer"] });
+});
+
+test("timelineSteps answered: names the last decider", () => {
+  const audit = [{ at: "A", action: "published" }, { at: "B", action: "decided", by: "ann" }, { at: "C", action: "decided", by: "bob" }];
+  const t = timelineSteps(audit, "answered", fmt);
+  assert.equal(t.current, 2);
+  assert.deepEqual(t.details, ["Published <A>", "Answered by bob, <C>", "Waiting for the developer"]);
+});
+
+test("timelineSteps applied: all three with dates", () => {
+  const audit = [{ at: "A", action: "published" }, { at: "B", action: "decided", by: "ann" }, { at: "C", action: "applied", by: "dev" }];
+  const t = timelineSteps(audit, "applied", fmt);
+  assert.equal(t.current, 3);
+  assert.deepEqual(t.details, ["Published <A>", "Answered by ann, <B>", "Applied <C>"]);
+});
+
+test("timelineSteps uses only the current cycle", () => {
+  const audit = [{ at: "A", action: "published" }, { at: "B", action: "decided", by: "old" }, { at: "C", action: "published (new cycle)" }];
+  const t = timelineSteps(audit, "pending", fmt);
+  assert.deepEqual(t.details, ["Published <C>", "Waiting for the reviewers", "Waiting for the developer"]);
+  assert.equal(timelineSteps(audit, "answered", fmt).details[1], "Answered");
+});
+
+test('timelineSteps "Figma changed" marker says the review was reopened', () => {
+  const audit = [{ at: "A", action: "published" }, { at: "B", action: "decided", by: "old" }, { at: "C", action: "Figma changed: earlier answers dropped" }];
+  const t = timelineSteps(audit, "pending", fmt);
+  assert.deepEqual(t.details, ["Figma changed <C>, review reopened", "Waiting for the reviewers", "Waiting for the developer"]);
+});
+
+test("republished is not a cycle marker", () => {
+  const audit = [{ at: "A", action: "published" }, { at: "B", action: "decided", by: "ann" }, { at: "C", action: "republished (same Figma state, answers kept)" }];
+  const t = timelineSteps(audit, "answered", fmt);
+  assert.deepEqual(t.details, ["Published <A>", "Answered by ann, <B>", "Waiting for the developer"]);
+});
+
+test("timelineSteps survives an old document: missing audit, bad dates, unknown status", () => {
+  assert.deepEqual(timelineSteps(undefined, undefined), { labels: ["Published", "Answered", "Applied"], current: 1, details: ["", "Waiting for the reviewers", "Waiting for the developer"] });
+  assert.equal(timelineSteps("nope", "weird").current, 1);
+  const t = timelineSteps([{ action: "published", at: "garbage" }, { action: "decided", at: "garbage" }, { action: "applied" }], "applied");
+  assert.deepEqual(t.details, ["Published", "Answered", "Applied"]);
+  assert.equal(timelineSteps([{ action: "decided", by: "z", at: "2026-01-01T00:00:00Z" }], "answered", fmt).details[0], "");
+  assert.doesNotThrow(() => timelineSteps([null, {}, { action: 3 }], "answered"));
 });

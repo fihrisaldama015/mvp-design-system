@@ -10,12 +10,13 @@ import { Input } from "components/input";
 import { PageHeader } from "components/page-header";
 import { ProgressBar } from "components/progress-bar";
 import { Select } from "components/select";
+import { Stepper } from "components/stepper";
 import { StatCard } from "components/stat-card";
 import { Textarea } from "components/textarea";
 import { previewFor } from "pages/review/previews";
 import PagePreview from "pages/review/PagePreview";
 import { call, changePassword, configured, login, sessionStore } from "app/review/serviceClient";
-import { NOTE_MAX, changeText, deadlineText, daysLeft, missingDates, mustChangePassword, publishedNote, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
+import { NOTE_MAX, changeText, deadlineText, eventLabel, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
 import { usageFor } from "../../scripts/figma/usageCore.mjs";
 import usage from "app/review/usage.json";
 
@@ -188,6 +189,7 @@ function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) 
   const changed = (i) => draft[i.id] && (draft[i.id] !== doc.answers[i.id] || (draft[i.id] === "keep-deprecated" && (dates[i.id] ?? "") !== (doc.migrateBy?.[i.id] ?? "")));
   const changes = Object.fromEntries(needs.filter(changed).map((i) => [i.id, draft[i.id]]));
   const lastDecision = [...doc.audit].reverse().find((a) => a.action === "decided");
+  const timeline = timelineSteps(doc.audit, doc.status);
   const link = figmaUrl(doc);
   const story = storybookLink(doc);
 
@@ -226,6 +228,12 @@ function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) 
       }
     >
       <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
+          <Stepper steps={timeline.labels} current={timeline.current} />
+          <ul className="text-caption typo-regular-text-sm flex flex-col gap-1">
+            {timeline.details.filter(Boolean).map((d) => <li key={d}>{d}</li>)}
+          </ul>
+        </div>
         {needs.length > 0 && !applied && <ProgressBar value={Math.round((answered / needs.length) * 100)} tone={answered === needs.length ? "success" : "warning"} label={`Your decisions: ${answered} of ${needs.length}`} />}
         {needs.length > 0 && (
           <ul className="flex flex-col gap-4">
@@ -262,7 +270,7 @@ function ReviewCard({ doc, session, onChanged, onExpired, onLocked, onReload }) 
             <ul className="mt-2 flex flex-col gap-2 typo-regular-text-sm">
               {[...doc.audit].reverse().map((a) => (
                 <li key={`${a.at}-${a.action}-${a.by}`}>
-                  {when(a.at)}, {a.by}: {a.action}
+                  {when(a.at)}, {a.by}: {eventLabel(a.action)}
                   {a.changes && Object.keys(a.changes).length > 0 && (
                     <ul className="list-disc pl-5 text-caption">
                       {Object.entries(a.changes).map(([id, c]) => <li key={id}><code>{id}</code>: {changeText(c, CHOICE_LABELS, a.migrateBy?.[id])}</li>)}
