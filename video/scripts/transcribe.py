@@ -9,11 +9,14 @@ import numpy as np
 from faster_whisper import WhisperModel
 
 MODEL = os.environ.get("WHISPER_MODEL", "small.en")
-audio_dir = "public/audio"
-only = sys.argv[1:]
+# `transcribe.py demo [scene3 ...]` transcribes the demo video's voice-over (public/audio/demo/ -> .align/demo-words.json).
+demo = len(sys.argv) > 1 and sys.argv[1] == "demo"
+audio_dir = "public/audio/demo" if demo else "public/audio"
+words_path = ".align/demo-words.json" if demo else ".align/words.json"
+only = sys.argv[2:] if demo else sys.argv[1:]
 files = sorted(f for f in os.listdir(audio_dir) if re.match(r"^scene\d+\.(mp3|wav|m4a|ogg)$", f, re.I)) if os.path.isdir(audio_dir) else []
 os.makedirs(".align", exist_ok=True)
-out = json.load(open(".align/words.json")) if os.path.exists(".align/words.json") else {}
+out = json.load(open(words_path)) if os.path.exists(words_path) else {}
 model = WhisperModel(MODEL, device="cpu", compute_type="int8")
 for f in files:
     sc = re.sub(r"\.\w+$", "", f).lower()
@@ -24,5 +27,5 @@ for f in files:
     segs, _ = model.transcribe(np.frombuffer(raw, dtype=np.float32), word_timestamps=True, language="en", beam_size=5, condition_on_previous_text=False)
     out[sc] = [[w.word.strip(), round(w.start, 2), round(w.end, 2)] for s in segs for w in s.words]
     print(f"{sc}: {len(out[sc])} words")
-json.dump(out, open(".align/words.json", "w"))
-print(".align/words.json written. Now: npm run align")
+json.dump(out, open(words_path, "w"))
+print(f"{words_path} written. Now: node scripts/align.mjs" + (" demo" if demo else ""))

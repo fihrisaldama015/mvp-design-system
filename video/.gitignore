@@ -5,3 +5,4 @@ public/assets/
 .align/
 public/audio/demo/sfx/
 public/audio/demo/music.mp3
+__pycache__/

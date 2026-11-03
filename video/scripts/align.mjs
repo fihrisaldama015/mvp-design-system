@@ -16,13 +16,19 @@ import { spawnSync } from "node:child_process";
 
 const FPS = 30, LEAD = 15, TAIL = 36; // frames before the voice starts / after it ends
 const NOISE = process.env.NOISE ?? "-32dB", MIN_PAUSE = process.env.MIN_PAUSE ?? "0.15";
-const narration = JSON.parse(fs.readFileSync("src/narration.json", "utf8"));
-const dir = "public/audio";
+// `node scripts/align.mjs demo [scene3 ...]` measures the demo video's voice-over (src/demo/, public/audio/demo/); without
+// `demo` it is the Shield video as before.
+const SET = process.argv[2] === "demo" ? (process.argv.splice(2, 1), "demo") : "";
+const NARRATION = SET ? "src/demo/narration.json" : "src/narration.json";
+const TIMING = SET ? "src/demo/audioTiming.json" : "src/audioTiming.json";
+const WORDS = SET ? ".align/demo-words.json" : ".align/words.json";
+const narration = JSON.parse(fs.readFileSync(NARRATION, "utf8"));
+const dir = SET ? "public/audio/demo" : "public/audio";
 const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => /^scene\d+\.(mp3|wav|m4a|ogg)$/i.test(f)) : [];
 const only = process.argv.slice(2);
-const table = fs.existsSync("src/audioTiming.json") ? JSON.parse(fs.readFileSync("src/audioTiming.json", "utf8")) : {};
+const table = fs.existsSync(TIMING) ? JSON.parse(fs.readFileSync(TIMING, "utf8")) : {};
 
-const words = fs.existsSync(".align/words.json") ? JSON.parse(fs.readFileSync(".align/words.json", "utf8")) : {};
+const words = fs.existsSync(WORDS) ? JSON.parse(fs.readFileSync(WORDS, "utf8")) : {};
 const norm = (w) => w.toLowerCase().replace(/[^a-z0-9]/g, "");
 // Time of each sentence's first word: edit-distance alignment of the narration words to the transcript words.
 const wordStarts = (sentences, hyp) => {
@@ -108,13 +114,13 @@ for (const f of files) {
   if (!sure) problems++;
   const lead = 0.1; // captions and visuals appear a touch before the word
   const frames = starts.map((t) => Math.max(LEAD, Math.round(LEAD + (t - lead) * FPS)));
-  table[id] = { audio: `audio/${f}`, audioStart: LEAD, durationFrames: LEAD + Math.ceil(total * FPS) + TAIL, starts: frames, how, sure };
+  table[id] = { audio: `audio/${SET ? "demo/" : ""}${f}`, audioStart: LEAD, durationFrames: LEAD + Math.ceil(total * FPS) + TAIL, starts: frames, how, sure };
   console.log(`\n${id}  ${total.toFixed(1)} s  ${how}  ${sure ? "OK" : "CHECK"}`);
   starts.forEach((t, i) => console.log(`  ${String(i).padStart(2)}  ${t.toFixed(2).padStart(6)} s  ${pauses[i] ? `pause ${pauses[i].toFixed(2)} s` : "             "}  ${sentences[i].slice(0, 60)}`));
   const short = used === "pauses" ? pauses.filter((d) => d && d < 0.3).length : 0;
   if (short) console.log(`  note: ${short} chosen pause(s) are short (< 0.3 s): this method may have picked a pause inside a sentence; run npm run transcribe`);
 }
-fs.writeFileSync("src/audioTiming.json", JSON.stringify(table, null, 2) + "\n");
+fs.writeFileSync(TIMING, JSON.stringify(table, null, 2) + "\n");
 const missing = Object.keys(narration).filter((id) => !table[id]);
-console.log(`\nsrc/audioTiming.json: ${Object.keys(table).length} scene(s) with audio${missing.length ? `; still without audio: ${missing.join(", ")}` : ""}`);
+console.log(`\n${TIMING}: ${Object.keys(table).length} scene(s) with audio${missing.length ? `; still without audio: ${missing.join(", ")}` : ""}`);
 if (problems) console.log(`${problems} scene(s) marked CHECK: the pauses did not match the sentences well. Listen at those times, or regenerate with a clearer pause after each sentence (or one file per sentence).`);

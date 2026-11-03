@@ -1,0 +1,79 @@
+{
+  "scene1": {
+    "audio": "audio/demo/scene1.wav",
+    "audioStart": 15,
+    "durationFrames": 337,
+    "starts": [
+      15,
+      110,
+      261
+    ],
+    "how": "transcript (29 words), 2/2 snapped to a pause",
+    "sure": true
+  },
+  "scene2": {
+    "audio": "audio/demo/scene2.wav",
+    "audioStart": 15,
+    "durationFrames": 524,
+    "starts": [
+      15,
+      143,
+      277,
+      383
+    ],
+    "how": "transcript (40 words), 3/3 snapped to a pause",
+    "sure": true
+  },
+  "scene3": {
+    "audio": "audio/demo/scene3.wav",
+    "audioStart": 15,
+    "durationFrames": 642,
+    "starts": [
+      15,
+      116,
+      238,
+      379,
+      474
+    ],
+    "how": "transcript (46 words), 4/4 snapped to a pause",
+    "sure": true
+  },
+  "scene4": {
+    "audio": "audio/demo/scene4.wav",
+    "audioStart": 15,
+    "durationFrames": 685,
+    "starts": [
+      15,
+      162,
+      315,
+      498
+    ],
+    "how": "transcript (60 words), 3/3 snapped to a pause",
+    "sure": true
+  },
+  "scene5": {
+    "audio": "audio/demo/scene5.wav",
+    "audioStart": 15,
+    "durationFrames": 417,
+    "starts": [
+      15,
+      84,
+      252
+    ],
+    "how": "transcript (33 words), 2/2 snapped to a pause",
+    "sure": true
+  },
+  "scene6": {
+    "audio": "audio/demo/scene6.wav",
+    "audioStart": 15,
+    "durationFrames": 502,
+    "starts": [
+      15,
+      123,
+      201,
+      377
+    ],
+    "how": "transcript (47 words), 3/3 snapped to a pause",
+    "sure": true
+  }
+}

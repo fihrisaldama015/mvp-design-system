@@ -83,4 +83,6 @@ Script: `src/demo/narration.json` (8 scenes, about 310 words, about 3 minutes). 
    `public/audio/demo/scene1.wav` ... `scene8.wav`.
 3. `npm run sfx` makes the sound effects (`public/audio/demo/sfx/`) and the music bed (`public/audio/demo/music.mp3`)
    with ffmpeg alone, nothing downloaded. Open `out/sfx/audition.html` to listen.
-4. Transcribe, align and make the word timings for the demo set, then render once.
+4. Transcribe, align and make the word timings for the demo set (the same scripts, with `demo` first), then render once:
+   `.venv/bin/python scripts/transcribe.py demo && node scripts/align.mjs demo && node scripts/words.mjs demo`
+   (writes `src/demo/audioTiming.json` and `src/demo/wordTiming.json`).
