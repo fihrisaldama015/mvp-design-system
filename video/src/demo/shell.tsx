@@ -15,8 +15,9 @@ const table = timing as Record<string, T>;
 const wordTable = wordTiming as unknown as Record<string, WordTiming[]>;
 const text = narration as Record<string, string[]>;
 
-// The music bed: "music.mp3" (bright, with a light beat) or "music-soft.mp3" (no drums). Made by `npm run sfx`.
-export const MUSIC_FILE = "music.mp3";
+// The music bed: "music-pad.mp3" (pad and bass only, low-passed under the speech band: the voice stays in front) or
+// "music-soft.mp3" (the same with eighth-note plucks, which compete with speech). Made by `npm run sfx`.
+export const MUSIC_FILE = "music-pad.mp3";
 export const FPS = 30;
 export const TAIL = 36; // frames after the voice ends (set by scripts/align.mjs)
 export const SCALE = 1.3;

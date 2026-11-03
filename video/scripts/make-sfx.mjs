@@ -1,6 +1,6 @@
 // Make the sound effects and the music bed of the demo video with ffmpeg alone: sine waves, shaped noise and filters.
 // Nothing is downloaded, so there is no license to check. Output (44.1 kHz):
-//   public/audio/demo/sfx/<name>.wav   short effects          public/audio/demo/music.mp3 and music-soft.mp3   a bright C major bed, about 3:30
+//   public/audio/demo/sfx/<name>.wav   short effects          public/audio/demo/music-pad.mp3 and music-soft.mp3   a bright C major bed, about 3:30
 // Run: npm run sfx   (needs ffmpeg on the PATH). The files are generated, so they are not committed; re-run to get them.
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -37,8 +37,8 @@ effect("chime", "'0.33*(sin(2*PI*880*t)*exp(-t*2.2)+0.6*sin(2*PI*1318.5*t)*exp(-
 effect("riser", "'(random(0)*2-1)*pow(t/2.4,2)*0.45+0.25*sin(2*PI*(200*t+250*t*t))*(t/2.4)'", 2.4, "lowpass=f=9000");
 
 // Music: a bright, friendly bed in C major at 100 bpm. Four chords (C, G, Am, F), two bars each, looped to cover the video:
-// a warm pad, a soft bass, an eighth-note pluck arpeggio, and (in music.mp3 only) a very light kick and hat.
-// Two versions: music.mp3 (with the light beat) and music-soft.mp3 (pad, bass and plucks only). Pick one in src/demo/shell.tsx.
+// a warm pad, a soft bass, and (in one version) an eighth-note pluck arpeggio.
+// Two versions, see below. Pick one in src/demo/shell.tsx.
 const EIGHTH = 0.3, BAR = 2.4, CHORD = 4.8, LOOPS = 11, TARGET_MEAN_DB = -28;
 const prog = [
   { name: "C", pad: [261.63, 329.63, 392.0], arp: [523.25, 659.25, 783.99, 1046.5], bass: 130.81 },
@@ -61,12 +61,12 @@ const drums = () => {
   const hats = pattern.map((_, k) => { const h = (k * EIGHTH + 0.15).toFixed(2); return `gte(t,${h})*lt(t,${(k * EIGHTH + 0.21).toFixed(2)})*0.07*(random(0)*2-1)*exp(-(t-${h})*70)`; }).join("+");
   return `'${kicks}+${hats}'`;
 };
-function music(file, withDrums) {
+function music(file, { drums = false, pluckGain = 0.17, lowpass = 5200 } = {}) {
   const parts = [];
   for (const ch of prog) {
     const t = `${dir}/m-${ch.name}-tonal.wav`;
-    ff(["-f", "lavfi", "-i", `aevalsrc=${tonal(ch, 0.17)}:s=${SR}:d=${CHORD}`, "-af", "lowpass=f=5200", "-ac", "2", t]);
-    if (withDrums) {
+    ff(["-f", "lavfi", "-i", `aevalsrc=${tonal(ch, pluckGain)}:s=${SR}:d=${CHORD}`, "-af", `lowpass=f=${lowpass}`, "-ac", "2", t]);
+    if (drums) {
       const d = `${dir}/m-${ch.name}-drums.wav`, mix = `${dir}/m-${ch.name}.wav`;
       ff(["-f", "lavfi", "-i", `aevalsrc=${drums()}:s=${SR}:d=${CHORD}`, "-af", "lowpass=f=9000", "-ac", "2", d]);
       ff(["-i", t, "-i", d, "-filter_complex", "amix=inputs=2:normalize=0", mix]);
@@ -85,7 +85,9 @@ function music(file, withDrums) {
   fs.rmSync(loop);
   return length;
 }
-const secondsA = music("music.mp3", true);
-const secondsB = music("music-soft.mp3", false);
+// music-pad.mp3: pad and bass only, low-passed below the speech band: it sits under the voice without competing with it.
+// music-soft.mp3: the same with the eighth-note plucks (their notes lie where speech is clearest: use it for a silent video).
+const secondsA = music("music-pad.mp3", { pluckGain: 0, lowpass: 1500 });
+const secondsB = music("music-soft.mp3", { pluckGain: 0.17, lowpass: 5200 });
 for (const old of ["chord-Am9.wav", "chord-Fmaj7.wav", "chord-Cmaj7.wav", "chord-G.wav"]) fs.rmSync(`${dir}/${old}`, { force: true });
-console.log(`sfx: ${fs.readdirSync(`${dir}/sfx`).join(", ")}\nmusic: ${dir}/music.mp3 (${secondsA} s, light beat), ${dir}/music-soft.mp3 (${secondsB} s, no drums)`);
+console.log(`sfx: ${fs.readdirSync(`${dir}/sfx`).join(", ")}\nmusic: ${dir}/music-pad.mp3 (${secondsA} s, pad and bass only), ${dir}/music-soft.mp3 (${secondsB} s, with plucks)`);
