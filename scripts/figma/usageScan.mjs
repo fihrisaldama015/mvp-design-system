@@ -14,6 +14,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { cleanHowToSee } from "./usageCore.mjs";
 
 const ALIASES = { pages: "src/pages", data: "src/data", utils: "src/utils", components: "src/components", app: "src/app", proposed: "src/proposed" };
 const posix = (p) => p.split(path.sep).join("/");
@@ -168,7 +169,7 @@ function routeTable(root, app) {
   return out;
 }
 
-export function scanUsage(root, { app = "src/App.js", excludeRoutes = ["/review"], routeSamples = {} } = {}) {
+export function scanUsage(root, { app = "src/App.js", excludeRoutes = ["/review"], routeSamples = {}, howToSee = {} } = {}) {
   const components = {}, warnings = [];
   const routes = routeTable(root, path.join(root, app)).filter((r) => !excludeRoutes.includes(r.path));
   const fileRoutes = new Map(); // absolute file -> [{ path, url }]
@@ -193,16 +194,22 @@ export function scanUsage(root, { app = "src/App.js", excludeRoutes = ["/review"
       }
     } catch (e) { warnings.push(`${file}: ${e.message}`); }
   }
-  return { generatedAt: new Date().toISOString(), components, warnings };
+  return { generatedAt: new Date().toISOString(), components, warnings, ...(Object.keys(howToSee).length ? { howToSee } : {}) };
 }
 
 // Script: node scripts/figma/usageScan.mjs -> src/app/review/usage.json. Never fails the build.
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = process.cwd();
-  let routeSamples = {};
-  try { routeSamples = JSON.parse(fs.readFileSync(path.join(root, "figma-tokens.config.json"), "utf8")).review?.routeSamples ?? {}; } catch { /* no config or no key */ }
+  let routeSamples = {}, rawSteps;
+  try {
+    const review = JSON.parse(fs.readFileSync(path.join(root, "figma-tokens.config.json"), "utf8")).review;
+    routeSamples = review?.routeSamples ?? {};
+    rawSteps = review?.howToSee;
+  } catch { /* no config or no key */ }
+  const { clean: howToSee, dropped } = cleanHowToSee(rawSteps);
+  for (const d of dropped) console.warn(`usage: ignored howToSee ${d}`); // a config slip must not block the build or a review
   let usage = { generatedAt: new Date().toISOString(), components: {}, warnings: [] };
-  try { usage = scanUsage(root, { routeSamples }); } catch (e) { usage.warnings.push(e.message); }
+  try { usage = scanUsage(root, { routeSamples, howToSee }); } catch (e) { usage.warnings.push(e.message); }
   for (const w of usage.warnings) console.warn(`usage: skipped ${w}`);
   const out = path.join(root, "src/app/review/usage.json");
   fs.mkdirSync(path.dirname(out), { recursive: true });

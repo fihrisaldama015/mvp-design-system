@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BadgeCheck, BookOpen, CalendarClock, CheckCircle2, ChevronDown, Eraser, ExternalLink, Gauge, Gavel, History, Hourglass, Info, Layers, ListChecks, LogOut, Monitor, PenLine, RefreshCw, RotateCw, Save, TriangleAlert, Unlink, Upload } from "lucide-react";
+import { BadgeCheck, BookOpen, CalendarClock, CheckCircle2, ChevronDown, Eraser, ExternalLink, Gauge, Gavel, History, Hourglass, Info, Layers, ListChecks, ListOrdered, LogOut, Monitor, PenLine, RefreshCw, RotateCw, Save, TriangleAlert, Unlink, Upload } from "lucide-react";
 import { Alert } from "components/alert";
 import { Badge } from "components/badge";
 import { Button } from "components/button";
@@ -107,6 +107,13 @@ function AffectedPages({ doc, item }) {
           <div className="overflow-x-auto"><Tabs className="min-w-max" tabs={found.routes.map((r) => ({ value: r.path, label: r.path }))} value={route.path} onChange={setPath} /></div>
         </div>
       ) : <p className="typo-medium-text-sm"><code>{route.path}</code></p>}
+      {route.steps?.length > 0 && (
+        <div key={route.path} className="review-enter flex flex-col gap-2 rounded-default bg-surface-lv1 p-4">
+          <p className="flex items-center gap-2 typo-medium-text-sm"><ListOrdered size={16} />How to see it here</p>
+          <p className="text-caption typo-regular-text-sm">The component only shows after these steps. Do the same in both frames to compare.</p>
+          <ol className="flex list-decimal flex-col gap-1 pl-5 typo-regular-text-sm">{route.steps.map((st, i) => <li key={i} className="break-words">{st}</li>)}</ol>
+        </div>
+      )}
       <PagePreview key={route.path} route={route} previewUrl={doc.previewUrl} />
       {note && <p className="text-caption typo-regular-text-sm">{note}.</p>}
     </div>

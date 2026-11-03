@@ -98,6 +98,23 @@ properties they already answered `keep-deprecated`. Carrying a keep-deprecated a
 lazy pages, route tables that are not plain `<Route element={<Page />}>` JSX, member tags (`<UI.Select>`) or barrel imports; a route with parameters is
 previewed only when `review.routeSamples` in `figma-tokens.config.json` gives a concrete path. A missed use is possible, so read `--done` as "the scan sees none".
 
+## "How to see it" steps
+
+Some components only show after the user did something on the page (fill in a step, pick an option). A page preview opens the URL and nothing else, so the
+reviewer would see a page without the component. `review.howToSee` in `figma-tokens.config.json` says what to do, per component and per route:
+
+```json
+"review": {
+  "howToSee": {
+    "Alert": { "/reservations/new": ["Fill in step 1 and press Next.", "Choose a period that overlaps another reservation.", "The alert shows under the date picker."] }
+  }
+}
+```
+
+`usageScan.mjs` copies the cleaned steps into `usage.json`; `usageFor` puts them on the route (`routes[].steps`), and the review page shows them as a numbered
+list above the frames when that route is selected. Rules (`cleanHowToSee`): 1 to 8 steps per route, each plain text of at most 200 characters; an entry that
+breaks them is dropped with a `usage: ignored howToSee ...` line and never fails the build or a review. The steps live in the project, not in the service.
+
 ## Limits of page-level before/after
 
 The page shows a route twice (current app and `previewUrl`) only for projects with preview builds (the MVP on Vercel). swt has no preview builds: there the

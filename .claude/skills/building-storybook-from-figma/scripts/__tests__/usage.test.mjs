@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { scanUsage } from "../usageScan.mjs";
-import { usageFor } from "../usageCore.mjs";
+import { cleanHowToSee, usageFor } from "../usageCore.mjs";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures/app");
 const urls = (uses) => uses.flatMap((u) => u.routes.map((r) => r.path));
@@ -105,4 +105,46 @@ test("tags inside JSX and JS comments are not counted; an apostrophe in text doe
   assert.ok(!names.includes("ghost-jsx") && !names.includes("ghost-line"));
   assert.ok(names.includes("landing") && names.includes("after-comment"));
   assert.equal(sel().find((x) => nameOf(x) === "after-comment").line, 14);
+});
+
+test("cleanHowToSee keeps valid steps (trimmed) and drops invalid entries with a reason", () => {
+  const { clean, dropped } = cleanHowToSee({
+    Alert: { "/reservations/new": ["  Open New reservation. ", "Pick the Recovery Strap Set."], "/bad/empty": [], "/bad/long": ["x".repeat(201)], "/bad/type": "text", "/bad/blank": ["ok", "  "] },
+    Select: "nope",
+    Many: { "/many": Array.from({ length: 9 }, (_, i) => `step ${i}`) },
+  });
+  assert.deepEqual(clean, { Alert: { "/reservations/new": ["Open New reservation.", "Pick the Recovery Strap Set."] } });
+  assert.equal(dropped.length, 6);
+  assert.ok(dropped.some((d) => d.startsWith("Alert /bad/long")));
+  assert.ok(dropped.some((d) => d.startsWith("Select:")));
+});
+
+test("cleanHowToSee of nothing is empty and of a non-object is dropped whole", () => {
+  assert.deepEqual(cleanHowToSee(undefined), { clean: {}, dropped: [] });
+  assert.equal(cleanHowToSee(["a"]).dropped.length, 1);
+  assert.deepEqual(cleanHowToSee(["a"]).clean, {});
+});
+
+test("usageFor puts the steps of a component on the route they belong to, and only there", () => {
+  const usage = {
+    howToSee: { Select: { "/reservations/new": ["Fill in step 1."] } },
+    components: { Select: [
+      { file: "a.js", line: 1, attrs: { searchable: true }, routes: [{ path: "/reservations", url: "/reservations" }] },
+      { file: "b.js", line: 2, attrs: { searchable: true }, routes: [{ path: "/reservations/new", url: "/reservations/new" }] },
+    ] },
+  };
+  const found = usageFor(usage, "Select", { kind: "removed-prop", prop: "searchable" });
+  assert.deepEqual(found.routes, [{ path: "/reservations", url: "/reservations" }, { path: "/reservations/new", url: "/reservations/new", steps: ["Fill in step 1."] }]);
+});
+
+test("usageFor without steps keeps the route shape, and a component named like an object member is safe", () => {
+  const usage = { howToSee: {}, components: { constructor: [{ file: "a.js", line: 1, attrs: { x: true }, routes: [{ path: "/p", url: "/p" }] }] } };
+  assert.deepEqual(usageFor(usage, "constructor", { kind: "removed-prop", prop: "x" }).routes, [{ path: "/p", url: "/p" }]);
+  assert.deepEqual(usageFor({ components: { A: [{ file: "a.js", line: 1, attrs: { x: true }, routes: [{ path: "/p", url: "/p" }] }] } }, "A", { kind: "removed-prop", prop: "x" }).routes, [{ path: "/p", url: "/p" }]);
+});
+
+test("scanUsage carries the cleaned steps into the usage and leaves the key out when there are none", () => {
+  const withSteps = scanUsage(root, { howToSee: { Select: { "/reservations": ["Open the list."] } } });
+  assert.deepEqual(withSteps.howToSee, { Select: { "/reservations": ["Open the list."] } });
+  assert.equal("howToSee" in scanUsage(root), false);
 });
