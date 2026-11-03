@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText, eventLabel, timelineSteps } from "../helpers.js";
+import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText, eventLabel, timelineSteps, defaultRoute } from "../helpers.js";
 
 test("frame urls join the origin and the route", () => {
   const r = frameUrls({ url: "/reservations" }, "https://x-abc.vercel.app/", "http://localhost:5002");
@@ -177,4 +177,28 @@ test("timelineSteps survives an old document: missing audit, bad dates, unknown 
   assert.deepEqual(t.details, ["Published", "Answered", "Applied"]);
   assert.equal(timelineSteps([{ action: "decided", by: "z", at: "2026-01-01T00:00:00Z" }], "answered", fmt).details[0], "");
   assert.doesNotThrow(() => timelineSteps([null, {}, { action: 3 }], "answered"));
+});
+
+test("defaultRoute prefers the first route with a configured sample", () => {
+  const routes = [{ path: "/reservations/new", url: "/reservations/new" }, { path: "/reservations/:id", url: "/reservations/RS-1001" }, { path: "/b/:id", url: "/b/1" }];
+  assert.equal(defaultRoute(routes), routes[1]);
+});
+
+test("defaultRoute falls back to the first route when none has a sample", () => {
+  const routes = [{ path: "/a", url: "/a" }, { path: "/b/:id", url: "" }, { path: "/c/:id", url: null }];
+  assert.equal(defaultRoute(routes), routes[0]);
+});
+
+test("defaultRoute of an empty or missing list is undefined", () => {
+  assert.equal(defaultRoute([]), undefined);
+  assert.equal(defaultRoute(undefined), undefined);
+  assert.equal(defaultRoute("nope"), undefined);
+});
+
+test("defaultRoute skips malformed entries", () => {
+  const good = { path: "/a/:id", url: "/a/1" };
+  assert.equal(defaultRoute([null, 3, "x", good]), good);
+  const first = { path: "/a", url: "/a" };
+  assert.equal(defaultRoute([null, first]), first);
+  assert.equal(defaultRoute([null, 3]), undefined);
 });

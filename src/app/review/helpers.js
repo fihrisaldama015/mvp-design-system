@@ -61,6 +61,14 @@ export function daysLeft(dateString, today = new Date()) {
   return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000);
 }
 
+// The route the page preview opens on: the first one whose url was resolved to a configured sample (url set and not the bare path), else the first route.
+// Entries that are not objects are skipped; undefined when there is none.
+export function defaultRoute(routes) {
+  if (!Array.isArray(routes)) return undefined;
+  const valid = routes.filter((r) => r && typeof r === "object");
+  return valid.find((r) => typeof r.url === "string" && r.url !== "" && r.url !== r.path) ?? valid[0];
+}
+
 // "Migrate by 2026-10-31 (4 days left)"; "" when the date is missing or invalid.
 export function deadlineText(dateString, today = new Date()) {
   const n = daysLeft(dateString, today);

@@ -16,7 +16,7 @@ import { Textarea } from "components/textarea";
 import { previewFor } from "pages/review/previews";
 import PagePreview from "pages/review/PagePreview";
 import { call, changePassword, configured, login, sessionStore } from "app/review/serviceClient";
-import { NOTE_MAX, changeText, deadlineText, eventLabel, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
+import { NOTE_MAX, changeText, defaultRoute, deadlineText, eventLabel, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
 import { usageFor } from "../../scripts/figma/usageCore.mjs";
 import usage from "app/review/usage.json";
 
@@ -73,7 +73,7 @@ function AffectedPages({ doc, item }) {
   const found = useMemo(() => usageFor(usage, doc.jsxName, item), [doc.jsxName, item]);
   const [path, setPath] = useState(null);
   const note = publishedNote(found.routes.length, doc.usage?.byItem?.[item.id]);
-  const route = found.routes.find((r) => r.path === path) ?? found.routes[0];
+  const route = found.routes.find((r) => r.path === path) ?? defaultRoute(found.routes);
   return (
     <div className="flex flex-col gap-2">
       <p className="typo-medium-text-sm">Pages that would change</p>
