@@ -33,7 +33,7 @@ const CHOICES = [
   { value: "keep", label: "Keep it, and add it to Figma", effect: "Nothing changes in the code. The design needs to add it to Figma so both match." },
 ];
 // Each choice has its own colour and icon, so the three read as three different things before a word is read.
-const CHOICE_LOOK = { "follow-figma": { icon: <Eraser size={20} />, tone: "danger" }, "keep-deprecated": { icon: <Hourglass size={20} />, tone: "warning" }, keep: { icon: <PenLine size={20} />, tone: "info" } };
+const CHOICE_LOOK = { "follow-figma": { icon: <Eraser size={52} strokeWidth={1.5} />, tone: "danger" }, "keep-deprecated": { icon: <Hourglass size={52} strokeWidth={1.5} />, tone: "warning" }, keep: { icon: <PenLine size={52} strokeWidth={1.5} />, tone: "info" } };
 const CHOICE_CARDS = CHOICES.map((c) => ({ value: c.value, label: c.label, description: c.effect, ...CHOICE_LOOK[c.value] }));
 const STATUS = { pending: { tone: "warning", label: "Waiting for an answer" }, answered: { tone: "info", label: "Answered, waiting for the developer" }, applied: { tone: "success", label: "Applied" } };
 
@@ -167,7 +167,7 @@ function Decision({ doc, item, choice, saved, detail, onChoice, readOnly, date, 
       </Section>
       <section className="flex flex-col gap-4 rounded-default border-2 border-primary p-5">
         <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600"><Gavel size={28} /></div>
+          <Gavel size={52} strokeWidth={1.5} className="shrink-0 text-amber-400/70" />
           <div className="flex flex-col gap-0.5">
             <h4 className="typo-semi-bold-text-lg">What should we do?</h4>
             <p className="text-caption typo-regular-text-sm">Pick one. The developers apply it next.</p>
