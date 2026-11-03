@@ -1,5 +1,15 @@
 import PropTypes from "prop-types";
+import { Check } from "lucide-react";
 import { cn } from "utils/cn";
+
+// Soft tints for the icon tile, the same pairs the StatCard uses, so the icon is coloured but does not shout.
+const TONES = {
+  neutral: "bg-slate-100 text-slate-600",
+  info: "bg-sky-50 text-sky-600",
+  success: "bg-emerald-50 text-emerald-600",
+  warning: "bg-amber-50 text-amber-600",
+  danger: "bg-red-50 text-red-600",
+};
 
 /**
  * ChoiceCards — pick one option from a few, each shown as a card with a title and a sentence that explains what happens.
@@ -26,12 +36,12 @@ export function ChoiceCards({ options, value, onChange, disabled = false, classN
             )}
           >
             <span className="flex items-start justify-between gap-3">
-              <span className="flex items-center gap-2 typo-semi-bold-text-sm">
-                {o.icon}
-                {o.label}
+              <span className="flex items-center gap-3">
+                {o.icon && <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", TONES[o.tone] ?? TONES.neutral)}>{o.icon}</span>}
+                <span className="typo-semi-bold-text-sm">{o.label}</span>
               </span>
-              <span aria-hidden="true" className={cn("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2", selected ? "border-primary" : "border-default")}>
-                {selected && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
+              <span aria-hidden="true" className={cn("flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2", selected ? "border-primary bg-primary text-true-white" : "border-default")}>
+                {selected && <Check size={14} strokeWidth={3} />}
               </span>
             </span>
             {o.description && <span className="text-caption typo-regular-text-sm">{o.description}</span>}
@@ -43,9 +53,15 @@ export function ChoiceCards({ options, value, onChange, disabled = false, classN
 }
 
 ChoiceCards.propTypes = {
-  /** The choices: `{ value, label, description?, icon? }`. `description` says what happens when it is chosen; `icon` is a lucide icon at size 16. */
+  /** The choices: `{ value, label, description?, icon?, tone? }`. `description` says what happens when it is chosen; `icon` is a lucide icon at size 20, shown in a soft tile coloured by `tone` (default `neutral`), so each choice looks different. */
   options: PropTypes.arrayOf(
-    PropTypes.shape({ value: PropTypes.string.isRequired, label: PropTypes.string.isRequired, description: PropTypes.string, icon: PropTypes.node }),
+    PropTypes.shape({
+      value: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+      description: PropTypes.string,
+      icon: PropTypes.node,
+      tone: PropTypes.oneOf(["neutral", "info", "success", "warning", "danger"]),
+    }),
   ).isRequired,
   /** `value` of the chosen option, or an empty value when nothing is chosen yet. */
   value: PropTypes.string,

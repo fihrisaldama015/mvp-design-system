@@ -3,9 +3,9 @@ import { Eraser, Hourglass, PenLine } from "lucide-react";
 import { ChoiceCards } from "proposed/choice-cards";
 
 const options = [
-  { value: "follow-figma", label: "Remove it, to match Figma", description: "The option disappears from the component. Screens that use it lose it.", icon: <Eraser size={16} /> },
-  { value: "keep-deprecated", label: "Keep it, but mark it as old", description: "Screens that use it keep working. New screens do not get it by default.", icon: <Hourglass size={16} /> },
-  { value: "keep", label: "Keep it, and add it to Figma", description: "Nothing changes in the code. The design adds it so both match.", icon: <PenLine size={16} /> },
+  { value: "follow-figma", label: "Remove it, to match Figma", description: "The option disappears from the component. Screens that use it lose it.", icon: <Eraser size={20} />, tone: "danger" },
+  { value: "keep-deprecated", label: "Keep it, but mark it as old", description: "Screens that use it keep working. New screens do not get it by default.", icon: <Hourglass size={20} />, tone: "warning" },
+  { value: "keep", label: "Keep it, and add it to Figma", description: "Nothing changes in the code. The design adds it so both match.", icon: <PenLine size={20} />, tone: "info" },
 ];
 
 /** ChoiceCards — pick one option from a few cards that explain what happens. */

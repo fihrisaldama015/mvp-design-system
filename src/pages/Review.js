@@ -32,8 +32,9 @@ const CHOICES = [
   { value: "keep-deprecated", label: "Keep it, but mark it as old (deprecated)", effect: "Screens that use it today keep working. New screens do not get it by default, and developers see a warning when they use it. It can be removed later." },
   { value: "keep", label: "Keep it, and add it to Figma", effect: "Nothing changes in the code. The design needs to add it to Figma so both match." },
 ];
-const CHOICE_ICONS = { "follow-figma": <Eraser size={16} />, "keep-deprecated": <Hourglass size={16} />, keep: <PenLine size={16} /> };
-const CHOICE_CARDS = CHOICES.map((c) => ({ value: c.value, label: c.label, description: c.effect, icon: CHOICE_ICONS[c.value] }));
+// Each choice has its own colour and icon, so the three read as three different things before a word is read.
+const CHOICE_LOOK = { "follow-figma": { icon: <Eraser size={20} />, tone: "danger" }, "keep-deprecated": { icon: <Hourglass size={20} />, tone: "warning" }, keep: { icon: <PenLine size={20} />, tone: "info" } };
+const CHOICE_CARDS = CHOICES.map((c) => ({ value: c.value, label: c.label, description: c.effect, ...CHOICE_LOOK[c.value] }));
 const STATUS = { pending: { tone: "warning", label: "Waiting for an answer" }, answered: { tone: "info", label: "Answered, waiting for the developer" }, applied: { tone: "success", label: "Applied" } };
 
 const when = (iso) => (iso ? new Date(iso).toLocaleString() : "");
@@ -165,9 +166,12 @@ function Decision({ doc, item, choice, saved, detail, onChoice, readOnly, date, 
         <AffectedPages doc={doc} item={item} />
       </Section>
       <section className="flex flex-col gap-4 rounded-default border-2 border-primary p-5">
-        <div className="flex flex-col gap-1">
-          <h4 className="flex items-center gap-2 typo-semi-bold-text-lg"><Gavel size={20} />What should we do?</h4>
-          <p className="text-caption typo-regular-text-sm">Pick one. The developers apply it next.</p>
+        <div className="flex items-center gap-4">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600"><Gavel size={28} /></div>
+          <div className="flex flex-col gap-0.5">
+            <h4 className="typo-semi-bold-text-lg">What should we do?</h4>
+            <p className="text-caption typo-regular-text-sm">Pick one. The developers apply it next.</p>
+          </div>
         </div>
         <ChoiceCards options={CHOICE_CARDS} value={choice ?? ""} disabled={readOnly} onChange={onChoice} />
         {choice === "keep-deprecated" && (
