@@ -33,14 +33,29 @@ Sound is just another layer.
 There is a voice, there are effects, and there is music that ducks under the voice, so you can always hear it.
 All of it is placed by frame number, like everything else.
 
-# scene7  (5 sentences)
+# scene7  (3 sentences)
 The camera is just math too.
 A zoom is a scale, a pan is a translation, and a tilt is a rotation with perspective.
 Here the view leans over by twenty degrees, then rolls back.
-For real depth, Remotion can render three-dimensional scenes, with lights and an orbiting camera.
-Add motion blur, and fast moves look as if a real lens filmed them.
 
-# scene8  (3 sentences)
+# scene8  (2 sentences)
+For real depth, Remotion can render three-dimensional scenes, with lights and an orbiting camera.
+The objects and the camera are both driven by the frame number.
+
+# scene9  (2 sentences)
+Add motion blur, and fast moves look as if a real lens filmed them.
+The scene is sampled several times inside each frame, then blended.
+
+# scene10  (3 sentences)
+And there is more.
+A line can draw itself, one stroke at a time.
+Shapes and noise give you organic motion without drawing a single keyframe.
+
+# scene11  (2 sentences)
+A video can even play inside another video, trimmed and sped up as you like.
+If it runs in a web page, you can put it on screen.
+
+# scene12  (3 sentences)
 Claude writes the scenes, the helpers, and the scripts.
 You write the script, choose the voice, and judge the feel.
 That is the whole idea: video as code.

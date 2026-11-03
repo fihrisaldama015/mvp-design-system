@@ -1,3 +1,2 @@
-Claude writes the scenes, the helpers, and the scripts.
-You write the script, choose the voice, and judge the feel.
-That is the whole idea: video as code.
+For real depth, Remotion can render three-dimensional scenes, with lights and an orbiting camera.
+The objects and the camera are both driven by the frame number.

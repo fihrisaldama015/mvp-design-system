@@ -1,0 +1,2 @@
+A video can even play inside another video, trimmed and sped up as you like.
+If it runs in a web page, you can put it on screen.

@@ -1,0 +1,2 @@
+Add motion blur, and fast moves look as if a real lens filmed them.
+The scene is sampled several times inside each frame, then blended.

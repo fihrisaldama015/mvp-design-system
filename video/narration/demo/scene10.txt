@@ -1,0 +1,3 @@
+And there is more.
+A line can draw itself, one stroke at a time.
+Shapes and noise give you organic motion without drawing a single keyframe.
