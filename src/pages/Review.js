@@ -19,6 +19,7 @@ import { StatCard } from "components/stat-card";
 import { Textarea } from "components/textarea";
 import { previewFor } from "pages/review/previews";
 import PagePreview from "pages/review/PagePreview";
+import LoginScreen from "pages/review/LoginScreen";
 import { call, changePassword, configured, login, sessionStore } from "app/review/serviceClient";
 import { NOTE_MAX, activityKind, actorLabel, changeSentence, changeText, decisionDetails, developerNote, defaultRoute, deadlineText, eventLabel, itemName, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, previewNotes, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
 import "app/review/motion.css";
@@ -582,10 +583,10 @@ export default function Review() {
 
   if (!session && !docs) {
     return (
-      <Shell>
-        <Header />
-        <LoginForm onLogin={start} message={expired} expired={Boolean(expired)} />
-      </Shell>
+      <LoginScreen
+        notice={expired ? { title: "Log in again", text: expired } : null}
+        onSubmit={async (email, password) => start(await login(email, password))}
+      />
     );
   }
 
