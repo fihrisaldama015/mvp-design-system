@@ -84,7 +84,7 @@ pre.code { margin: 0; background: var(--surface); border: 1px solid var(--line);
 table { width: 100%; border-collapse: collapse; font-size: 32px; line-height: 1.35; }
 th { text-align: left; font-size: 24px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); padding: 0 28px 16px 0; }
 td { padding: 24px 28px 24px 0; border-top: 1px solid var(--line); vertical-align: top; }
-td:first-child { font-weight: 600; width: 26%; }
+td:first-child { font-weight: 600; width: 17%; }
 .note { font-size: 24px; color: var(--faint); }
 
 .flow { display: flex; align-items: stretch; gap: 20px; }
@@ -322,7 +322,7 @@ td:first-child { font-weight: 600; width: 26%; }
       </section>
 
       <!-- 13 -->
-      <section class="slide" data-notes="<b>Peta.</b> Ini potensi penuhnya; kita memakai sebagian kecil. Jangan dibacakan satu per satu: sebut kelompoknya. Nama paket sesuai dokumentasi, cek untuk versi yang dipakai (kita 4.0.535).">
+      <section class="slide" data-notes="<b>Peta.</b> Ini potensi penuhnya; kita memakai sebagian kecil. Jangan dibacakan satu per satu: sebut kelompoknya. Nama paket sudah dicek di npm untuk versi 4.0.535 yang kita pakai.">
         <div class="kicker">What else is possible</div>
         <h2>The map</h2>
         <div class="cards">
@@ -335,7 +335,7 @@ td:first-child { font-weight: 600; width: 26%; }
           <div class="card"><h3>Ship it</h3><p>@remotion/player · renderMedia · Lambda · codecs · --props</p><span class="badge part">Partly</span></div>
           <div class="card"><h3>Data</h3><p>calculateMetadata · zod schema · inputProps</p><span class="badge part">Partly</span></div>
         </div>
-        <div class="foot">Package names as in the Remotion docs. We use version 4.0.535.</div>
+        <div class="foot">Package names checked against npm at version 4.0.535, the version we use.</div>
       </section>
 
       <!-- 14 -->
@@ -365,20 +365,19 @@ td:first-child { font-weight: 600; width: 26%; }
       </section>
 
       <!-- 15 -->
-      <section class="slide" data-notes="<b>Perbandingan.</b> Claude Motion: menurut laporan pihak ketiga, beta untuk Team dan Enterprise, animasi pendek di Artifacts. Cek halaman resmi Anthropic. <b>Isi baris lisensi Remotion setelah dicek di remotion.dev/license.</b>">
+      <section class="slide" data-notes="<b>Perbandingan.</b> Claude Motion (Help Center Anthropic): beta untuk Team dan Enterprise; aktif bawaan di Team, di Enterprise mati sampai owner menyalakannya. Berupa kode, ekspor MP4, dihitung ke batas pemakaian, tidak memakai model pembuat video. Lisensi Remotion (LICENSE.md versi 4.0.535): gratis untuk individu dan perusahaan for-profit sampai 3 karyawan; di atas itu perlu Company License.">
         <div class="kicker">Choosing</div>
         <h2>Remotion, Claude Motion, or an editor</h2>
         <table>
-          <thead><tr><th></th><th>Remotion</th><th>Claude Motion *</th><th>Video editor</th></tr></thead>
+          <thead><tr><th></th><th style="width:31%">Remotion</th><th style="width:30%">Claude Motion</th><th style="width:22%">Video editor</th></tr></thead>
           <tbody>
             <tr><td>Lives in</td><td>Code in your repo</td><td>Inside Claude</td><td>A desktop app</td></tr>
-            <tr><td>Control</td><td>Every frame, audio timing, git</td><td>Prompt-driven, limited</td><td>Full, by hand</td></tr>
-            <tr><td>Available to</td><td>Anyone. Check the license for company use</td><td>Team and Enterprise, beta</td><td>Anyone with the app</td></tr>
+            <tr><td>Control</td><td>Every frame, audio timing, git</td><td>Prompt-driven, editable in chat or its editor</td><td>Full, by hand</td></tr>
+            <tr><td>Available to</td><td>Free for individuals and up to 3 employees. Larger companies need a Company License</td><td>Team and Enterprise, beta. Off by default on Enterprise</td><td>Anyone with the app</td></tr>
             <tr><td>Best for</td><td>Repeatable, data-driven videos</td><td>Quick short animations</td><td>One-off creative edits</td></tr>
           </tbody>
         </table>
-        <div class="chips"><span class="chip live">License</span><span class="chip">check remotion.dev/license before company use</span></div>
-        <div class="foot">* Per third-party reports. Check Anthropic's own page.</div>
+        <div class="foot">Claude Motion: Anthropic Help Center, "Get started with Claude Motion". Remotion: LICENSE.md of version 4.0.535.</div>
       </section>
 
       <!-- 16 -->
