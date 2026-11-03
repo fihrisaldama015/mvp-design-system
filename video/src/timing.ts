@@ -29,3 +29,20 @@ export const useStarts = (sentences: string[]) => {
   const measured = useContext(StartsContext);
   return measured && measured.length === sentences.length ? measured : sentenceStarts(sentences, durationInFrames);
 };
+
+/** [word, start frame, end frame] of every spoken word of a scene (src/wordTiming.json), provided per scene by SceneShell. */
+export type WordTiming = [string, number, number];
+export const WordsContext = createContext<WordTiming[] | null>(null);
+/** True when the captions should be kinetic (word by word). Set by the root from the composition's `kinetic` prop. */
+export const KineticContext = createContext<boolean>(false);
+
+/** The start frame of each token of `sentence`: the narration tokens are matched to the spoken words that fall in
+ *  [from, to). When the counts match it is one to one; otherwise the tokens spread over the spoken words in order.
+ *  Returns null when no word was spoken in that window (the caption then shows the whole sentence at once). */
+export const tokenStarts = (sentence: string, words: WordTiming[], from: number, to: number): { tokens: string[]; starts: number[]; ends: number[] } | null => {
+  const tokens = sentence.split(/\s+/).filter(Boolean);
+  const spoken = words.filter(([, s]) => s >= from && s < to);
+  if (!tokens.length || !spoken.length) return null;
+  const pick = (j: number) => spoken[Math.min(spoken.length - 1, tokens.length === 1 ? 0 : Math.round((j * (spoken.length - 1)) / (tokens.length - 1)))];
+  return { tokens, starts: tokens.map((_, j) => pick(j)[1]), ends: tokens.map((_, j) => pick(j)[2]) };
+};

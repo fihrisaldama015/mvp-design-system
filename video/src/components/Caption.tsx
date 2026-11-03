@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { c, inter } from "../theme";
-import { useStarts } from "../timing";
+import { KineticContext, useStarts } from "../timing";
+import { KineticCaption } from "./KineticCaption";
 
 /** Narration as captions: one sentence at a time, timed by length over the whole scene. */
-export const Caption: React.FC<{ sentences: string[] }> = ({ sentences }) => {
+const PlainCaption: React.FC<{ sentences: string[] }> = ({ sentences }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
   if (!sentences.length) return null;
@@ -19,4 +20,10 @@ export const Caption: React.FC<{ sentences: string[] }> = ({ sentences }) => {
       <div style={{ maxWidth: 1560, textAlign: "center", fontFamily: inter, fontSize: 34, lineHeight: 1.35, fontWeight: 500, color: c.text, background: "rgba(13,16,23,0.82)", border: `1px solid ${c.line}`, borderRadius: 16, padding: "16px 30px", opacity }}>{sentences[idx]}</div>
     </AbsoluteFill>
   );
+};
+
+/** The scene's captions: kinetic (word by word) when the composition says so, else one sentence at a time. */
+export const Caption: React.FC<{ sentences: string[] }> = (props) => {
+  const kinetic = useContext(KineticContext);
+  return kinetic ? <KineticCaption {...props} /> : <PlainCaption {...props} />;
 };

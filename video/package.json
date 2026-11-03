@@ -9,6 +9,7 @@
     "render": "npm run assets && remotion render src/index.ts ShieldVideo out/shield-video.mp4",
     "narration": "node scripts/export-narration.mjs",
     "align": "node scripts/align.mjs",
+    "words": "node scripts/words.mjs",
     "transcribe": "[ -x .venv/bin/python ] && .venv/bin/python scripts/transcribe.py || echo 'Setup once: python3 -m venv .venv && .venv/bin/pip install faster-whisper'"
   },
   "dependencies": {

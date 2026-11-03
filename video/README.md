@@ -37,3 +37,19 @@ Audio files and `src/audioTiming.json` are specific to one recording: they are n
 
 Re-run `npm run align` after replacing any audio file. To go back to the silent version, empty
 `src/audioTiming.json` (`{}`) and the scenes return to their planned timing.
+
+## Kinetic captions (word by word)
+
+The captions normally show one sentence at a time. The kinetic version pops each word in the moment it is spoken and
+highlights the word being spoken. It uses the word timestamps of the transcript, so it needs the precise setup above.
+
+1. `npm run transcribe`, then `npm run align` (as in the voice-over steps).
+2. `npm run words`: turns `.align/words.json` (seconds) and `src/audioTiming.json` (where each audio starts) into
+   `src/wordTiming.json` (word, start frame, end frame). Re-run it after `align`.
+3. Preview or render the kinetic version: the compositions `ShieldVideoKinetic` and `Scene1Kinetic` ... `Scene10Kinetic`
+   (`npx remotion render src/index.ts ShieldVideoKinetic out/shield-kinetic.mp4`). The plain compositions are unchanged.
+
+A scene without words (no audio, or not in `wordTiming.json`) keeps its plain captions. The numbers to tune by hand are
+in `KINETIC` at the top of `src/components/KineticCaption.tsx`: how far a word rises, its start scale, the spring
+(`damping` = bounce, `stiffness` = speed), the fade and the highlight colour.
+
