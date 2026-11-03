@@ -108,7 +108,7 @@ function AffectedPages({ doc, item }) {
         </div>
       ) : <p className="typo-medium-text-sm"><code>{route.path}</code></p>}
       {route.steps?.length > 0 && (
-        <div key={route.path} className="review-enter flex flex-col gap-2 rounded-default bg-surface-lv1 p-4">
+        <div key={`steps:${route.path}`} className="review-enter flex flex-col gap-2 rounded-default bg-surface-lv1 p-4">
           <p className="flex items-center gap-2 typo-medium-text-sm"><ListOrdered size={16} />How to see it here</p>
           <p className="text-caption typo-regular-text-sm">The component only shows after these steps. Do the same in both frames to compare.</p>
           <ol className="flex list-decimal flex-col gap-1 pl-5 typo-regular-text-sm">{route.steps.map((st, i) => <li key={i} className="break-words">{st}</li>)}</ol>
