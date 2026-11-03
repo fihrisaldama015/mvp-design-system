@@ -61,8 +61,8 @@ function Preview({ preview, prop, option }) {
     <div className="flex flex-col gap-2">
       <p className="typo-medium-text-sm">See the difference</p>
       <div className="flex flex-col gap-3 md:flex-row">
-        {panel("Without it", notes.without, preview.without)}
         {panel("With it", notes.with, preview.with)}
+        {panel("Without it", notes.without, preview.without)}
       </div>
       {(preview.hint ?? preview.spec.hint) && <p className="text-caption typo-regular-text-sm">{preview.hint ?? preview.spec.hint}</p>}
     </div>
