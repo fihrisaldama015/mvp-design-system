@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText, eventLabel, timelineSteps, defaultRoute, previewProps, previewNotes, activityKind, actorLabel, itemName, decisionDetails } from "../helpers.js";
+import { embedUrl, frameUrls, publishedNote, validMigrateBy, missingDates, safeRouteUrl, mustChangePassword, changeText, daysLeft, deadlineText, usageTrend, trendText, eventLabel, timelineSteps, defaultRoute, previewProps, previewNotes, activityKind, actorLabel, itemName, decisionDetails, changeSentence, developerNote } from "../helpers.js";
 
 test("frame urls join the origin and the route", () => {
   const r = frameUrls({ url: "/reservations" }, "https://x-abc.vercel.app/", "http://localhost:5002");
@@ -121,12 +121,12 @@ test("trend text needs two points", () => {
 const fmt = (at) => (at ? `<${at}>` : "");
 
 test("eventLabel maps every known audit action and passes unknown text through", () => {
-  assert.equal(eventLabel("published"), "Published for review");
-  assert.equal(eventLabel("published (new cycle)"), "Published again, new review");
+  assert.equal(eventLabel("published"), "Sent for review");
+  assert.equal(eventLabel("published (new cycle)"), "Sent for review again, as a new review");
   assert.equal(eventLabel("Figma changed: earlier answers dropped"), "Figma changed: earlier answers were cleared, please answer again");
   assert.equal(eventLabel("republished (same Figma state, answers kept)"), "Synced again, nothing changed");
-  assert.equal(eventLabel("decided"), "Answered");
-  assert.equal(eventLabel("applied"), "Applied by the developer");
+  assert.equal(eventLabel("decided"), "Decision saved");
+  assert.equal(eventLabel("applied"), "Applied in the code");
   assert.equal(eventLabel("something else"), "something else");
   assert.equal(eventLabel(undefined), "");
   assert.equal(eventLabel(5), "");
@@ -134,47 +134,47 @@ test("eventLabel maps every known audit action and passes unknown text through",
 
 test("timelineSteps pending: published done, answered waiting", () => {
   const t = timelineSteps([{ at: "A", action: "published", by: "x" }], "pending", fmt);
-  assert.deepEqual(t, { labels: ["Published", "Answered", "Applied"], current: 1, details: ["Published <A>", "Waiting for the reviewers", "Waiting for the developer"] });
+  assert.deepEqual(t, { labels: ["Sent for review", "Decided", "Applied in code"], current: 1, details: ["Sent for review <A>", "Waiting for a decision", "Waiting for the developer"] });
 });
 
 test("timelineSteps answered: names the last decider", () => {
   const audit = [{ at: "A", action: "published" }, { at: "B", action: "decided", by: "ann" }, { at: "C", action: "decided", by: "bob" }];
   const t = timelineSteps(audit, "answered", fmt);
   assert.equal(t.current, 2);
-  assert.deepEqual(t.details, ["Published <A>", "Answered by bob, <C>", "Waiting for the developer"]);
+  assert.deepEqual(t.details, ["Sent for review <A>", "Decided by bob, <C>", "Waiting for the developer"]);
 });
 
 test("timelineSteps applied: all three with dates", () => {
   const audit = [{ at: "A", action: "published" }, { at: "B", action: "decided", by: "ann" }, { at: "C", action: "applied", by: "dev" }];
   const t = timelineSteps(audit, "applied", fmt);
   assert.equal(t.current, 3);
-  assert.deepEqual(t.details, ["Published <A>", "Answered by ann, <B>", "Applied <C>"]);
+  assert.deepEqual(t.details, ["Sent for review <A>", "Decided by ann, <B>", "Applied <C>"]);
 });
 
 test("timelineSteps uses only the current cycle", () => {
   const audit = [{ at: "A", action: "published" }, { at: "B", action: "decided", by: "old" }, { at: "C", action: "published (new cycle)" }];
   const t = timelineSteps(audit, "pending", fmt);
-  assert.deepEqual(t.details, ["Published <C>", "Waiting for the reviewers", "Waiting for the developer"]);
-  assert.equal(timelineSteps(audit, "answered", fmt).details[1], "Answered");
+  assert.deepEqual(t.details, ["Sent for review <C>", "Waiting for a decision", "Waiting for the developer"]);
+  assert.equal(timelineSteps(audit, "answered", fmt).details[1], "Decided");
 });
 
 test('timelineSteps "Figma changed" marker says the review was reopened', () => {
   const audit = [{ at: "A", action: "published" }, { at: "B", action: "decided", by: "old" }, { at: "C", action: "Figma changed: earlier answers dropped" }];
   const t = timelineSteps(audit, "pending", fmt);
-  assert.deepEqual(t.details, ["Figma changed <C>, review reopened", "Waiting for the reviewers", "Waiting for the developer"]);
+  assert.deepEqual(t.details, ["Figma changed <C>, review reopened", "Waiting for a decision", "Waiting for the developer"]);
 });
 
 test("republished is not a cycle marker", () => {
   const audit = [{ at: "A", action: "published" }, { at: "B", action: "decided", by: "ann" }, { at: "C", action: "republished (same Figma state, answers kept)" }];
   const t = timelineSteps(audit, "answered", fmt);
-  assert.deepEqual(t.details, ["Published <A>", "Answered by ann, <B>", "Waiting for the developer"]);
+  assert.deepEqual(t.details, ["Sent for review <A>", "Decided by ann, <B>", "Waiting for the developer"]);
 });
 
 test("timelineSteps survives an old document: missing audit, bad dates, unknown status", () => {
-  assert.deepEqual(timelineSteps(undefined, undefined), { labels: ["Published", "Answered", "Applied"], current: 1, details: ["", "Waiting for the reviewers", "Waiting for the developer"] });
+  assert.deepEqual(timelineSteps(undefined, undefined), { labels: ["Sent for review", "Decided", "Applied in code"], current: 1, details: ["", "Waiting for a decision", "Waiting for the developer"] });
   assert.equal(timelineSteps("nope", "weird").current, 1);
   const t = timelineSteps([{ action: "published", at: "garbage" }, { action: "decided", at: "garbage" }, { action: "applied" }], "applied");
-  assert.deepEqual(t.details, ["Published", "Answered", "Applied"]);
+  assert.deepEqual(t.details, ["Sent for review", "Decided", "Applied"]);
   assert.equal(timelineSteps([{ action: "decided", by: "z", at: "2026-01-01T00:00:00Z" }], "answered", fmt).details[0], "");
   assert.doesNotThrow(() => timelineSteps([null, {}, { action: 3 }], "answered"));
 });
@@ -294,4 +294,18 @@ test("decisionDetails ignores an earlier cycle and survives old documents", () =
   assert.deepEqual(decisionDetails(audit, { "removed-prop:a": "keep" }, {}), { "removed-prop:a": { choice: "keep", by: "", at: "", note: "", migrateBy: "" } });
   assert.deepEqual(decisionDetails(undefined, undefined, undefined), {});
   assert.deepEqual(decisionDetails([null, 3, {}], { x: "keep" }, null), { x: { choice: "keep", by: "", at: "", note: "", migrateBy: "" } });
+});
+
+test("changeSentence says what Figma no longer has, for a setting and for an option", () => {
+  assert.equal(changeSentence("Select", { kind: "removed-prop", prop: "searchable" }), 'In Select, the "searchable" setting is not in Figma any more.');
+  assert.equal(changeSentence("Alert", { kind: "removed-option", prop: "kind", option: "outlined" }), 'In Alert, the kind "outlined" is not in Figma any more.');
+  assert.equal(changeSentence(undefined, { kind: "removed-prop", prop: "x" }), 'In This component, the "x" setting is not in Figma any more.');
+  assert.equal(changeSentence("Alert", { kind: "added-prop", prop: "x" }), "");
+  assert.equal(changeSentence("Alert", null), "");
+});
+
+test("developerNote drops the @deprecated tag and survives non-text", () => {
+  assert.equal(developerNote("@deprecated Not in the SHIELD design. Still works."), "Not in the SHIELD design. Still works.");
+  assert.equal(developerNote("Shows a search box."), "Shows a search box.");
+  assert.equal(developerNote(undefined), "");
 });

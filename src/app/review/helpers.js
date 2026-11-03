@@ -90,12 +90,12 @@ export const NOTE_MAX = 500;
 
 // The audit action in plain English (same strings as the service). Unknown text passes through; non-strings give "".
 const EVENT_LABELS = {
-  published: "Published for review",
-  "published (new cycle)": "Published again, new review",
+  published: "Sent for review",
+  "published (new cycle)": "Sent for review again, as a new review",
   "Figma changed: earlier answers dropped": "Figma changed: earlier answers were cleared, please answer again",
   "republished (same Figma state, answers kept)": "Synced again, nothing changed",
-  decided: "Answered",
-  applied: "Applied by the developer",
+  decided: "Decision saved",
+  applied: "Applied in the code",
 };
 export const eventLabel = (action) => (typeof action !== "string" ? "" : Object.hasOwn(EVENT_LABELS, action) ? EVENT_LABELS[action] : action);
 
@@ -121,11 +121,11 @@ export function timelineSteps(audit, status, format = defaultFormat) {
   const decided = last("decided");
   const applied = last("applied");
   return {
-    labels: ["Published", "Answered", "Applied"],
+    labels: ["Sent for review", "Decided", "Applied in code"],
     current,
     details: [
-      marker ? (starts(marker, "Figma changed") ? `${text("Figma changed", marker.at)}, review reopened` : text("Published", marker.at)) : "",
-      current >= 2 ? (decided ? [decided.by ? `Answered by ${decided.by}` : "Answered", safe(format, decided.at)].filter(Boolean).join(", ") : "Answered") : "Waiting for the reviewers",
+      marker ? (starts(marker, "Figma changed") ? `${text("Figma changed", marker.at)}, review reopened` : text("Sent for review", marker.at)) : "",
+      current >= 2 ? (decided ? [decided.by ? `Decided by ${decided.by}` : "Decided", safe(format, decided.at)].filter(Boolean).join(", ") : "Decided") : "Waiting for a decision",
       current === 3 ? (applied ? text("Applied", applied.at) : "Applied") : "Waiting for the developer",
     ],
   };
@@ -204,3 +204,15 @@ export function decisionDetails(audit, answers, migrateBy) {
   }
   return out;
 }
+
+// One plain sentence for someone who does not read code: what this review item is about.
+export function changeSentence(component, item) {
+  const name = typeof component === "string" && component ? component : "This component";
+  if (!item || typeof item !== "object") return "";
+  if (item.kind === "removed-option") return `In ${name}, the ${item.prop} "${item.option}" is not in Figma any more.`;
+  if (item.kind === "removed-prop") return `In ${name}, the "${item.prop}" setting is not in Figma any more.`;
+  return "";
+}
+
+// The developer's comment on a property, without the @deprecated tag (the page shows that as its own badge).
+export const developerNote = (description) => (typeof description === "string" ? description.replace(/^@deprecated\s*/i, "").trim() : "");

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BadgeCheck, BookOpen, CheckCircle2, ChevronDown, ChevronUp, ExternalLink, Info, ListChecks, LogOut, RefreshCw, RotateCw, Upload } from "lucide-react";
+import { BadgeCheck, BookOpen, CalendarClock, CheckCircle2, ChevronDown, ChevronUp, Eraser, ExternalLink, Gauge, Gavel, History, Hourglass, Info, Layers, ListChecks, LogOut, Monitor, PenLine, RefreshCw, RotateCw, Save, TriangleAlert, Unlink, Upload } from "lucide-react";
 import { Alert } from "components/alert";
 import { Badge } from "components/badge";
 import { Button } from "components/button";
@@ -9,15 +9,17 @@ import { EmptyState } from "components/empty-state";
 import { Field } from "components/field";
 import { Input } from "components/input";
 import { PageHeader } from "components/page-header";
-import { ProgressBar } from "components/progress-bar";
 import { Select } from "components/select";
 import { Stepper } from "components/stepper";
+import { Tabs } from "components/tabs";
+import { ChoiceCards } from "proposed/choice-cards";
+import { ProgressRing } from "proposed/progress-ring";
 import { StatCard } from "components/stat-card";
 import { Textarea } from "components/textarea";
 import { previewFor } from "pages/review/previews";
 import PagePreview from "pages/review/PagePreview";
 import { call, changePassword, configured, login, sessionStore } from "app/review/serviceClient";
-import { NOTE_MAX, activityKind, actorLabel, changeText, decisionDetails, defaultRoute, deadlineText, eventLabel, itemName, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, previewNotes, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
+import { NOTE_MAX, activityKind, actorLabel, changeSentence, changeText, decisionDetails, developerNote, defaultRoute, deadlineText, eventLabel, itemName, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, previewNotes, safeRouteUrl, trendText, usageTrend } from "app/review/helpers";
 import { usageFor } from "../../scripts/figma/usageCore.mjs";
 import usage from "app/review/usage.json";
 
@@ -30,6 +32,8 @@ const CHOICES = [
   { value: "keep-deprecated", label: "Keep it, but mark it as old (deprecated)", effect: "Screens that use it today keep working. New screens do not get it by default, and developers see a warning when they use it. It can be removed later." },
   { value: "keep", label: "Keep it, and add it to Figma", effect: "Nothing changes in the code. The design needs to add it to Figma so both match." },
 ];
+const CHOICE_ICONS = { "follow-figma": <Eraser size={16} />, "keep-deprecated": <Hourglass size={16} />, keep: <PenLine size={16} /> };
+const CHOICE_CARDS = CHOICES.map((c) => ({ value: c.value, label: c.label, description: c.effect, icon: CHOICE_ICONS[c.value] }));
 const STATUS = { pending: { tone: "warning", label: "Waiting for an answer" }, answered: { tone: "info", label: "Answered, waiting for the developer" }, applied: { tone: "success", label: "Applied" } };
 
 const when = (iso) => (iso ? new Date(iso).toLocaleString() : "");
@@ -70,54 +74,57 @@ function Preview({ preview, prop, option }) {
   );
 }
 
-// The pages of the app that use the property, and each one as it is now next to the Figma version.
+// A titled block with an icon, so a review reads as a few clear sections instead of one long page of text.
+function Section({ icon, title, hint, children }) {
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex flex-col gap-0.5">
+        <h4 className="flex items-center gap-2 typo-semi-bold-text-base">{icon}{title}</h4>
+        {hint && <p className="text-caption typo-regular-text-sm">{hint}</p>}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+// The pages of the app that use the property: one tab per page (they scroll sideways when there are many), the current
+// one underlined, and under them the page as it is now next to the Figma version.
 function AffectedPages({ doc, item }) {
   const found = useMemo(() => usageFor(usage, doc.jsxName, item), [doc.jsxName, item]);
   const [path, setPath] = useState(null);
   const note = publishedNote(found.routes.length, doc.usage?.byItem?.[item.id]);
   const route = found.routes.find((r) => r.path === path) ?? defaultRoute(found.routes);
+  if (!route) return <p className="text-caption typo-regular-text-sm">No page in the app uses it today.</p>;
+  const at = found.routes.indexOf(route) + 1;
   return (
-    <div className="flex flex-col gap-2">
-      <p className="typo-medium-text-sm">Pages that would change</p>
-      {!route && <p className="text-caption typo-regular-text-sm">No page in the app uses it today.</p>}
-      {route && (
-        <>
-          <ul className="flex flex-col gap-1 typo-regular-text-sm">
-            {found.routes.map((r) => (
-              <li key={r.path}>
-                <code>{r.path}</code>{" "}
-                {safeRouteUrl(r.url) ? <a href={r.url} target="_blank" rel="noreferrer" className="text-primary underline">Open this page</a> : <span className="text-caption">(needs a sample path)</span>}
-              </li>
-            ))}
-          </ul>
-          {found.routes.length > 1 && (
-            <div className="w-72"><Select label="Page to preview" options={found.routes.map((r) => ({ value: r.path, label: r.path }))} value={route.path} onChange={setPath} /></div>
-          )}
-          <PagePreview key={route.path} route={route} previewUrl={doc.previewUrl} />
-        </>
-      )}
+    <div className="flex flex-col gap-3">
+      {found.routes.length > 1 ? (
+        <div className="flex flex-col gap-2">
+          <p className="text-caption typo-regular-text-sm">Page {at} of {found.routes.length}</p>
+          <div className="overflow-x-auto"><Tabs className="min-w-max" tabs={found.routes.map((r) => ({ value: r.path, label: r.path }))} value={route.path} onChange={setPath} /></div>
+        </div>
+      ) : <p className="typo-medium-text-sm"><code>{route.path}</code></p>}
+      <PagePreview key={route.path} route={route} previewUrl={doc.previewUrl} />
       {note && <p className="text-caption typo-regular-text-sm">{note}.</p>}
     </div>
   );
 }
 
-// Where the property stands now: uses in this build next to the count at the last sync, the trend, and the deadline
-// of a saved "keep it, but mark it as old" answer. Each part is left out when its data is missing.
-function Standing({ doc, item, saved, today }) {
+// How much the decision matters: uses in this build next to the count at the last sync, the trend, the deadline of a
+// saved "keep it, but mark it as old" answer. Each tile is left out when its data is missing.
+function Impact({ doc, item, saved, today }) {
   const found = useMemo(() => usageFor(usage, doc.jsxName, item), [doc.jsxName, item]);
   const atSync = doc.usage?.byItem?.[item.id]?.count;
   const trend = trendText(usageTrend(doc.usageHistory, item.id));
   const dateText = saved === "keep-deprecated" ? deadlineText(doc.migrateBy?.[item.id], today) : "";
   const overdue = dateText && daysLeft(doc.migrateBy[item.id], today) < 0;
   return (
-    <div className="flex flex-col gap-1">
-      <p className="typo-medium-text-sm">Where it stands</p>
-      <ul className="flex flex-col gap-1 typo-regular-text-sm">
-        <li>In this build: {plural(found.count, "use", "uses")} on {plural(found.routes.length, "page", "pages")}</li>
-        {typeof atSync === "number" && <li>At the last sync: {plural(atSync, "use", "uses")}</li>}
-        {trend && <li>Over the syncs: {trend}</li>}
-        {dateText && <li className="flex flex-wrap items-center gap-2">{dateText}{overdue && <Badge tone="danger">Overdue</Badge>}</li>}
-      </ul>
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <StatCard label="Used in" value={found.count} hint={found.count === 1 ? "place in the app" : "places in the app"} tone={found.count ? "warning" : "success"} icon={<Layers size={20} />} />
+      <StatCard label="Pages that would change" value={found.routes.length} hint={found.routes.length === 1 ? "page" : "pages"} tone={found.routes.length ? "warning" : "success"} icon={<Monitor size={20} />} />
+      {typeof atSync === "number" && <StatCard label="At the last sync" value={atSync} hint={trend ? `Over the syncs: ${trend}` : "places in the app"} tone="neutral" icon={<History size={20} />} />}
+      {item.onByDefault && <StatCard label="On by default" value="Yes" hint={`Every ${doc.jsxName ?? "instance"} has it today`} tone="warning" icon={<Gauge size={20} />} />}
+      {dateText && <StatCard label="Migrate by" value={doc.migrateBy[item.id]} hint={overdue ? "Overdue" : dateText.replace(/^Migrate by \S+ ?/, "")} tone={overdue ? "danger" : "info"} icon={<CalendarClock size={20} />} />}
     </div>
   );
 }
@@ -125,50 +132,59 @@ function Standing({ doc, item, saved, today }) {
 function Decision({ doc, item, choice, saved, detail, onChoice, readOnly, date, onDate, dateError, today }) {
   const preview = useMemo(() => previewFor(doc, item), [doc, item]);
   const story = storybookLink(doc);
-  const chosen = CHOICES.find((c) => c.value === choice);
   const decision = CHOICES.find((c) => c.value === saved);
-  const where = item.callers ? plural(item.callers, "place", "places") + " in the app" : "";
+  const devNote = developerNote(item.description);
   return (
-    <li className="flex flex-col gap-4 rounded-default border border-default bg-surface p-5">
-      <div className="flex flex-col gap-1">
+    <li className="flex flex-col gap-6 rounded-default border border-default bg-surface p-5">
+      <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge tone={saved ? "success" : choice ? "info" : "warning"}>{saved && saved === choice ? "Answered" : choice ? "Chosen, not saved yet" : "Needs your decision"}</Badge>
+          <span className="flex items-center gap-1 text-caption typo-medium-text-sm"><Unlink size={14} />Removed in Figma</span>
+          <Badge tone={saved ? "success" : choice ? "info" : "warning"}>{saved && saved === choice ? "Decision saved" : choice ? "Chosen, not saved yet" : "Needs your decision"}</Badge>
           {item.deprecated && <Badge tone="neutral">already marked as old</Badge>}
         </div>
-        <h3 className="typo-semi-bold-text-base">The property <code>{item.prop}{item.option ? `="${item.option}"` : ""}</code> is not in the Figma design</h3>
-        {item.description && <p className="text-default typo-regular-text-sm">What it does today: {item.description}</p>}
-        <p className="text-caption typo-regular-text-sm">
-          {item.onByDefault ? `It is on by default, so every ${doc.jsxName ?? "instance"} in the app has it today. ` : ""}
-          {where ? `Used in ${where}.` : "Nothing in the app asks for it explicitly."}
-        </p>
+        <h3 className="typo-semi-bold-text-lg">{changeSentence(doc.jsxName ?? doc.component, item)}</h3>
+        <p className="text-caption typo-regular-text-sm">The code still has it and the Figma design does not. Your decision tells the developers which one wins.</p>
+        {devNote && (
+          <details>
+            <summary className="cursor-pointer text-caption typo-medium-text-sm">Developer's note (technical)</summary>
+            <p className="mt-2 break-words text-caption typo-regular-text-sm">{devNote}</p>
+          </details>
+        )}
       </div>
-      {saved && (
-        <div className="flex flex-col gap-1 rounded-default border border-success p-3">
-          <p className="flex items-center gap-2 typo-semi-bold-text-sm"><CheckCircle2 size={16} className="shrink-0 text-success" />Decision: {decision?.label ?? saved}</p>
-          {detail && (detail.by || detail.at || detail.migrateBy) && (
-            <p className="text-caption typo-regular-text-sm">{[detail.by && `by ${detail.by}`, when(detail.at), detail.migrateBy && `migrate by ${detail.migrateBy}`].filter(Boolean).join(" · ")}</p>
-          )}
-          {detail?.note && <p className="break-words border-l-2 border-default pl-3 typo-regular-text-sm">&ldquo;{detail.note}&rdquo;</p>}
-        </div>
-      )}
+      <Section icon={<Gauge size={18} />} title="How much it affects">
+        <Impact doc={doc} item={item} saved={saved} today={today} />
+      </Section>
       {preview && <Preview preview={preview} prop={item.prop} option={item.option} />}
       {!preview && (
         <p className="text-caption typo-regular-text-sm">
-          There is no live preview for this one yet.{" "}
-          {story ? <a href={story} target="_blank" rel="noreferrer" className="text-primary underline">Try the component in Storybook</a> : "Ask the developer to show it to you."}
+          There is no side-by-side box for this component. Compare the pages below
+          {story ? <>, or <a href={story} target="_blank" rel="noreferrer" className="text-primary underline">try it in Storybook</a></> : ""}.
         </p>
       )}
-      <Standing doc={doc} item={item} saved={saved} today={today} />
-      <AffectedPages doc={doc} item={item} />
-      <div className="flex flex-col gap-2">
-        <div className="w-96"><Select label="What should we do with it?" options={CHOICES} value={choice ?? ""} placeholder="Choose what to do" disabled={readOnly} onChange={onChoice} /></div>
-        {chosen && <p className="text-default typo-regular-text-sm">If you choose this: {chosen.effect}</p>}
+      <Section icon={<Monitor size={18} />} title="See it on a page" hint="On the left the page as it is now, on the right the page with the Figma version.">
+        <AffectedPages doc={doc} item={item} />
+      </Section>
+      <section className="flex flex-col gap-4 rounded-default border-2 border-primary p-5">
+        <div className="flex flex-col gap-1">
+          <h4 className="flex items-center gap-2 typo-semi-bold-text-lg"><Gavel size={20} />What should we do?</h4>
+          <p className="text-caption typo-regular-text-sm">Pick one. The developers apply it next.</p>
+        </div>
+        <ChoiceCards options={CHOICE_CARDS} value={choice ?? ""} disabled={readOnly} onChange={onChoice} />
         {choice === "keep-deprecated" && (
           <div className="w-72">
             <Input label="Migrate by" type="date" required value={date ?? ""} disabled={readOnly} onChange={(e) => onDate(e.target.value)} status={dateError ? "danger" : "default"} caption={dateError ? "Choose the date the pages should stop using it." : "The date the pages should stop using it."} />
           </div>
         )}
-      </div>
+        {saved && (
+          <div className="flex flex-col gap-1 rounded-default border border-success p-3">
+            <p className="flex items-center gap-2 typo-semi-bold-text-sm"><CheckCircle2 size={16} className="shrink-0 text-success" />Decision saved: {decision?.label ?? saved}</p>
+            {detail && (detail.by || detail.at || detail.migrateBy) && (
+              <p className="text-caption typo-regular-text-sm">{[detail.by && `by ${detail.by}`, when(detail.at), detail.migrateBy && `migrate by ${detail.migrateBy}`].filter(Boolean).join(" · ")}</p>
+            )}
+            {detail?.note && <p className="break-words border-l-2 border-default pl-3 typo-regular-text-sm">&ldquo;{detail.note}&rdquo;</p>}
+          </div>
+        )}
+      </section>
     </li>
   );
 }
@@ -200,6 +216,7 @@ function ReviewCard({ doc, index, total, open, onToggle, onUnsaved, session, onC
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  const [logOpen, setLogOpen] = useState(false);
   const today = useMemo(() => new Date(), []);
   // Only a new version of the review resets the choices: a reload after logging in again keeps them.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -248,8 +265,17 @@ function ReviewCard({ doc, index, total, open, onToggle, onUnsaved, session, onC
     onChanged(r.json);
   };
 
+  const toggleFromCard = onToggle; // the whole card opens when it is collapsed
+  const clickable = open ? {} : {
+    role: "button",
+    tabIndex: 0,
+    "aria-expanded": false,
+    onClick: toggleFromCard,
+    onKeyDown: (e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggleFromCard(); } },
+  };
+
   return (
-    <div className={`rounded-default border-l-4 ${ACCENT[doc.status] ?? "border-default"}`}>
+    <div className={`group rounded-default border-l-4 ${ACCENT[doc.status] ?? "border-default"} ${open ? "" : "cursor-pointer transition-shadow hover:shadow-md"}`} {...clickable}>
     <Card
       title={doc.component}
       description={`Review ${index} of ${total} · ${doc.figmaPage ? `Figma page "${doc.figmaPage}"` : "Figma component"}`}
@@ -259,7 +285,7 @@ function ReviewCard({ doc, index, total, open, onToggle, onUnsaved, session, onC
           {unsaved > 0 && <Badge tone="warning" dot>{unsaved} not saved</Badge>}
           {open && story && <Button as="a" href={story} target="_blank" rel="noreferrer" kind="outlined" size="sm" prefixIcon={<BookOpen />}>Open in Storybook</Button>}
           {open && link && <Button as="a" href={link} target="_blank" rel="noreferrer" kind="outlined" size="sm" suffixIcon={<ExternalLink />}>Open in Figma</Button>}
-          <Button kind="text" size="sm" suffixIcon={open ? <ChevronUp /> : <ChevronDown />} onClick={onToggle}>{open ? "Hide" : "Show"}</Button>
+          <Button kind="text" size="sm" suffixIcon={open ? <ChevronUp /> : <ChevronDown />} onClick={(e) => { e.stopPropagation(); onToggle(); }}>{open ? "Hide" : "Show"}</Button>
         </div>
       }
     >
@@ -268,16 +294,21 @@ function ReviewCard({ doc, index, total, open, onToggle, onUnsaved, session, onC
           {needs.length > 0 && !applied && <span>Decisions saved: {savedCount} of {needs.length}</span>}
           {decided.length > 0 && <span className="flex items-center gap-1 text-caption"><CheckCircle2 size={14} className="text-success" />{decisionSummary}</span>}
           {needs.length === 0 && decided.length === 0 && <span className="text-caption">{timeline.details[timeline.current === 3 ? 2 : timeline.current === 2 ? 1 : 0]}</span>}
+          <span className="ml-auto flex items-center gap-1 text-caption transition-colors group-hover:text-primary">Click to open<ChevronDown size={16} /></span>
         </div>
       ) : (
       <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-2">
-          <Stepper steps={timeline.labels} current={timeline.current} />
-          <ul className="text-caption typo-regular-text-sm flex flex-col gap-1">
-            {timeline.details.filter(Boolean).map((d) => <li key={d}>{d}</li>)}
-          </ul>
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <Stepper steps={timeline.labels} current={timeline.current} />
+            <ul className="text-caption typo-regular-text-sm flex flex-col gap-1">
+              {timeline.details.filter(Boolean).map((d) => <li key={d}>{d}</li>)}
+            </ul>
+          </div>
+          {needs.length > 0 && (
+            <ProgressRing value={savedCount} max={needs.length} tone={savedCount === needs.length ? "success" : "warning"} label="Decisions saved" className="md:border-l md:border-default md:pl-6" />
+          )}
         </div>
-        {needs.length > 0 && !applied && <ProgressBar value={Math.round((savedCount / needs.length) * 100)} tone={savedCount === needs.length ? "success" : "warning"} label={`Decisions saved: ${savedCount} of ${needs.length}`} />}
         {needs.length > 0 && (
           <ul className="flex flex-col gap-4">
             {needs.map((i) => <Decision key={i.id} doc={doc} item={i} choice={draft[i.id]} saved={doc.answers[i.id]} detail={details[i.id]} readOnly={applied} onChoice={(v) => setDraft((d) => ({ ...d, [i.id]: v }))} date={dates[i.id]} onDate={(v) => setDates((d) => ({ ...d, [i.id]: v }))} dateError={dateErrors.includes(i.id)} today={today} />)}
@@ -291,48 +322,57 @@ function ReviewCard({ doc, index, total, open, onToggle, onUnsaved, session, onC
           </details>
         )}
         {!applied && needs.length > 0 && (
-          <div className="w-96">
-            <Field label="Why? (optional)" hint={`${note.length} of ${NOTE_MAX} characters. Shown to the developer and kept in the history.`}>
-              <Textarea rows={3} maxLength={NOTE_MAX} value={note} onChange={(e) => setNote(e.target.value)} />
-            </Field>
-          </div>
-        )}
-        {!applied && needs.length > 0 && (
-          <div className="flex flex-wrap items-center gap-3">
-            <Button status="primary" loading={busy} disabled={Object.keys(changes).length === 0} onClick={save}>Save answers</Button>
-            <span className="text-caption typo-regular-text-sm">
-              {Object.keys(changes).length ? plural(Object.keys(changes).length, "change", "changes") + " not saved yet" : answered < needs.length ? "You can answer some now and come back for the rest." : "All answered. The developer applies them next."}
-            </span>
-          </div>
+          <section className={`flex flex-col gap-4 rounded-default border-2 p-5 ${unsaved > 0 ? "border-warning" : "border-default"}`}>
+            <div className="flex flex-col gap-1">
+              <h4 className="flex items-center gap-2 typo-semi-bold-text-base"><Save size={18} />Save your answers</h4>
+              {unsaved > 0 && <p className="flex items-center gap-2 typo-medium-text-sm"><TriangleAlert size={16} className="shrink-0 text-warning" />{plural(unsaved, "answer", "answers")} not saved yet. Nothing is sent until you press Save answers.</p>}
+            </div>
+            <div className="max-w-xl">
+              <Field label="Why? (optional)" hint={`${note.length} of ${NOTE_MAX} characters. Shown to the developer and kept in the activity log.`}>
+                <Textarea rows={3} maxLength={NOTE_MAX} value={note} onChange={(e) => setNote(e.target.value)} />
+              </Field>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button status="primary" loading={busy} disabled={unsaved === 0} onClick={save}>Save answers</Button>
+              <span className="text-caption typo-regular-text-sm">
+                {unsaved ? "Your answers stay on this page until you save them." : answered < needs.length ? "You can answer some now and come back for the rest." : "All answered. The developer applies them next."}
+              </span>
+            </div>
+          </section>
         )}
         {doc.status === "answered" && <p className="text-caption typo-regular-text-sm">Nothing changes in the code until the developer applies it.</p>}
         {error && <Alert status="danger" title="Not saved">{error}</Alert>}
         {doc.audit.length > 0 && (
-          <details className="rounded-default border border-default p-4">
-            <summary className="cursor-pointer typo-medium-text-sm">Activity log ({doc.audit.length})</summary>
-            <ul className="mt-3 flex flex-col gap-3">
-              {[...doc.audit].reverse().map((a, n) => {
-                const kind = activityKind(a.action);
-                const { Icon, tone } = ACTIVITY[kind];
-                const strong = kind === "decided" || kind === "applied";
-                return (
-                  <li key={`${a.at}-${a.action}-${a.by}-${n}`} className="flex gap-3">
-                    <Icon size={16} className={`mt-0.5 shrink-0 ${tone}`} />
-                    <div className="flex min-w-0 flex-col gap-0.5">
-                      <p className={strong ? "typo-medium-text-sm" : "text-caption typo-regular-text-sm"}>{eventLabel(a.action)}</p>
-                      <p className="text-caption typo-regular-text-sm">{[actorLabel(a), when(a.at)].filter(Boolean).join(" · ")}</p>
-                      {a.changes && Object.keys(a.changes).length > 0 && (
-                        <ul className="flex flex-col gap-0.5 typo-regular-text-sm">
-                          {Object.entries(a.changes).map(([id, c]) => <li key={id} className="break-words"><code>{itemName(id)}</code>: {changeText(c, CHOICE_LABELS, a.migrateBy?.[id])}</li>)}
-                        </ul>
-                      )}
-                      {typeof a.note === "string" && a.note && <p className="mt-1 break-words border-l-2 border-default pl-3 text-caption typo-regular-text-sm">&ldquo;{a.note}&rdquo;</p>}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </details>
+          <section className="flex flex-col gap-3">
+            <Button kind="text" size="sm" className="self-start" prefixIcon={<History />} suffixIcon={logOpen ? <ChevronUp /> : <ChevronDown />} onClick={() => setLogOpen((v) => !v)}>Activity log ({doc.audit.length})</Button>
+            {logOpen && (
+              <ol className="flex flex-col">
+                {[...doc.audit].reverse().map((a, n, all) => {
+                  const kind = activityKind(a.action);
+                  const { Icon, tone } = ACTIVITY[kind];
+                  const strong = kind === "decided" || kind === "applied";
+                  return (
+                    <li key={`${a.at}-${a.action}-${a.by}-${n}`} className="flex gap-3">
+                      <div className="flex flex-col items-center">
+                        <Icon size={18} className={`shrink-0 ${tone}`} />
+                        {n < all.length - 1 && <div className="mt-1 w-0 flex-1 border-l border-default" />}
+                      </div>
+                      <div className="flex min-w-0 flex-col gap-0.5 pb-4">
+                        <p className={strong ? "typo-medium-text-sm" : "text-caption typo-regular-text-sm"}>{eventLabel(a.action)}</p>
+                        <p className="text-caption typo-regular-text-sm">{[actorLabel(a), when(a.at)].filter(Boolean).join(" · ")}</p>
+                        {a.changes && Object.keys(a.changes).length > 0 && (
+                          <ul className="flex flex-col gap-0.5 typo-regular-text-sm">
+                            {Object.entries(a.changes).map(([id, c]) => <li key={id} className="break-words"><code>{itemName(id)}</code>: {changeText(c, CHOICE_LABELS, a.migrateBy?.[id])}</li>)}
+                          </ul>
+                        )}
+                        {typeof a.note === "string" && a.note && <p className="mt-1 break-words border-l-2 border-default pl-3 text-caption typo-regular-text-sm">&ldquo;{a.note}&rdquo;</p>}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </section>
         )}
       </div>
       )}
