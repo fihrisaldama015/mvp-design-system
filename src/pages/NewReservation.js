@@ -164,10 +164,11 @@ export default function NewReservation() {
             </Field>
           </div>
           <Field label="Team" required error={errors.team}>
-            <Select options={teamOptions} value={team} onChange={setTeam} placeholder="Choose a team" />
+            <Select searchable options={teamOptions} value={team} onChange={setTeam} placeholder="Choose a team" />
           </Field>
           <Field label="Equipment" required hint={`Add up to ${MAX_ITEMS} items.`} error={errors.items}>
             <Select
+              searchable
               options={equipmentOptions}
               value={pick}
               onChange={addItem}

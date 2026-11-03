@@ -20,5 +20,20 @@
     "page spacing": "",
     "tv page spacing": "tv-",
     "sticker size": "sticker-"
+  },
+  "review": {
+    "routeSamples": {
+      "/reservations/:id": "/reservations/RS-1001"
+    },
+    "howToSee": {
+      "Alert": {
+        "/reservations/new": [
+          "Step 1, Who and what: type any name, a valid email and choose a team.",
+          "Choose Recovery Strap Set in Equipment, so it is added to the list, and tick the loan rules box. Press Next.",
+          "Step 2, When: choose any period that starts within the next three days.",
+          "The warning alert shows under the date picker (another reservation already books the strap set). Nothing is saved until the last step."
+        ]
+      }
+    }
   }
 }
