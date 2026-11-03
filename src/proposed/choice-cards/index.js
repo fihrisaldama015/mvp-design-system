@@ -40,7 +40,7 @@ export function ChoiceCards({ options, value, onChange, disabled = false, classN
               <span className="typo-semi-bold-text-sm">{o.label}</span>
               {o.description && <span className="text-caption typo-regular-text-sm">{o.description}</span>}
             </span>
-            <span aria-hidden="true" className={cn("flex h-6 w-6 shrink-0 items-center justify-center self-start rounded-full border-2 transition-colors duration-200", selected ? "border-primary bg-primary text-true-white" : "border-default")}>
+            <span aria-hidden="true" className={cn("flex h-6 w-6 shrink-0 items-center justify-center self-start rounded-full border-2 transition-colors duration-200", selected ? "border-primary bg-primary-default text-base-color" : "border-default")}>
               <Check size={14} strokeWidth={3} className={cn("transition-all duration-200", selected ? "scale-100 opacity-100" : "scale-50 opacity-0")} />
             </span>
           </button>
