@@ -53,3 +53,18 @@ A scene without words (no audio, or not in `wordTiming.json`) keeps its plain ca
 in `KINETIC` at the top of `src/components/KineticCaption.tsx`: how far a word rises, its start scale, the spring
 (`damping` = bounce, `stiffness` = speed), the fade and the highlight colour.
 
+
+## Showcase clips (tech-sharing slides)
+
+Short muted clips for the slides, 1280x720 (the kinetic pair is half size). They need no audio and are tiny (tens of kB):
+
+```bash
+r() { npx remotion render src/index.ts "$@"; }
+r DemoMotion out/clips/motion.mp4 --codec=h264 --crf=28 --muted      # one move, three curves
+r DemoSpring out/clips/spring.mp4 --codec=h264 --crf=28 --muted      # four spring() settings
+r Scene1        out/clips/kinetic-plain.mp4 --codec=h264 --crf=28 --muted --scale=0.5 --frames=150-330
+r Scene1Kinetic out/clips/kinetic-word.mp4  --codec=h264 --crf=28 --muted --scale=0.5 --frames=150-330
+```
+
+The compositions live in `src/showcase/` and are registered in `src/Root.tsx`. Browsers only autoplay a video that is muted,
+so a slide uses `<video autoplay muted loop playsinline>`.

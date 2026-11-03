@@ -4,6 +4,8 @@ import { FPS, H, W } from "./theme";
 import { SCENES } from "./scenes";
 import { SceneShell, sceneFrames } from "./audio";
 import { KineticContext } from "./timing";
+import { Motion } from "./showcase/Motion";
+import { SpringGrid } from "./showcase/SpringGrid";
 
 const TOTAL = SCENES.reduce((n, s) => n + sceneFrames(s.id, s.seconds), 0);
 
@@ -26,6 +28,9 @@ export const Root: React.FC = () => (
     <Composition id="ShieldVideo" component={Full} durationInFrames={TOTAL} fps={FPS} width={W} height={H} />
     {/* The same video with kinetic captions (word by word). Needs `npm run words`; a scene without words keeps its plain captions. */}
     <Composition id="ShieldVideoKinetic" component={Full} defaultProps={{ kinetic: true }} durationInFrames={TOTAL} fps={FPS} width={W} height={H} />
+    {/* Short clips for the tech-sharing slides (1280x720, muted). Render: see the README, "Showcase clips". */}
+    <Composition id="DemoMotion" component={Motion} durationInFrames={180} fps={FPS} width={1280} height={720} />
+    <Composition id="DemoSpring" component={SpringGrid} durationInFrames={200} fps={FPS} width={1280} height={720} />
     {SCENES.map(({ id, seconds, Component }) => {
       const Alone: React.FC<{ kinetic?: boolean }> = ({ kinetic = false }) => (
         <KineticContext.Provider value={kinetic}>
