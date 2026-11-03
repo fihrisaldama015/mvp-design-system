@@ -1,19 +1,23 @@
-import React from "react";
+import React, { createContext, useContext } from "react";
 import { AbsoluteFill, useVideoConfig } from "remotion";
 import { c, inter, mono } from "../theme";
+
+/** True inside the demo video: the demo paints the background itself, so a Stage leaves its own out. */
+export const BareContext = createContext(false);
 
 /** The common look of the showcase clips: a dark stage with a faint grid, the title, and a frame counter
  *  (the idea of Remotion on screen: a video is a function of the frame number). `at` is the frame to show. */
 export const Stage: React.FC<{ title: string; subtitle: string; at: number; children: React.ReactNode }> = ({ title, subtitle, at, children }) => {
   const { fps } = useVideoConfig();
+  const bare = useContext(BareContext);
   return (
-    <AbsoluteFill style={{ background: c.bg, fontFamily: inter, color: c.text }}>
-      <AbsoluteFill
+    <AbsoluteFill style={{ background: bare ? "transparent" : c.bg, fontFamily: inter, color: c.text }}>
+      {!bare && <AbsoluteFill
         style={{
           backgroundImage: `radial-gradient(circle at 15% 0%, rgba(251,113,133,0.13), transparent 52%), linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)`,
           backgroundSize: "100% 100%, 40px 40px, 40px 40px",
         }}
-      />
+      />}
       <div style={{ position: "absolute", left: 60, top: 40, fontSize: 40, fontWeight: 700, letterSpacing: -0.5 }}>{title}</div>
       <div style={{ position: "absolute", left: 60, top: 98, fontSize: 22, color: c.dim }}>{subtitle}</div>
       <div style={{ position: "absolute", right: 60, top: 52, fontFamily: mono, fontSize: 20, color: c.faint }}>
