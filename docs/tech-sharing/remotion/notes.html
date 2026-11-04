@@ -48,6 +48,11 @@ th { color: var(--dim); font-weight: 600; font-size: 13px; letter-spacing: 0.08e
 td.num { font-family: var(--mono); white-space: nowrap; }
 .warn { border-left: 3px solid var(--amber); padding: 6px 0 6px 14px; color: var(--text); }
 .overflow { overflow-x: auto; }
+.ic { width: 1.1em; height: 1.1em; display: inline-block; flex: none; vertical-align: -0.16em; }
+.label { display: flex; align-items: center; gap: 8px; }
+.label .ic { width: 1.25em; height: 1.25em; }
+.warn .ic { color: var(--amber); margin-right: 8px; }
+h2 .ic { margin-right: 10px; color: var(--accent); }
 
 .say { display: flex; flex-direction: column; gap: 10px; }
 .say p { font-size: 20px; line-height: 1.65; }
@@ -59,6 +64,16 @@ td.num { font-family: var(--mono); white-space: nowrap; }
 @media (max-width: 560px) { body { font-size: 17px; } h1 { font-size: 28px; } }
 </style>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<!-- Icons: Lucide (ISC license) -->
+<symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol>
+<symbol id="i-triangle-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-circle-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-square-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+</defs></svg>
 <main>
   <header>
     <h1>Video as code: catatan presentasi</h1>
@@ -66,7 +81,7 @@ td.num { font-family: var(--mono); white-space: nowrap; }
   </header>
 
   <section class="card">
-    <h2 style="margin:0">Sebelum mulai</h2>
+    <h2 style="margin:0"><svg class="ic" aria-hidden="true"><use href="#i-square-check"/></svg>Sebelum mulai</h2>
     <ul>
       <li>Buka dek di laptop presentasi, tekan <code>F</code> untuk layar penuh (bar tombol hilang sendiri). <b>Jangan tekan N</b>: itu menampilkan catatan singkat di layar yang sama.</li>
       <li>Cek klip autoplay di browser yang dipakai (Zen). Kalau ada klip yang diam, klik sekali di halaman.</li>
@@ -79,7 +94,7 @@ td.num { font-family: var(--mono); white-space: nowrap; }
   </section>
 
   <section class="card">
-    <h2 style="margin:0">Anggaran waktu</h2>
+    <h2 style="margin:0"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg>Anggaran waktu</h2>
     <div class="overflow"><table>
       <thead><tr><th>Slide</th><th>Isi</th><th>Menit</th></tr></thead>
       <tbody>
@@ -103,7 +118,7 @@ td.num { font-family: var(--mono); white-space: nowrap; }
       <p>Halo semuanya. Hari ini saya mau cerita soal satu hal yang menurut saya seru: <b>membuat video dari kode</b>, bareng Claude dan Remotion.</p>
       <p>Di akhir nanti saya putar sebuah video tiga menit. Video itu dibuat <b>sepenuhnya dari kode</b>, dan semua yang saya bahas hari ini dipakai di dalam video itu sendiri.</p>
     </div>
-    <div class="label act">Aksi</div>
+    <div class="label act"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg>Aksi</div>
     <p class="act-text">Layar penuh dengan F (jangan tekan N).</p>
     <p class="bridge">→ Sebelum lihat hasilnya, kita mulai dari pertanyaan paling dasar: kenapa video kok dari kode?</p>
   </article>
@@ -116,7 +131,7 @@ td.num { font-family: var(--mono); white-space: nowrap; }
       <p>Bonusnya, semua perubahan bisa <b>di-review di git</b>, seperti kode biasa.</p>
       <p>Contoh nyatanya: naskah video demo ini sempat berubah beberapa kali, dan scene-scene awal yang sudah bersuara tidak perlu disentuh sama sekali.</p>
     </div>
-    <div class="label sh">Kalau mepet</div>
+    <div class="label sh"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg>Kalau mepet</div>
     <p class="short">Di editor revisi itu manual. Di kode cukup ubah teks lalu render ulang.</p>
     <p class="bridge">→ Oke, sekarang gambaran hasilnya.</p>
   </article>
@@ -128,7 +143,7 @@ td.num { font-family: var(--mono); white-space: nowrap; }
       <p>Yang kalian lihat di klip ini baru scene pertama. Nanti di akhir saya putar penuh.</p>
       <p>Slide-slide berikutnya memakai video ini sebagai contoh. Jadi kalau ada yang belum kebayang, nanti kelihatan hasilnya di sana.</p>
     </div>
-    <div class="label act">Aksi</div>
+    <div class="label act"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg>Aksi</div>
     <p class="act-text">Klip berputar sendiri. Biarkan satu putaran.</p>
     <p class="bridge">→ Sekarang, gimana cara kerjanya? Idenya sederhana.</p>
   </article>
@@ -173,9 +188,9 @@ td.num { font-family: var(--mono); white-space: nowrap; }
       <p>Cara kedua pakai <b>transkrip whisper</b>. Setiap kata dapat waktunya, lalu tiap kalimat ditempelkan ke jeda tepat sebelumnya. Waktu kami cek, semua batasnya jatuh di jeda setengah sampai 0,8 detik.</p>
       <p>Suaranya bebas, TTS atau manusia. Saya sendiri pakai MiniMax.</p>
     </div>
-    <div class="label sh">Kalau mepet</div>
+    <div class="label sh"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg>Kalau mepet</div>
     <p class="short">Dua cara: deteksi jeda yang cepat tapi bisa salah, dan transkrip whisper yang akurat.</p>
-    <p class="warn">Satu catatan jujur: model whisper yang kami pakai khusus <b>bahasa Inggris</b>. Untuk bahasa Indonesia belum kami coba, dan perlu model multibahasa.</p>
+    <p class="warn"><svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"/></svg>Satu catatan jujur: model whisper yang kami pakai khusus <b>bahasa Inggris</b>. Untuk bahasa Indonesia belum kami coba, dan perlu model multibahasa.</p>
     <p class="bridge">→ Oke, sekarang ke sisi visualnya: gerakan.</p>
   </article>
 
@@ -228,7 +243,7 @@ td.num { font-family: var(--mono); white-space: nowrap; }
       <p>Ada cerita kecil. Musik pertama kami <b>terdengar seram</b>: akor minor, nada rendah, gema panjang. Kami ganti ke mayor.</p>
       <p>Lalu petikan arpeggio yang terus-menerus kami buang, karena bersaing dengan suara. Terukur sekitar 2,4 desibel lebih keras di rentang suara bicara.</p>
     </div>
-    <div class="label sh">Kalau mepet</div>
+    <div class="label sh"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg>Kalau mepet</div>
     <p class="short">Suara juga lapisan: narasi, efek, dan musik yang turun saat ada suara.</p>
     <p class="bridge">→ Sekarang saya tunjukkan langsung bagian yang paling enak untuk diutak-atik.</p>
   </article>
@@ -241,11 +256,11 @@ td.num { font-family: var(--mono); white-space: nowrap; }
       <p>Saya ganti judulnya… saya ganti warnanya… dan kalau damping saya kecilkan, kotaknya jadi memantul.</p>
       <p>Tidak ada satu baris kode pun yang saya ubah.</p>
     </div>
-    <div class="label act">Aksi</div>
+    <div class="label act"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg>Aksi</div>
     <p class="act-text">Studio sudah terbuka sebelumnya. Pilih DemoProps di kiri, ubah title, accent, damping, stiffness di panel kanan, tekan play. Lalu kembali ke dek.</p>
-    <div class="label sh">Kalau mepet</div>
+    <div class="label sh"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg>Kalau mepet</div>
     <p class="short">Kalau Studio bermasalah: bilang "ini hasilnya", tunjuk klip di slide, lanjut.</p>
-    <p class="warn">Jangan memperbaiki Studio di depan penonton. Lanjut saja ke slide berikutnya.</p>
+    <p class="warn"><svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"/></svg>Jangan memperbaiki Studio di depan penonton. Lanjut saja ke slide berikutnya.</p>
     <p class="bridge">→ Oke. Itu baru sebagian dari yang bisa dilakukan.</p>
   </article>
 
@@ -255,7 +270,7 @@ td.num { font-family: var(--mono); white-space: nowrap; }
       <p>Yang berlabel hijau sudah kami pakai. Yang berlabel <b>"In the demo video"</b>, seperti kamera, 3D, motion blur, garis, bentuk, noise, dan video di dalam video, akan kalian lihat di video demo nanti.</p>
       <p>Jadi ini potensi penuhnya. Kami memakai sebagian.</p>
     </div>
-    <div class="label sh">Kalau mepet</div>
+    <div class="label sh"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg>Kalau mepet</div>
     <p class="short">Sebut kelompoknya saja, jangan dibaca satu per satu.</p>
     <p class="bridge">→ Lalu peran Claude di mana?</p>
   </article>
@@ -269,7 +284,7 @@ td.num { font-family: var(--mono); white-space: nowrap; }
       <p>Soal versi: Remotion 4.0.535 minta zod 4.5.4. Peringatan <b>Version mismatch</b> muncul sendiri, dan perintah <b>npx remotion versions</b> menunjukkan sumbernya.</p>
       <p>Dan untuk 3D di React 18, kita harus pakai <b>react-three/fiber versi 8</b>. Versi 9 minta React 19.</p>
     </div>
-    <div class="label sh">Kalau mepet</div>
+    <div class="label sh"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg>Kalau mepet</div>
     <p class="short">Claude menulis kodenya, kita menilai rasanya. Hati-hati dengan versi paket.</p>
     <p class="bridge">→ Pertanyaan yang pasti muncul: kenapa tidak pakai Claude Motion saja?</p>
   </article>
@@ -282,7 +297,7 @@ td.num { font-family: var(--mono); white-space: nowrap; }
       <p>Keduanya tidak saling menggantikan.</p>
       <p>Dan satu hal penting untuk perusahaan, soal lisensi.</p>
     </div>
-    <p class="warn"><b>Lisensi Remotion</b> (LICENSE.md versi 4.0.535): gratis untuk individu dan perusahaan for-profit sampai 3 karyawan. Di atas itu perlu Company License. Ucapkan: "Cek dulu sebelum dipakai komersial." Cek jumlah karyawan perusahaan sebelum sesi.</p>
+    <p class="warn"><svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"/></svg><b>Lisensi Remotion</b> (LICENSE.md versi 4.0.535): gratis untuk individu dan perusahaan for-profit sampai 3 karyawan. Di atas itu perlu Company License. Ucapkan: "Cek dulu sebelum dipakai komersial." Cek jumlah karyawan perusahaan sebelum sesi.</p>
     <p class="bridge">→ Sekarang, saatnya lihat hasilnya.</p>
   </article>
 
@@ -291,9 +306,9 @@ td.num { font-family: var(--mono); white-space: nowrap; }
       <p>Ini videonya. Dua menit lima puluh enam detik.</p>
       <p>Perhatikan caption kinetic-nya, suaranya, efek suaranya, lalu bagian kamera, 3D, dan motion blur.</p>
     </div>
-    <div class="label act">Aksi</div>
+    <div class="label act"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg>Aksi</div>
     <p class="act-text">Putar demo-video.mp4 dari berkas lokal, layar penuh. Setelah selesai, kembali ke dek, slide 18.</p>
-    <p class="warn">Kalau tidak ada suara, cek keluaran audio ke speaker ruangan. Kalau berkas tidak terbuka, lanjut ke tanya jawab dan tunjukkan klip di slide.</p>
+    <p class="warn"><svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"/></svg>Kalau tidak ada suara, cek keluaran audio ke speaker ruangan. Kalau berkas tidak terbuka, lanjut ke tanya jawab dan tunjukkan klip di slide.</p>
     <p class="bridge">→ Itu tadi semuanya dari kode.</p>
   </article>
 
@@ -301,35 +316,35 @@ td.num { font-family: var(--mono); white-space: nowrap; }
     <div class="say">
       <p>Terima kasih. Silakan tanya apa saja.</p>
     </div>
-    <div class="label act">Aksi</div>
+    <div class="label act"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg>Aksi</div>
     <p class="act-text">Tunjukkan folder video/ dan video/src/showcase/, perintah npm run studio.</p>
   </article>
 
   <h2>Tanya jawab: kemungkinan pertanyaan</h2>
 
   <section class="card">
-    <div class="label ask">Kenapa bukan Claude Motion?</div>
+    <div class="label ask"><svg class="ic" aria-hidden="true"><use href="#i-circle-help"/></svg>Kenapa bukan Claude Motion?</div>
     <p>Beda tujuan. Claude Motion membuat animasi pendek di dalam percakapan dan hanya tersedia di paket Team dan Enterprise (beta). Remotion kode di repo kita: bisa di-git, diatur sampai frame dan audio, dan dijalankan berulang. Untuk video dengan narasi dan timing presisi seperti video demo ini, Remotion yang cocok.</p>
-    <div class="label ask">Berapa lama render?</div>
+    <div class="label ask"><svg class="ic" aria-hidden="true"><use href="#i-circle-help"/></svg>Berapa lama render?</div>
     <p>Video demo 2:56 (5288 frame) di 1920x1080 selesai sekitar <b>5 menit</b> di laptop ini. Itu satu kali pengukuran, di mesin saya; di mesin lain bisa berbeda. Scene 3D dan motion blur yang paling berat.</p>
-    <div class="label ask">Apakah Claude "menonton" videonya?</div>
+    <div class="label ask"><svg class="ic" aria-hidden="true"><use href="#i-circle-help"/></svg>Apakah Claude "menonton" videonya?</div>
     <p>Tidak. Ia memeriksa frame sebagai gambar diam dan angka timing. Rasa gerak, bunyi, dan keseimbangan audio dinilai manusia.</p>
-    <div class="label ask">Bisa narasi bahasa Indonesia?</div>
+    <div class="label ask"><svg class="ic" aria-hidden="true"><use href="#i-circle-help"/></svg>Bisa narasi bahasa Indonesia?</div>
     <p>Suaranya bisa, TTS atau suara asli. Tetapi alat penyelarasan kita memakai whisper <code>small.en</code> (Inggris saja). Untuk bahasa Indonesia modelnya perlu diganti ke multibahasa, dan itu belum kita uji.</p>
-    <div class="label ask">Bisa di Windows atau Mac?</div>
+    <div class="label ask"><svg class="ic" aria-hidden="true"><use href="#i-circle-help"/></svg>Bisa di Windows atau Mac?</div>
     <p>Remotion sendiri berjalan di ketiganya. Skrip kita memakai ffmpeg dan Python, dan baru diuji di Linux. Jawab jujur: belum diuji di Windows atau Mac.</p>
-    <div class="label ask">Bisa render di cloud?</div>
+    <div class="label ask"><svg class="ic" aria-hidden="true"><use href="#i-circle-help"/></svg>Bisa render di cloud?</div>
     <p>Remotion punya Lambda dan renderMedia untuk server. Kita belum mencobanya.</p>
-    <div class="label ask">Lisensinya bagaimana?</div>
+    <div class="label ask"><svg class="ic" aria-hidden="true"><use href="#i-circle-help"/></svg>Lisensinya bagaimana?</div>
     <p>Gratis untuk individu dan perusahaan for-profit sampai 3 karyawan. Di atas itu Company License berbayar. Rinci dan harga: remotion.dev/license.</p>
-    <div class="label ask">Suara dan musiknya aman dipakai?</div>
+    <div class="label ask"><svg class="ic" aria-hidden="true"><use href="#i-circle-help"/></svg>Suara dan musiknya aman dipakai?</div>
     <p>Efek dan musik di video demo dibuat sendiri dengan ffmpeg dari rumus, jadi tidak ada hak cipta pihak lain. Untuk suara TTS, ikuti syarat penyedia TTS yang dipakai.</p>
-    <div class="label ask">Seberapa banyak ditulis Claude?</div>
+    <div class="label ask"><svg class="ic" aria-hidden="true"><use href="#i-circle-help"/></svg>Seberapa banyak ditulis Claude?</div>
     <p>Hampir semua kode scene, helper, dan skrip. Naskah, pilihan suara, dan penilaian rasa gerak tetap pekerjaan manusia.</p>
   </section>
 
   <section class="card">
-    <h2 style="margin:0">Angka untuk diingat</h2>
+    <h2 style="margin:0"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Angka untuk diingat</h2>
     <ul>
       <li>Video demo: 12 scene, 2:56, 5288 frame, 1920x1080, 30 fps. Render penuh ±5 menit (satu pengukuran di laptop ini).</li>
       <li>Versi: Remotion 4.0.535, zod 4.5.4, three 0.170.0, @react-three/fiber 8.18.0.</li>
@@ -340,7 +355,7 @@ td.num { font-family: var(--mono); white-space: nowrap; }
   </section>
 
   <section class="card">
-    <h2 style="margin:0">Yang belum kita uji (jujur kalau ditanya)</h2>
+    <h2 style="margin:0"><svg class="ic" aria-hidden="true"><use href="#i-triangle-alert"/></svg>Yang belum kita uji (jujur kalau ditanya)</h2>
     <ul>
       <li>Gerakan dan bunyi dinilai manusia, bukan diukur otomatis.</li>
       <li>Narasi bahasa Indonesia dan model whisper multibahasa.</li>
