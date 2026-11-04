@@ -48,13 +48,21 @@ th { color: var(--dim); font-weight: 600; font-size: 13px; letter-spacing: 0.08e
 td.num { font-family: var(--mono); white-space: nowrap; }
 .warn { border-left: 3px solid var(--amber); padding: 6px 0 6px 14px; color: var(--text); }
 .overflow { overflow-x: auto; }
+
+.say { display: flex; flex-direction: column; gap: 10px; }
+.say p { font-size: 20px; line-height: 1.65; }
+.say b { color: var(--text); font-weight: 700; background: rgba(251,113,133,0.16); border-radius: 4px; padding: 0 3px; }
+.label.sh { color: var(--dim); }
+.act-text { color: var(--amber); font-size: 17px; }
+.short { color: var(--dim); font-size: 17px; }
+.bridge { color: var(--accent); font-size: 18px; font-style: italic; margin-top: 4px; }
 @media (max-width: 560px) { body { font-size: 17px; } h1 { font-size: 28px; } }
 </style>
 
 <main>
   <header>
     <h1>Video as code: catatan presentasi</h1>
-    <p class="lead">Untuk dibaca sendiri di layar kedua atau HP. Jangan dibuka di layar yang dilihat penonton. 30 menit: 19 slide ±22,5 menit, video demo 3 menit, tanya jawab ±4,5 menit.</p>
+    <p class="lead">Naskah bicara untuk dibaca di layar kedua atau HP. Jangan dibuka di layar yang dilihat penonton. 30 menit: 19 slide ±22,5 menit, video demo 3 menit, tanya jawab ±4,5 menit. Tulisannya sengaja kalimat utuh, bukan poin: baca saja, tidak perlu merangkai kata sendiri.</p>
   </header>
 
   <section class="card">
@@ -87,212 +95,221 @@ td.num { font-family: var(--mono); white-space: nowrap; }
     <p class="lead">Kalau molor: potong slide 14 (peta, tinggal sebut kelompoknya) dan slide 7. Jangan potong video demo.</p>
   </section>
 
-  <h2>Per slide</h2>
+  <h2>Naskah per slide</h2>
+  <p class="lead">Baca per baris, tiap baris satu napas. <b>Tebal</b> berarti beri tekanan. Baris dengan → adalah peralihan ke slide berikutnya, ucapkan supaya jalannya mengalir. "Kalau mepet" adalah versi satu kalimat bila waktu habis.</p>
 
-  <article class="card">
-    <h3><span class="n">1</span>Title <span class="t">0,5 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li>"Hari ini kita bahas membuat video dari kode, dengan Claude dan Remotion."</li>
-      <li>"Saya membuat satu video demo ±3 menit yang saya putar di akhir. Video itu dibuat sepenuhnya dari kode, dan setiap fitur yang saya bahas dipakai di dalam video itu sendiri."</li>
-    </ul>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">2</span>Change one sentence, render again <span class="t">1 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li>Di editor video, naskah berubah berarti merekam ulang, memotong, dan menggeser manual.</li>
-      <li>Di kode: ubah <code>narration.json</code>, buat audio baru, jalankan <code>npm run align</code>, render. Timing mengikuti suara.</li>
-      <li>Contoh nyata: naskah video demo berubah beberapa kali (scene props ditukar scene kamera), dan scene 1–6 yang sudah bersuara tidak disentuh.</li>
-    </ul>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">3</span>The demo video <span class="t">1 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li>12 scene, <b>2 menit 56 detik</b> (5288 frame), 1920x1080 pada 30 fps, dari satu repo. Panjangnya ditentukan audio, bukan ditentukan duluan.</li>
-      <li>Suara, caption, timing, efek, kamera, dan 3D, semuanya dihasilkan dari kode.</li>
-      <li>Jelaskan sekali: "slide-slide berikut memakai video ini sebagai contoh, jadi kalau ada yang belum jelas, nanti kita lihat hasilnya di akhir."</li>
-    </ul>
+<article class="card"><h3><span class="n">1</span>Title <span class="t">0,5 menit</span></h3>
+    <div class="say">
+      <p>Halo semuanya. Hari ini saya mau cerita soal satu hal yang menurut saya seru: <b>membuat video dari kode</b>, bareng Claude dan Remotion.</p>
+      <p>Di akhir nanti saya putar sebuah video tiga menit. Video itu dibuat <b>sepenuhnya dari kode</b>, dan semua yang saya bahas hari ini dipakai di dalam video itu sendiri.</p>
+    </div>
     <div class="label act">Aksi</div>
-    <ul><li>Klip 12 detik berputar sendiri. Biarkan satu putaran.</li></ul>
+    <p class="act-text">Layar penuh dengan F (jangan tekan N).</p>
+    <p class="bridge">→ Sebelum lihat hasilnya, kita mulai dari pertanyaan paling dasar: kenapa video kok dari kode?</p>
   </article>
 
-  <article class="card">
-    <h3><span class="n">4</span>A video is a function of the frame number <span class="t">1,5 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li><code>useCurrentFrame()</code> memberi 0, 1, 2, dan seterusnya. Pada 30 fps, frame 45 adalah 1,5 detik.</li>
-      <li>Tidak ada timer, tidak ada state tersembunyi. Frame yang sama selalu menghasilkan gambar yang sama.</li>
-      <li>Kode di kanan adalah helper kita yang asli (<code>ramp</code>), bukan contoh buatan.</li>
-    </ul>
+<article class="card"><h3><span class="n">2</span>Change one sentence, render again <span class="t">1 menit</span></h3>
+    <div class="say">
+      <p>Biasanya bikin video itu pakai editor. Nah, masalahnya muncul di <b>revisi</b>.</p>
+      <p>Misalnya naskah berubah satu kalimat. Di editor, saya harus rekam suara lagi, potong ulang, dan geser semua klip supaya pas.</p>
+      <p>Kalau dari kode, saya cukup <b>ubah teksnya</b>, bikin audio baru, jalankan satu perintah untuk mengukur ulang, lalu render. Timing-nya <b>mengikuti suara</b> sendiri.</p>
+      <p>Bonusnya, semua perubahan bisa <b>di-review di git</b>, seperti kode biasa.</p>
+      <p>Contoh nyatanya: naskah video demo ini sempat berubah beberapa kali, dan scene-scene awal yang sudah bersuara tidak perlu disentuh sama sekali.</p>
+    </div>
+    <div class="label sh">Kalau mepet</div>
+    <p class="short">Di editor revisi itu manual. Di kode cukup ubah teks lalu render ulang.</p>
+    <p class="bridge">→ Oke, sekarang gambaran hasilnya.</p>
   </article>
 
-  <article class="card">
-    <h3><span class="n">5</span>From script to scenes <span class="t">1 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li>Satu sumber naskah: <code>video-script.md</code> menjadi <code>narration.json</code>, scene dan caption membaca dari sana.</li>
-      <li>Karena itu suara dan caption tidak bisa melenceng satu sama lain.</li>
-    </ul>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">6</span>The audio sets the schedule <span class="t">2 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li>Suara tidak membawa timestamp. Jadi urutannya terbalik: rekam dulu, ukur dengan <code>npm run align</code>, lalu scene membaca <code>audioTiming.json</code>.</li>
-      <li>Tunjuk JSON di kanan (data asli scene 1 video demo): dimulai di frame 15, durasi 337 frame (11,2 detik), kalimat mulai di 15, 110, dan 261, <code>sure: true</code>.</li>
-      <li>Ada jeda 15 frame sebelum suara dan 36 frame sesudahnya.</li>
-    </ul>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">7</span>Two ways to find each sentence <span class="t">1,5 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li>Deteksi jeda dengan ffmpeg: cepat, tapi jeda di koma bisa tertukar dengan akhir kalimat.</li>
-      <li>Transkrip whisper: setiap kata punya waktu, lalu tiap kalimat menempel ke jeda sebelumnya. Dalam pengecekan kita semua batas jatuh di jeda 0,5 sampai 0,8 detik.</li>
-      <li>Suara apa pun boleh: TTS (saya pakai MiniMax) atau suara manusia.</li>
-    </ul>
-    <p class="warn">Jujur soal batasan: model whisper kita <code>small.en</code>, khusus bahasa Inggris. Bahasa Indonesia belum diuji dan butuh model multibahasa.</p>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">8</span>Same move, three curves <span class="t">1,5 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li>Jarak dan frame mulai sama, hanya kurvanya yang beda. Lihat jarak antar garis tepi: rapat berarti pelan.</li>
-      <li>Easing mengubah rasa, bukan jarak. Spring memakai fisika: melewati target lalu menetap.</li>
-    </ul>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">9</span>Two numbers decide the feel <span class="t">1 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li><code>damping</code> kecil berarti memantul, <code>stiffness</code> besar berarti cepat.</li>
-      <li>Garis putus-putus di grafik adalah target. Contoh angka asli: damping 7 dan stiffness 220 melewati target sampai 1,455 pada frame 7. Damping 10 dan stiffness 100 sampai 1,163 pada frame 11.</li>
-    </ul>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">10</span>From a sentence to a word <span class="t">1,5 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li>Atas: satu kalimat sekaligus. Bawah: kata muncul saat diucapkan, kata yang sedang diucapkan menyala.</li>
-      <li>Datanya <code>[kata, frame mulai, frame akhir]</code> dari transkrip, dibuat dengan <code>npm run words</code>.</li>
-      <li>"Caption yang Anda baca di video demo nanti memakai ini."</li>
-    </ul>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">11</span>Scenes overlap, the presentation decides <span class="t">1 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li><code>&lt;TransitionSeries&gt;</code> membuat dua scene tumpang tindih 20 frame, dan <code>presentation</code> menentukan caranya: fade, slide, wipe, flip.</li>
-      <li>Efek <code>cube</code> ditandai berbayar di dokumentasi.</li>
-    </ul>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">12</span>Sound is just another layer <span class="t">1,5 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li>Suara narasi satu berkas per scene, dimulai di frame yang diukur. Efek ditaruh di frame tertentu.</li>
-      <li>Level musik adalah fungsi dari frame: turun saat ada suara (0,2) dan naik di sela-sela (0,75).</li>
-      <li>Delapan efek suara dan musiknya dibuat dengan ffmpeg dari rumus, jadi tidak ada lisensi yang perlu dicek.</li>
-      <li>Langkah terakhir: loudness dinormalisasi ke −16 LUFS (puncak −1,4 dB).</li>
-    </ul>
-    <div class="label ask">Cerita yang bagus</div>
-    <ul>
-      <li>Musik pertama kita terdengar seram (akor minor, register rendah, gema panjang). Diganti musik mayor. Lalu petikan arpeggio yang berjalan terus kita buang karena bersaing dengan suara: energinya di pita 300 sampai 3400 Hz terukur sekitar 2,4 dB lebih tinggi daripada versi pad saja.</li>
-    </ul>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">13</span>One composition, many videos <span class="t">2,5 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li>Satu komposisi, props berbeda, video berbeda. Schema zod membuat Studio menampilkan panel Props.</li>
-    </ul>
-    <div class="label act">Demo langsung (±1,5 menit)</div>
-    <ul>
-      <li>Pindah ke Studio (<code>npm run studio</code> sudah terbuka). Pilih <code>DemoProps</code> di sidebar kiri.</li>
-      <li>Di panel Props kanan: ubah <code>title</code>, pilih warna di <code>accent</code>, geser <code>damping</code> dan <code>stiffness</code>.</li>
-      <li>Tekan play. Tunjukkan bahwa damping kecil membuat kotak memantul.</li>
-      <li>Lalu kembali ke dek (slide 14).</li>
-    </ul>
-    <p class="warn">Kalau Studio bermasalah: jangan diperbaiki di depan penonton. Bilang "ini hasilnya" dan tunjuk klip di slide, lalu lanjut.</p>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">14</span>The map <span class="t">1,5 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li>Jangan dibaca satu per satu. Sebut kelompoknya saja: motion, scenes, teks, grafik, 3D dan kamera, media, ship it, data.</li>
-      <li>Label hijau berarti sudah kita pakai. Yang berlabel "In the demo video" (kamera, 3D, motion blur, garis, bentuk, noise, video di dalam video) akan terlihat di video demo.</li>
-      <li>Ini peta potensi penuhnya. Kita memakai sebagian.</li>
-    </ul>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">15</span>Who does what, and what bit us <span class="t">2 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li>Claude menulis scene, helper, dan skrip, dan memeriksa frame sebagai gambar diam. Ia tidak "menonton" gerakan, jadi rasa gerak dinilai manusia.</li>
-      <li>Anda menulis naskah, memilih suara, dan menilai rasa.</li>
-    </ul>
-    <div class="label ask">Jebakan nyata</div>
-    <ul>
-      <li>TTS salah baca nama: eja ulang khusus untuk TTS, jaga jumlah kalimat.</li>
-      <li>Jeda di koma menipu deteksi jeda: pakai transkrip.</li>
-      <li>Peringatan "Version mismatch": Remotion 4.0.535 meminta zod 4.5.4. <code>npx remotion versions</code> menunjukkannya.</li>
-      <li>3D di React 18 butuh <code>@react-three/fiber</code> 8.x. Versi 9.x meminta React 19.</li>
-    </ul>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">16</span>Remotion, Claude Motion, or an editor <span class="t">1 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li>Remotion: kode di repo, kontrol penuh sampai frame dan audio, masuk git. Cocok untuk video berulang atau berbasis data.</li>
-      <li>Claude Motion (Help Center Anthropic): beta untuk paket Team dan Enterprise, berupa kode yang menganimasikan teks, grafik, dan bentuk, diekspor sebagai MP4, dihitung ke batas pemakaian. Tidak memakai model pembuat video. Aktif bawaan di Team, mati bawaan di Enterprise sampai owner menyalakannya.</li>
-      <li>Keduanya tidak saling menggantikan: Claude Motion untuk animasi cepat di percakapan, Remotion untuk yang berulang dan bisa di-review.</li>
-    </ul>
-    <p class="warn"><b>Lisensi Remotion</b> (LICENSE.md versi 4.0.535): gratis untuk individu dan perusahaan for-profit sampai 3 karyawan. Di atas itu perlu Company License. Harga tidak ada di slide, lihat remotion.dev/license. Cek jumlah karyawan perusahaan Anda sebelum sesi.</p>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">17</span>Beyond one video <span class="t">0,5 menit</span></h3>
-    <div class="label">Katakan</div>
-    <ul>
-      <li>Subtitle SRT dari naskah yang sama sudah ada di proyek lain kita.</li>
-      <li><code>calculateMetadata</code> membuat durasi dan props dari data.</li>
-      <li>Satu ide yang belum dibangun: video mingguan dari riwayat design review. Sebut sebagai ide, bukan hasil.</li>
-    </ul>
-  </article>
-
-  <article class="card">
-    <h3><span class="n">18</span>Now: the demo video <span class="t">3 menit</span></h3>
-    <div class="label">Katakan sebelum memutar</div>
-    <ul>
-      <li>"Video ini 2 menit 56 detik, dan dibuat persis dengan cara yang tadi saya jelaskan. Perhatikan caption kinetic-nya, suaranya, efek, lalu kamera, 3D, dan motion blur."</li>
-    </ul>
+<article class="card"><h3><span class="n">3</span>The demo video <span class="t">1 menit</span></h3>
+    <div class="say">
+      <p>Ini video yang tadi saya bilang. <b>Dua belas scene</b>, durasinya <b>dua menit lima puluh enam detik</b>, dan semuanya keluar dari satu repo.</p>
+      <p>Suaranya, caption-nya, efek suaranya, sampai kamera dan 3D-nya, dihasilkan dari kode.</p>
+      <p>Yang kalian lihat di klip ini baru scene pertama. Nanti di akhir saya putar penuh.</p>
+      <p>Slide-slide berikutnya memakai video ini sebagai contoh. Jadi kalau ada yang belum kebayang, nanti kelihatan hasilnya di sana.</p>
+    </div>
     <div class="label act">Aksi</div>
-    <ul>
-      <li>Putar <code>demo-video.mp4</code> dari berkas lokal (di luar dek), layar penuh.</li>
-      <li>Setelah selesai, kembali ke dek, slide 19.</li>
-    </ul>
-    <p class="warn">Kalau tidak ada suara: cek keluaran audio ke speaker ruangan. Kalau berkas tidak terbuka, lanjut ke tanya jawab dan tunjukkan klip-klip di slide.</p>
+    <p class="act-text">Klip berputar sendiri. Biarkan satu putaran.</p>
+    <p class="bridge">→ Sekarang, gimana cara kerjanya? Idenya sederhana.</p>
   </article>
 
-  <article class="card">
-    <h3><span class="n">19</span>Questions? <span class="t">±4,5 menit</span></h3>
-    <div class="label">Tunjukkan</div>
-    <ul><li>Folder <code>video/</code> dan <code>video/src/showcase/</code>, perintah <code>npm run studio</code>.</li></ul>
+<article class="card"><h3><span class="n">4</span>A video is a function of the frame number <span class="t">1,5 menit</span></h3>
+    <div class="say">
+      <p>Remotion punya satu ide inti: <b>video adalah fungsi dari nomor frame</b>.</p>
+      <p>Artinya, kalau kita kasih nomor frame, dia menghasilkan satu gambar. Frame nol, frame satu, frame dua, dan seterusnya.</p>
+      <p>Dengan 30 frame per detik, frame ke-45 itu persis <b>satu setengah detik</b>.</p>
+      <p>Tidak ada timer, tidak ada state tersembunyi. <b>Frame yang sama selalu menghasilkan gambar yang sama.</b></p>
+      <p>Kode di kanan itu helper asli kami, namanya <b>ramp</b>. Dia cuma bilang: di antara frame a dan b, nilainya naik dari nol ke satu.</p>
+    </div>
+    <p class="bridge">→ Lalu proyeknya tersusun seperti apa?</p>
+  </article>
+
+<article class="card"><h3><span class="n">5</span>From script to scenes <span class="t">1 menit</span></h3>
+    <div class="say">
+      <p>Susunannya begini. Ada naskah, naskah itu jadi satu file <b>narration.json</b>, dan semua scene membaca dari file yang sama.</p>
+      <p>Jadi suara dan caption <b>tidak mungkin melenceng</b>, karena dua-duanya berasal dari teks yang sama.</p>
+      <p>Di kanan kelihatan struktur foldernya: scene, narasi, data timing, audio, dan skrip.</p>
+    </div>
+    <p class="bridge">→ Nah, yang paling menarik, dan paling sering bikin orang salah, itu timing.</p>
+  </article>
+
+<article class="card"><h3><span class="n">6</span>A voice has no timestamps, so the audio sets the schedule <span class="t">2 menit</span></h3>
+    <div class="say">
+      <p>Masalahnya begini: sebuah suara itu <b>tidak punya timestamp</b>. Dia cuma audio.</p>
+      <p>Jadi urutannya kami balik: <b>suara dulu, video mengikuti</b>.</p>
+      <p>Pertama, kita rekam suaranya. Boleh TTS, boleh suara manusia.</p>
+      <p>Kedua, kami jalankan satu perintah, <b>npm run align</b>, yang mengukur audio itu dan mencari di frame berapa tiap kalimat dimulai.</p>
+      <p>Ketiga, setiap scene membaca hasilnya dari satu file, <b>audioTiming.json</b>.</p>
+      <p>Di kanan ini data asli scene pertama video demo. Suaranya mulai di frame 15, panjangnya 337 frame, dan kalimatnya mulai di frame 15, 110, dan 261. Ada juga tanda <b>sure: true</b>, artinya penyelarasannya yakin.</p>
+      <p>Oh ya, ada jeda 15 frame sebelum suara dan 36 frame sesudahnya, supaya tidak terasa mepet.</p>
+    </div>
+    <p class="bridge">→ Pertanyaannya: gimana dia tahu kalimat mulai di frame berapa?</p>
+  </article>
+
+<article class="card"><h3><span class="n">7</span>Two ways to find each sentence, any voice <span class="t">1,5 menit</span></h3>
+    <div class="say">
+      <p>Ada dua cara.</p>
+      <p>Cara pertama <b>deteksi jeda</b> pakai ffmpeg. Cepat, tapi kadang salah, karena jeda di koma bisa dikira akhir kalimat.</p>
+      <p>Cara kedua pakai <b>transkrip whisper</b>. Setiap kata dapat waktunya, lalu tiap kalimat ditempelkan ke jeda tepat sebelumnya. Waktu kami cek, semua batasnya jatuh di jeda setengah sampai 0,8 detik.</p>
+      <p>Suaranya bebas, TTS atau manusia. Saya sendiri pakai MiniMax.</p>
+    </div>
+    <div class="label sh">Kalau mepet</div>
+    <p class="short">Dua cara: deteksi jeda yang cepat tapi bisa salah, dan transkrip whisper yang akurat.</p>
+    <p class="warn">Satu catatan jujur: model whisper yang kami pakai khusus <b>bahasa Inggris</b>. Untuk bahasa Indonesia belum kami coba, dan perlu model multibahasa.</p>
+    <p class="bridge">→ Oke, sekarang ke sisi visualnya: gerakan.</p>
+  </article>
+
+<article class="card"><h3><span class="n">8</span>Same move, three curves <span class="t">1,5 menit</span></h3>
+    <div class="say">
+      <p>Ini satu gerakan yang sama: jarak sama, mulai di frame yang sama, tapi <b>tiga kurva berbeda</b>.</p>
+      <p>Perhatikan <b>jarak antar garis tepi</b> di belakang kotak. Kalau rapat, berarti geraknya pelan.</p>
+      <p>Yang biru linear: kecepatannya konstan, terasa datar.</p>
+      <p>Yang kuning pakai easing. Dia mengubah <b>rasanya</b>, tapi jaraknya sama.</p>
+      <p>Yang merah pakai spring: dia melewati target, lalu menetap.</p>
+    </div>
+    <p class="bridge">→ Spring ini punya dua angka yang menentukan semuanya.</p>
+  </article>
+
+<article class="card"><h3><span class="n">9</span>Two numbers decide the feel <span class="t">1 menit</span></h3>
+    <div class="say">
+      <p>Dua angka itu <b>damping</b> dan <b>stiffness</b>.</p>
+      <p><b>Damping kecil</b> berarti makin memantul. <b>Stiffness besar</b> berarti makin cepat.</p>
+      <p>Garis putus-putus di grafik itu targetnya. Kartu bouncy ini melewati target sampai <b>1,455</b> di frame ketujuh. Bandingkan dengan spring di klip tadi, damping 10 dan stiffness 100, puncaknya cuma 1,163.</p>
+      <p>Jadi dua angka saja sudah cukup untuk mengubah karakter gerakan.</p>
+    </div>
+    <p class="bridge">→ Dan dua angka yang sama kami pakai untuk caption.</p>
+  </article>
+
+<article class="card"><h3><span class="n">10</span>From a sentence to a word <span class="t">1,5 menit</span></h3>
+    <div class="say">
+      <p>Di atas, caption biasa: satu kalimat muncul sekaligus. Di bawah, <b>kinetic</b>: tiap kata muncul <b>tepat saat diucapkan</b>, dan kata yang sedang diucapkan menyala.</p>
+      <p>Datanya sederhana. Untuk setiap kata kami punya frame mulai dan frame akhir, dari transkrip tadi.</p>
+      <p>Tiap kata memakai spring yang barusan, jadi mereka melompat masuk.</p>
+      <p>Caption yang akan kalian baca di video demo nanti memakai ini.</p>
+    </div>
+    <p class="bridge">→ Berikutnya, gimana pindah antar scene.</p>
+  </article>
+
+<article class="card"><h3><span class="n">11</span>Scenes overlap, the presentation decides <span class="t">1 menit</span></h3>
+    <div class="say">
+      <p>Antar scene kita bisa pakai <b>transisi</b>. Komponennya <b>TransitionSeries</b>. Dua scene dibuat tumpang tindih sekitar 20 frame, dan <b>presentation</b> menentukan caranya: fade, slide, wipe, atau flip.</p>
+      <p>Ada juga efek cube, tapi di dokumentasinya ditandai <b>berbayar</b>.</p>
+    </div>
+    <p class="bridge">→ Dan bunyinya bagaimana?</p>
+  </article>
+
+<article class="card"><h3><span class="n">12</span>Sound is just another layer <span class="t">1,5 menit</span></h3>
+    <div class="say">
+      <p>Suara juga cuma <b>lapisan</b> lain.</p>
+      <p>Suara narasi satu berkas per scene, dimulai di frame yang sudah diukur. Efek suara diletakkan di frame tertentu.</p>
+      <p>Volume musik adalah <b>fungsi dari frame</b>. Saat ada suara, dia turun ke 0,2. Saat jeda, dia naik lagi ke 0,75. Kodenya persis seperti yang kalian lihat.</p>
+      <p>Delapan efek suara dan musiknya kami buat sendiri dengan ffmpeg dari rumus, jadi tidak ada lisensi yang perlu dicek.</p>
+      <p>Langkah terakhir, volumenya kami normalkan ke minus 16 LUFS.</p>
+      <p>Ada cerita kecil. Musik pertama kami <b>terdengar seram</b>: akor minor, nada rendah, gema panjang. Kami ganti ke mayor.</p>
+      <p>Lalu petikan arpeggio yang terus-menerus kami buang, karena bersaing dengan suara. Terukur sekitar 2,4 desibel lebih keras di rentang suara bicara.</p>
+    </div>
+    <div class="label sh">Kalau mepet</div>
+    <p class="short">Suara juga lapisan: narasi, efek, dan musik yang turun saat ada suara.</p>
+    <p class="bridge">→ Sekarang saya tunjukkan langsung bagian yang paling enak untuk diutak-atik.</p>
+  </article>
+
+<article class="card"><h3><span class="n">13</span>One composition, many videos <span class="t">2,5 menit</span></h3>
+    <div class="say">
+      <p>Satu komposisi bisa jadi banyak video lewat <b>props</b>.</p>
+      <p>Dengan schema zod, Remotion Studio menampilkan <b>panel Props</b> otomatis.</p>
+      <p><i>(Pindah ke Studio.)</i> Saya buka <b>DemoProps</b>. Di sini ada judul, warna, damping, dan stiffness.</p>
+      <p>Saya ganti judulnya… saya ganti warnanya… dan kalau damping saya kecilkan, kotaknya jadi memantul.</p>
+      <p>Tidak ada satu baris kode pun yang saya ubah.</p>
+    </div>
+    <div class="label act">Aksi</div>
+    <p class="act-text">Studio sudah terbuka sebelumnya. Pilih DemoProps di kiri, ubah title, accent, damping, stiffness di panel kanan, tekan play. Lalu kembali ke dek.</p>
+    <div class="label sh">Kalau mepet</div>
+    <p class="short">Kalau Studio bermasalah: bilang "ini hasilnya", tunjuk klip di slide, lanjut.</p>
+    <p class="warn">Jangan memperbaiki Studio di depan penonton. Lanjut saja ke slide berikutnya.</p>
+    <p class="bridge">→ Oke. Itu baru sebagian dari yang bisa dilakukan.</p>
+  </article>
+
+<article class="card"><h3><span class="n">14</span>The map <span class="t">1,5 menit</span></h3>
+    <div class="say">
+      <p>Ini <b>peta</b> dari yang bisa dilakukan Remotion. Saya tidak akan bacakan semuanya, cukup kelompoknya: motion, scene, teks, grafik, 3D dan kamera, media, cara mengirim hasil, dan data.</p>
+      <p>Yang berlabel hijau sudah kami pakai. Yang berlabel <b>"In the demo video"</b>, seperti kamera, 3D, motion blur, garis, bentuk, noise, dan video di dalam video, akan kalian lihat di video demo nanti.</p>
+      <p>Jadi ini potensi penuhnya. Kami memakai sebagian.</p>
+    </div>
+    <div class="label sh">Kalau mepet</div>
+    <p class="short">Sebut kelompoknya saja, jangan dibaca satu per satu.</p>
+    <p class="bridge">→ Lalu peran Claude di mana?</p>
+  </article>
+
+<article class="card"><h3><span class="n">15</span>Who does what, and what bit us <span class="t">2 menit</span></h3>
+    <div class="say">
+      <p>Pembagiannya begini. <b>Claude</b> menulis scene, helper, dan skrip, dan memeriksa frame sebagai gambar diam.</p>
+      <p>Satu hal penting: dia <b>tidak menonton</b> gerakannya. Jadi soal rasa gerak, seberapa pas, itu penilaian manusia.</p>
+      <p><b>Kita</b> menulis naskah, memilih suara, dan menilai rasa.</p>
+      <p>Beberapa jebakan yang benar-benar kami alami. TTS salah baca nama, jadi kami eja ulang khusus untuk TTS. Jeda di koma menipu deteksi jeda, jadi kami pakai transkrip.</p>
+      <p>Soal versi: Remotion 4.0.535 minta zod 4.5.4. Peringatan <b>Version mismatch</b> muncul sendiri, dan perintah <b>npx remotion versions</b> menunjukkan sumbernya.</p>
+      <p>Dan untuk 3D di React 18, kita harus pakai <b>react-three/fiber versi 8</b>. Versi 9 minta React 19.</p>
+    </div>
+    <div class="label sh">Kalau mepet</div>
+    <p class="short">Claude menulis kodenya, kita menilai rasanya. Hati-hati dengan versi paket.</p>
+    <p class="bridge">→ Pertanyaan yang pasti muncul: kenapa tidak pakai Claude Motion saja?</p>
+  </article>
+
+<article class="card"><h3><span class="n">16</span>Remotion, Claude Motion, or an editor <span class="t">1 menit</span></h3>
+    <div class="say">
+      <p>Pertanyaan yang wajar: ada Claude Motion, ada editor, ada Remotion. Beda tujuan.</p>
+      <p><b>Remotion</b>: kode di repo, kontrol sampai frame dan audio, masuk git. Cocok untuk video yang berulang atau berbasis data.</p>
+      <p><b>Claude Motion</b>: menurut Help Center Anthropic masih beta, untuk paket Team dan Enterprise. Dia membuat animasi sebagai kode dan mengekspor MP4. Cocok untuk animasi cepat di percakapan.</p>
+      <p>Keduanya tidak saling menggantikan.</p>
+    </div>
+    <p class="warn"><b>Lisensi Remotion</b> (LICENSE.md versi 4.0.535): gratis untuk individu dan perusahaan for-profit sampai 3 karyawan. Di atas itu perlu Company License. Ucapkan: "Cek dulu sebelum dipakai komersial." Cek jumlah karyawan perusahaan sebelum sesi.</p>
+    <p class="bridge">→ Dan satu hal penting untuk perusahaan, soal lisensi.</p>
+  </article>
+
+<article class="card"><h3><span class="n">17</span>Beyond one video <span class="t">0,5 menit</span></h3>
+    <div class="say">
+      <p>Beberapa arah lanjut. Subtitle SRT dari naskah yang sama sudah ada di proyek lain kami. <b>calculateMetadata</b> membuat durasi dan props dari data.</p>
+      <p>Dan satu ide, belum dibangun: video mingguan dari riwayat design review.</p>
+    </div>
+    <p class="bridge">→ Sekarang, saatnya lihat hasilnya.</p>
+  </article>
+
+<article class="card"><h3><span class="n">18</span>Now: the demo video <span class="t">3 menit</span></h3>
+    <div class="say">
+      <p>Ini videonya. Dua menit lima puluh enam detik.</p>
+      <p>Perhatikan caption kinetic-nya, suaranya, efek suaranya, lalu bagian kamera, 3D, dan motion blur.</p>
+    </div>
+    <div class="label act">Aksi</div>
+    <p class="act-text">Putar demo-video.mp4 dari berkas lokal, layar penuh. Setelah selesai, kembali ke dek, slide 19.</p>
+    <p class="warn">Kalau tidak ada suara, cek keluaran audio ke speaker ruangan. Kalau berkas tidak terbuka, lanjut ke tanya jawab dan tunjukkan klip di slide.</p>
+    <p class="bridge">→ Itu tadi semuanya dari kode.</p>
+  </article>
+
+<article class="card"><h3><span class="n">19</span>Questions? <span class="t">±4,5 menit</span></h3>
+    <div class="say">
+      <p>Terima kasih. Silakan tanya apa saja.</p>
+    </div>
+    <div class="label act">Aksi</div>
+    <p class="act-text">Tunjukkan folder video/ dan video/src/showcase/, perintah npm run studio.</p>
   </article>
 
   <h2>Tanya jawab: kemungkinan pertanyaan</h2>
