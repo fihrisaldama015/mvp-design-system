@@ -7,10 +7,16 @@
 //   node scripts/figma/reviewSync.mjs --answers "<Name>"                 print the answers and who gave them
 //   node scripts/figma/reviewSync.mjs --plan "<Name>" [--json]          what to change in the code for each answer (scans the current code; refuses when the scan skipped files)
 //   node scripts/figma/reviewSync.mjs --done "<Name>"                    after applying the answers: checks the gates (usage, Waiting for Figma), then marks the review as applied
-// Usage: node scripts/figma/reviewSync.mjs <components.Name.json> <src/components/x/index.js>
+// Only what changes how a component LOOKS is compared: options of a variant (kind="outlined") and on/off switches (searchable).
+// Data (columns, rows, options), content (label, children), handlers and behaviour (a permission code) stay as the code has them; the
+// run lists them under "not compared". The code file can be left out when review.components["<Figma name>"].code in figma-tokens.config.json
+// names it; that entry can also hold component, also, map, legacy, ui, behavior and ignore (the flags below win over it).
+// Usage: node scripts/figma/reviewSync.mjs <components.Name.json> [<src/components/x/index.js>]
+//          [--component Input]                 which `X.propTypes` block is the component, when the file holds several (a re-export is followed)
+//          [--ui badge,active]                 code props to compare although they are not an enum or a switch
 //          [--map '{"Dismiss":"onDismiss"}']   Figma property -> code prop (default: camelCase)
 //          [--legacy tone=status,...]          old code prop that Figma replaced (not "removed")
-//          [--behavior value,onChange,...]     code-only props that are data or behaviour, not looks (never flagged as removed)
+//          [--behavior type,code,...]          code-only props that are behaviour although they look like an enum or a switch (never flagged as removed)
 //          [--also src/components/field/index.js]  a wrapper whose props count as this component's API (label, hint, required in Field)
 //          [--ignore "State,Label"]           Figma properties that are not props (CSS state, show/hide switches for text that already has a prop)
 //          [--preview-url https://<preview-origin>]  the candidate's preview deployment (the page shows the route there next to the current one)
@@ -22,8 +28,11 @@ import { scanUsage } from "./usageScan.mjs";
 import { usageFor } from "./usageCore.mjs";
 import { doneGate, planGate } from "./reviewGate.mjs";
 import { buildPlan, planText } from "./reviewPlan.mjs";
+import { ALWAYS_BEHAVIOR, findBlocks, isUiProp, readBlock, resolveCode, signatureDefaults } from "./codeProps.mjs";
 
-const [, , figmaFile, codeFile, ...rest] = process.argv;
+const [, , figmaFile, third, ...others] = process.argv;
+const codeArg = third && !third.startsWith("--") ? third : undefined; // the code file may come from the config instead
+const rest = codeArg ? others : [third, ...others].filter((x) => x !== undefined);
 const flag = (n, d) => (rest.includes(n) ? rest[rest.indexOf(n) + 1] : d);
 // Same data, ignoring the read time: if this changed, Figma changed (or the read was different).
 const hashOf = (d) => { const { readAt, ...rest } = d; return crypto.createHash("sha1").update(JSON.stringify(rest)).digest("hex").slice(0, 12); };
@@ -72,19 +81,26 @@ if (["--verify", "--answers", "--plan", "--done"].includes(process.argv[2])) {
   } catch (e) { fail(e.message); }
 }
 
-const MAP = JSON.parse(flag("--map", "{}"));
-const LEGACY = Object.fromEntries((flag("--legacy", "") || "").split(",").filter(Boolean).map((p) => p.split("=")));
-const BEHAVIOR = new Set(["id", "name", "ref", "className", "style", "children", "value", "defaultValue", "onChange", "onClick", "onBlur", "onFocus", ...flag("--behavior", "").split(",").filter(Boolean)]);
-const IGNORE = new Set((flag("--ignore", "") || "").split(",").filter(Boolean));
-const ALSO = (flag("--also", "") || "").split(",").filter(Boolean);
-if (!figmaFile || !codeFile) {
-  console.error("Usage: node scripts/figma/reviewSync.mjs <components.Name.json> <src/components/x/index.js> [--map JSON] [--legacy a=b] [--out file]");
+if (!figmaFile) {
+  console.error("Usage: node scripts/figma/reviewSync.mjs <components.Name.json> [<src/components/x/index.js>] [--component Name] [--map JSON] [--legacy a=b] [--ui a,b] [--behavior a,b] [--ignore A,B] [--also file]");
   process.exit(1);
 }
 
 const api = makeApi(); // before any work: a broken review config stops the run early
 const figma = JSON.parse(fs.readFileSync(figmaFile, "utf8"));
-const code = fs.readFileSync(codeFile, "utf8");
+const entry = readJson("figma-tokens.config.json").review?.components?.[figma.name] ?? {}; // per component: code, component, also, map, legacy, ui, behavior, ignore
+const list = (v) => (Array.isArray(v) ? v : String(v ?? "").split(",").map((x) => x.trim()).filter(Boolean));
+const MAP = { ...(entry.map ?? {}), ...JSON.parse(flag("--map", "{}")) };
+const LEGACY = { ...(entry.legacy ?? {}), ...Object.fromEntries((flag("--legacy", "") || "").split(",").filter(Boolean).map((p) => p.split("="))) };
+const BEHAVIOR = [...list(entry.behavior), ...list(flag("--behavior", ""))];
+const UI = [...list(entry.ui), ...list(flag("--ui", ""))];
+const IGNORE = new Set([...list(entry.ignore), ...list(flag("--ignore", ""))]);
+const ALSO = [...list(entry.also), ...list(flag("--also", ""))];
+const codeFile = codeArg ?? entry.code;
+if (!codeFile) fail(`No code file for "${figma.name}": pass it as the second argument, or set review.components["${figma.name}"].code in figma-tokens.config.json.`, 1);
+let resolved;
+try { resolved = resolveCode({ codeFile, component: flag("--component", entry.component), figmaName: figma.name }); } catch (e) { fail(e.message, 1); }
+const code = resolved.text;
 const camel = (s) => s.replace(/[^\w ]/g, "").trim().split(/\s+/).map((w, i) => (i ? w[0].toUpperCase() + w.slice(1) : w[0].toLowerCase() + w.slice(1))).join("");
 const clean = (o) => String(o).replace(/\*$/, "");
 
@@ -98,31 +114,16 @@ for (const [name, def] of Object.entries(figma.props)) {
   fProps[key] = { figma: name, type: def.type, options: isBool ? null : def.options?.map(clean) ?? null, default: isBool ? String(def.default) : clean(def.options?.find((o) => String(o).endsWith("*")) ?? def.default ?? "") };
 }
 
-const COMP = code.match(/(\w+)\.propTypes\s*=\s*\{/)?.[1] ?? figma.name; // the name used in JSX (Figma's name can differ: "Input - Single Select/Base" is Select)
-// Code side: propTypes keys with their options and description (of the file and of any --also wrapper), defaults from the signature.
-const cProps = {};
-function readPropTypes(text, file) {
-  const at = text.search(/\w+\.propTypes\s*=\s*\{/);
-  if (at < 0) { console.error(`No Component.propTypes block in ${file}`); process.exit(1); }
-  let desc = "";
-  let open = null; // a /** ... */ comment that spans several lines
-  for (const line of text.slice(at, text.indexOf("\n};", at)).split("\n").slice(1)) {
-    if (open !== null) { const end = line.match(/^\s*\*?\s*(.*?)\s*\*\/\s*$/); if (end) { desc = `${open} ${end[1]}`.trim(); open = null; } else open += ` ${line.replace(/^\s*\*\s?/, "").trim()}`; continue; }
-    const start = line.match(/^\s*\/\*\*\s*(.*)$/);
-    if (start && !start[1].includes("*/")) { open = start[1].trim(); continue; }
-    const d = line.match(/^\s*\/\*\*\s*(.*?)\s*\*\/\s*$/);
-    if (d) { desc = d[1]; continue; }
-    const m = line.match(/^\s{2}(\w+):\s*(.*)$/);
-    if (!m) continue;
-    const one = m[2].match(/oneOf\(\[(.*?)\]\)/);
-    cProps[m[1]] = { options: one && m[2].startsWith("PropTypes.oneOf(") ? [...one[1].matchAll(/"([^"]*)"/g)].map((x) => x[1]) : null, description: desc, deprecated: /^@deprecated/i.test(desc), via: file === codeFile ? undefined : file };
-    desc = "";
-  }
+const COMP = resolved.component; // the name used in JSX (Figma's name can differ: "Input - Single Select/Base" is Select)
+// Code side: the props of that block (and of any --also wrapper) with their kind, options and description; defaults from the signature.
+const cProps = readBlock(code, resolved.at, { file: resolved.file });
+for (const f of ALSO) {
+  const t = fs.readFileSync(f, "utf8");
+  const b = findBlocks(t)[0];
+  if (!b) fail(`No Component.propTypes block in ${f}`, 1);
+  Object.assign(cProps, readBlock(t, b.at, { file: f, via: true }));
 }
-readPropTypes(code, codeFile);
-for (const f of ALSO) readPropTypes(fs.readFileSync(f, "utf8"), f);
-const sig = code.match(/export (?:function|const) \w+[^(]*\(\s*\{([\s\S]*?)\}\s*(?:,\s*\w+)?\s*\)/);
-for (const m of sig ? sig[1].matchAll(/(\w+)\s*=\s*("[^"]*"|true|false|[\w.]+)/g) : []) if (cProps[m[1]]) cProps[m[1]].default = m[2].replace(/"/g, "");
+for (const [k, v] of Object.entries(signatureDefaults(code, COMP))) if (cProps[k]) cProps[k].default = v;
 
 // Where each item is used: the usage scan of routed pages (usageScan.mjs). callers = uses, callerRoutes = the route paths.
 let usage;
@@ -142,8 +143,10 @@ for (const [p, f] of Object.entries(fProps)) {
     add({ kind: "default-changed", prop: p, detail: `Default is "${c.default}" in code, "${f.default}" in Figma. Callers that rely on the default render differently.`, from: c.default, to: f.default });
 }
 const covered = new Set([...Object.keys(fProps), ...Object.values(LEGACY).length ? Object.keys(LEGACY) : []]);
+const notCompared = []; // code-only props that are data, content or behaviour: the code keeps them, the review does not look at them
 for (const [p, c] of Object.entries(cProps)) {
-  if (BEHAVIOR.has(p) || /^on[A-Z]/.test(p)) continue; // data / behaviour (handlers too): Figma does not draw it
+  if (ALWAYS_BEHAVIOR.includes(p) || BEHAVIOR.includes(p)) continue; // the project says: not looks
+  if (!covered.has(p) && !isUiProp(p, c.kind, { ui: UI })) { notCompared.push(p); continue; }
   if (!covered.has(p)) add({ kind: "removed-prop", prop: p, deprecated: c.deprecated, description: c.description, default: c.default, onByDefault: cProps[p].default === "true", detail: `Code has "${p}" but Figma does not. ${c.description}` });
   else if (fProps[p]?.options && c.options)
     for (const o of c.options.filter((o) => !fProps[p].options.some((x) => x.toLowerCase() === o.toLowerCase()))) add({ kind: "removed-option", prop: p, option: o, detail: `Code has ${p}="${o}" but Figma does not.` });
@@ -160,4 +163,8 @@ try {
 const count = (k) => items.filter((i) => i.kind === k).length;
 console.log(`${figma.name}: ${count("added-prop") + count("added-option")} additions (safe), ${count("default-changed")} default changes, ${count("removed-prop") + count("removed-option")} removals (need a decision)`);
 for (const i of items) console.log(`  ${i.kind.padEnd(15)} ${i.prop}${i.option ? `="${i.option}"` : ""}${i.callers !== undefined ? `  (${i.callers} use(s) on ${i.callerRoutes.length} page(s)${i.onByDefault ? ", ON by default: all of them get it" : ""})` : ""}${i.deprecated ? "  [already deprecated]" : ""}`);
+const kinds = Object.values(cProps).reduce((a, c) => ({ ...a, [c.kind]: (a[c.kind] ?? 0) + 1 }), {});
+console.log(`  read: ${resolved.file}, "${COMP}" (${Object.keys(cProps).length} props: ${Object.entries(kinds).map(([k, n]) => `${n} ${k}`).join(", ")})`);
+for (const n of resolved.notes) console.warn(`  note: ${n}`);
+if (notCompared.length) console.log(`  not compared (data, content or behaviour, not looks): ${notCompared.join(", ")}`);
 console.log(`Published to ${api.url}. Reviewers answer at ${reviewPage()}; the removals wait there. Tell the dev; do not apply anything until the review shows "answered".`);
