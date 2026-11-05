@@ -169,10 +169,12 @@ const listed = await api.list().catch(() => null);
 const previewUrl = flag("--preview-url", null) ?? listed?.project?.candidatePreviewUrl ?? null;
 const stop = previewNeeded(items, previewUrl, { allowNone: rest.includes("--no-preview") });
 if (stop) fail(`Nothing was published.\n${stop}`);
+if (previewUrl) console.log(`Candidate preview: ${previewUrl} (${flag("--preview-url", null) ? "--preview-url" : "the project's Candidate preview URL"}).`);
+// Only an explicit --preview-url is kept in the review: the project's address is read when the page opens, so changing it in the dashboard is enough.
 try {
   const idx = (() => { try { return JSON.parse(fs.readFileSync("figma-index.json", "utf8")).components?.[figma.name]; } catch { return null; } })();
   const cfg = readJson("figma-tokens.config.json");
-  await api.publish({ component: figma.name, jsxName: COMP, storybookUrl: cfg.storybookUrl || null, storyId: idx?.story ?? null, figmaFileKey: flag("--file", idx?.figmaFileKey ?? null), figmaNode: figma.nodeId, figmaPage: figma.page?.name ?? figma.page, code: codeFile, readAt: figma.readAt, sourceHash: hashOf(figma), items, usage: { at: usage.generatedAt, byItem: usageByItem }, ...(flag("--preview-url") ? { previewUrl: previewUrl ?? null } : {}) });
+  await api.publish({ component: figma.name, jsxName: COMP, storybookUrl: cfg.storybookUrl || null, storyId: idx?.story ?? null, figmaFileKey: flag("--file", idx?.figmaFileKey ?? null), figmaNode: figma.nodeId, figmaPage: figma.page?.name ?? figma.page, code: codeFile, readAt: figma.readAt, sourceHash: hashOf(figma), items, usage: { at: usage.generatedAt, byItem: usageByItem }, ...(flag("--preview-url") ? { previewUrl: flag("--preview-url", null) } : {}) });
 } catch (e) { fail(`Could not publish the review: ${e.message}`); }
 
 const count = (k) => items.filter((i) => i.kind === k).length;
