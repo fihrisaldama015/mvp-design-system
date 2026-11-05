@@ -1,4 +1,4 @@
-import { componentTypes, findComponentNodes } from "app/review/highlightCore";
+import { componentTypes, findComponentNodes } from "./highlightCore";
 
 // Inside a preview frame of the review page: when the page asks, outline every instance of one design-system component
 // (for example every Alert), so the reviewers see what a decision touches without guessing. It listens for a message from the
@@ -34,10 +34,10 @@ function schedule() {
   requestAnimationFrame(mark);
 }
 
-async function turnOn(folder) {
+async function turnOn(folder, load) {
   if (!/^[a-z0-9-]+$/.test(folder)) return;
   try {
-    types = componentTypes(await import(`../../components/${folder}/index.js`));
+    types = componentTypes(await load(folder));
   } catch {
     return; // no such component folder: nothing to outline
   }
@@ -58,12 +58,14 @@ function turnOff() {
   mark();
 }
 
-export function installHighlight() {
-  if (window.self === window.top) return; // only inside a frame
+// load(folder) returns the module of the component folder: the project passes `(folder) => import(`components/${folder}/index.js`)`
+// (the import must be written in the project, where its bundler resolves it).
+export function installHighlight(load) {
+  if (window.self === window.top || typeof load !== "function") return; // only inside a frame
   window.addEventListener("message", (e) => {
     if (e.source !== window.parent) return;
     const d = e.data;
     if (!d || d.type !== "review-highlight") return;
-    if (d.on && typeof d.folder === "string") turnOn(d.folder); else turnOff();
+    if (d.on && typeof d.folder === "string") turnOn(d.folder, load); else turnOff();
   });
 }

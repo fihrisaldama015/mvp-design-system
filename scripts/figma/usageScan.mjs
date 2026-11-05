@@ -1,5 +1,5 @@
 // Where each design-system component is used: every capitalised JSX tag imported from components/* or proposed/*,
-// with its attributes and the routes whose pages render that file. Written to src/app/review/usage.json for the review page.
+// with its attributes and the routes whose pages render that file. Written to src/review-kit/usage.json (review.usage.out) for the review page.
 //
 // Known limits (each means a use may be missed; none is an error):
 // - routes are read by two adapters: JSX (<Route path="..." element={<Page />} />) and config arrays ({ path: "...", component: Page }
@@ -313,7 +313,7 @@ export function probeText(report) {
   return lines.join("\n");
 }
 
-// Script: node scripts/figma/usageScan.mjs [--probe] -> src/app/review/usage.json (--probe only prints how the routes were read). Never fails the build.
+// Script: node scripts/figma/usageScan.mjs [--probe] -> src/review-kit/usage.json (--probe only prints how the routes were read). Never fails the build.
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = process.cwd();
   let routeSamples = {}, rawSteps, cfgUsage = {};
@@ -333,7 +333,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   } else {
     for (const w of usage.warnings) console.warn(`usage: skipped ${w}`);
     if (usage.routing?.blind) console.warn("usage: BLIND, no route was read. Run `node scripts/figma/usageScan.mjs --probe`.");
-    const out = path.join(root, "src/app/review/usage.json");
+    const out = path.join(root, cfgUsage.out ?? "src/review-kit/usage.json");
     fs.mkdirSync(path.dirname(out), { recursive: true });
     fs.writeFileSync(out, JSON.stringify(usage, null, 2) + "\n");
     console.log(`usage: ${Object.keys(usage.components).length} components -> ${path.relative(root, out)}`);

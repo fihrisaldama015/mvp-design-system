@@ -14,6 +14,7 @@ export default defineConfig({
       utils: "./src/utils",
       app: "./src/app",
       proposed: "./src/proposed",
+      "review-kit": "./src/review-kit",
     },
   },
   html: { title: "Equipment Loan Tracker" },

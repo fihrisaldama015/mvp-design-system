@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { Eye, EyeOff, LockKeyhole } from "lucide-react";
-import { Alert } from "components/alert";
-import { Button } from "components/button";
-import { Input } from "components/input";
-import AuthLayout from "pages/review/AuthLayout";
+import { Alert, Button, Input } from "./ui";
+import AuthLayout from "./AuthLayout";
 
 // The log in screen of the review page: a short explanation next to the form (stacked on a phone).
 // notice: { title, text } shown above the form, for a session that ended.
@@ -25,16 +23,16 @@ export default function LoginScreen({ onSubmit, notice = null }) {
 
   return (
     <AuthLayout>
-      <form className="flex w-full max-w-sm flex-col gap-5" onSubmit={enter}>
-          <div className="flex flex-col gap-1">
-            <span className="mb-2 flex size-10 items-center justify-center rounded-full border border-default" aria-hidden><LockKeyhole size={20} /></span>
-            <h2 className="typo-semi-bold-text-xl">Log in to review</h2>
-            <p className="text-caption typo-regular-text-sm">Use the account the developer made for you.</p>
+      <form className="rk-flex rk-w-full rk-max-w-sm rk-flex-col rk-gap-5" onSubmit={enter}>
+          <div className="rk-flex rk-flex-col rk-gap-1">
+            <span className="rk-mb-2 rk-flex rk-size-10 rk-items-center rk-justify-center rk-rounded-full rk-border rk-border-default" aria-hidden><LockKeyhole size={20} /></span>
+            <h2 className="rk-typo-semi-bold-text-xl">Log in to review</h2>
+            <p className="rk-text-caption rk-typo-regular-text-sm">Use the account the developer made for you.</p>
           </div>
           {notice && !error && <Alert status="warning" title={notice.title}>{notice.text}</Alert>}
           {error && <Alert status="danger" title="Cannot log in">{error}</Alert>}
           <Input label="Email" type="email" autoComplete="username" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} />
-          <div className="flex flex-col gap-1">
+          <div className="rk-flex rk-flex-col rk-gap-1">
             <Input
               label="Password"
               type={showPassword ? "text" : "password"}
@@ -43,7 +41,7 @@ export default function LoginScreen({ onSubmit, notice = null }) {
               onChange={(e) => setPassword(e.target.value)}
               caption="Ask the developer if you do not have an account."
             />
-            <Button kind="text" size="sm" className="-ml-4 self-start" prefixIcon={showPassword ? <EyeOff /> : <Eye />} onClick={() => setShowPassword((v) => !v)}>
+            <Button kind="text" size="sm" className="rk--ml-4 rk-self-start" prefixIcon={showPassword ? <EyeOff /> : <Eye />} onClick={() => setShowPassword((v) => !v)}>
               {showPassword ? "Hide password" : "Show password"}
             </Button>
           </div>

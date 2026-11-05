@@ -1,9 +1,10 @@
 // Client of the design review service (login, password change, the project's reviews).
-// Set PUBLIC_REVIEW_SERVICE_URL and PUBLIC_REVIEW_PROJECT (see .env.example).
-import { serviceOrigin } from "app/review/helpers";
+// The service URL and the project slug come from review.config.js.
+import { serviceOrigin } from "./helpers";
+import { config } from "./review.config.js";
 
-export const SERVICE = serviceOrigin(import.meta.env.PUBLIC_REVIEW_SERVICE_URL);
-export const PROJECT = (import.meta.env.PUBLIC_REVIEW_PROJECT ?? "").trim();
+export const SERVICE = serviceOrigin(config.serviceUrl);
+export const PROJECT = (config.project ?? "").trim();
 export const configured = Boolean(SERVICE && PROJECT);
 
 const KEY = "review-session";

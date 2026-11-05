@@ -29,9 +29,11 @@ test("a fresh project gets the skill, the runnable scripts (no tests), the confi
   assert.equal(pkg.scripts.test, "jest");
   assert.equal(pkg.scripts.doctor, "node scripts/figma/doctor.mjs");
   assert.equal(pkg.scripts.predev, undefined); // build hooks only on request
-  assert.match(read(dir, ".gitignore"), /\.figma-dump\nsrc\/app\/review\/usage\.json\n/);
+  assert.match(read(dir, ".gitignore"), /\.figma-dump\nsrc\/review-kit\/usage\.json\n/);
   assert.equal(r.changed, true);
   assert.ok(r.notes.some((n) => /--build-hooks/.test(n)));
+  for (const f of ["ReviewPage.js", "ui.js", "kit.css", "index.js", "review.config.js", "usage.json", "usageCore.js"]) assert.ok(fs.existsSync(path.join(dir, "src/review-kit", f)), f);
+  assert.deepEqual(JSON.parse(read(dir, "src/review-kit/usage.json")).components, {}); // empty until `npm run usage`
 });
 
 test("running it again changes nothing, and --check/dry run write nothing", () => {
@@ -63,7 +65,7 @@ test("the project's own config, scripts and ignore lines are never replaced", ()
   assert.equal(read(dir, "figma-tokens.config.json"), '{"mine":true}\n');
   assert.equal(JSON.parse(read(dir, "package.json")).scripts.doctor, "node my-doctor.js");
   assert.ok(r.conflicts.some((c) => /scripts\.doctor/.test(c)));
-  assert.equal(read(dir, ".gitignore"), "node_modules\n.figma-dump\n\n# design review (skill building-storybook-from-figma)\nsrc/app/review/usage.json\n");
+  assert.equal(read(dir, ".gitignore"), "node_modules\n.figma-dump\n\n# design review (skill building-storybook-from-figma)\nsrc/review-kit/usage.json\n");
 });
 
 test("--build-hooks chains after predev/prebuild instead of replacing them, once", () => {
@@ -79,7 +81,7 @@ test("package.json keeps its indent (tabs, 4 spaces) and a project without packa
   assert.match(mergeScripts('{\n\t"name": "a"\n}\n').text, /^\{\n\t"name"/);
   assert.match(mergeScripts('{\n    "name": "a"\n}\n').text, /^\{\n    "name"/);
   assert.throws(() => install({ target: fs.mkdtempSync(path.join(os.tmpdir(), "install-")), from: SKILL }), /no package\.json/);
-  assert.equal(mergeIgnore(".figma-dump\nsrc/app/review/usage.json\n").missing.length, 0);
+  assert.equal(mergeIgnore(".figma-dump\nsrc/review-kit/usage.json\n").missing.length, 0);
 });
 
 test("a project that already holds the skill (mvp) only gets its runnable copy checked", () => {
@@ -87,4 +89,20 @@ test("a project that already holds the skill (mvp) only gets its runnable copy c
   install({ target: dir, from: SKILL });
   const r = install({ target: dir }); // no --from: finds the skill in the project
   assert.equal(r.changed, false);
+});
+
+test("the kit is replaced on every run, but review.config.js belongs to the project; --no-kit and --kit-dir", () => {
+  const dir = project({ name: "x" });
+  install({ target: dir, from: SKILL });
+  fs.writeFileSync(path.join(dir, "src/review-kit/review.config.js"), "// mine\n");
+  fs.appendFileSync(path.join(dir, "src/review-kit/kit.css"), "/* edited */");
+  const r = install({ target: dir, from: SKILL });
+  assert.deepEqual(r.actions.map((a) => path.basename(a.file)), ["kit.css"]);
+  assert.equal(read(dir, "src/review-kit/review.config.js"), "// mine\n");
+  const none = project({ name: "n" });
+  install({ target: none, from: SKILL, kit: false });
+  assert.ok(!fs.existsSync(path.join(none, "src/review-kit")));
+  const other = project({ name: "o" });
+  install({ target: other, from: SKILL, kitDir: "src/features/review" });
+  assert.ok(fs.existsSync(path.join(other, "src/features/review/ReviewPage.js")));
 });

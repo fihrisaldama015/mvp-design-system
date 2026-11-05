@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { componentTypes, findComponentNodes, hostNodes } from "../highlightCore.js";
+import { componentTypes, findComponentNodes, hostNodes } from "../../templates/review-kit/highlightCore.js";
 
 // Fake fibers: tag 5 is a DOM element, 0 a function component, 11 a forwardRef, 6 a text node, 7 a fragment.
 const fiber = (tag, type, { child = null, sibling = null, stateNode = null, elementType } = {}) => ({ tag, type, elementType: elementType ?? type, child, sibling, stateNode });

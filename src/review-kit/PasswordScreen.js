@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Eye, EyeOff, KeyRound } from "lucide-react";
-import { Alert } from "components/alert";
-import { Button } from "components/button";
-import { Input } from "components/input";
-import AuthLayout from "pages/review/AuthLayout";
-import { changePassword } from "app/review/serviceClient";
+import { Alert, Button, Input } from "./ui";
+import AuthLayout from "./AuthLayout";
+import { changePassword } from "./serviceClient";
 
 const MIN = 10;
 
@@ -41,11 +39,11 @@ export default function PasswordScreen({ session, knownCurrent = null, onDone, o
 
   return (
     <AuthLayout>
-      <form className="flex w-full max-w-sm flex-col gap-5" onSubmit={save}>
-        <div className="flex flex-col gap-1">
-          <span className="mb-2 flex size-10 items-center justify-center rounded-full border border-default" aria-hidden><KeyRound size={20} /></span>
-          <h2 className="typo-semi-bold-text-xl">{name ? `Welcome, ${name}` : "Welcome"}</h2>
-          <p className="typo-regular-text-sm">Choose your own password before you start. {knownCurrent ? "The temporary one you just used stops working." : "It replaces the temporary one the developer gave you."}</p>
+      <form className="rk-flex rk-w-full rk-max-w-sm rk-flex-col rk-gap-5" onSubmit={save}>
+        <div className="rk-flex rk-flex-col rk-gap-1">
+          <span className="rk-mb-2 rk-flex rk-size-10 rk-items-center rk-justify-center rk-rounded-full rk-border rk-border-default" aria-hidden><KeyRound size={20} /></span>
+          <h2 className="rk-typo-semi-bold-text-xl">{name ? `Welcome, ${name}` : "Welcome"}</h2>
+          <p className="rk-typo-regular-text-sm">Choose your own password before you start. {knownCurrent ? "The temporary one you just used stops working." : "It replaces the temporary one the developer gave you."}</p>
         </div>
         {error && <Alert status="danger" title="Password not changed">{error}</Alert>}
         {knownCurrent === null && (
@@ -70,7 +68,7 @@ export default function PasswordScreen({ session, knownCurrent = null, onDone, o
           status={mismatch ? "danger" : "default"}
           caption={mismatch ? "The two passwords differ." : undefined}
         />
-        <Button kind="text" size="sm" className="-ml-4 self-start" prefixIcon={show ? <EyeOff /> : <Eye />} onClick={() => setShow((v) => !v)}>
+        <Button kind="text" size="sm" className="rk--ml-4 rk-self-start" prefixIcon={show ? <EyeOff /> : <Eye />} onClick={() => setShow((v) => !v)}>
           {show ? "Hide passwords" : "Show passwords"}
         </Button>
         <Button type="submit" status="primary" loading={busy} disabled={!ready}>Save password and continue</Button>

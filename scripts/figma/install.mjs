@@ -1,12 +1,14 @@
 // Puts the skill into a project, or checks that it is in. Safe to run again: it never overwrites the project's own files.
 //
-//   node <skill>/scripts/install.mjs [--target <project>] [--from <skill folder>] [--dry-run] [--check] [--build-hooks]
+//   node <skill>/scripts/install.mjs [--target <project>] [--from <skill folder>] [--dry-run] [--check] [--build-hooks] [--no-kit] [--kit-dir <dir>]
 //
 // It does four things in the target project (default: the current folder):
 //   1. copies the skill (without its tests: a project's jest would run their fixtures) to .claude/skills/building-storybook-from-figma/ (the source the AI reads and `sync-skill` copies from);
 //   2. copies its scripts to scripts/figma/ (the runnable copy; tests are left out) and the plugin scripts with them;
 //   3. creates figma-tokens.config.json from the template when there is none (an existing one is never touched);
-//   4. adds the npm scripts below to package.json when the name is free, and the ignore lines to .gitignore.
+//   4. adds the npm scripts below to package.json when the name is free, and the ignore lines to .gitignore;
+//   5. puts the review page kit (templates/review-kit) in src/review-kit/ (--kit-dir to change, --no-kit to skip): the shared page, which is
+//      replaced on every run, plus review.config.js, which is the project's and created once.
 // A script name that is taken with another value is reported, not replaced. `predev` / `prebuild` (they run the usage scan so the review
 // page has fresh data) are only touched with --build-hooks, and then chained after what is there: "<yours> && npm run usage".
 // --check changes nothing: it lists what an install would change and exits 1 when anything differs.
@@ -23,7 +25,8 @@ export const NPM_SCRIPTS = {
   "figma:receiver": "node scripts/figma/receiver.mjs 9232 .figma-dump",
 };
 export const BUILD_HOOKS = ["predev", "prebuild"];
-export const GITIGNORE = [".figma-dump", "src/app/review/usage.json"];
+export const KIT_DIR = "src/review-kit";
+export const GITIGNORE = [".figma-dump", `${KIT_DIR}/usage.json`];
 
 const walk = (d, base = d) => (fs.existsSync(d) ? fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => {
   if (e.name === "node_modules" || e.name === ".DS_Store") return [];
@@ -81,7 +84,7 @@ export function mergeIgnore(text) {
 }
 
 /** Does the whole install. write:false only reports. Returns { actions[], conflicts[], notes[], changed }. */
-export function install({ target = process.cwd(), from, write = true, buildHooks = false } = {}) {
+export function install({ target = process.cwd(), from, write = true, buildHooks = false, kit = true, kitDir = KIT_DIR } = {}) {
   target = path.resolve(target);
   if (!fs.existsSync(path.join(target, "package.json"))) throw new Error(`${target} has no package.json: run it from the project root or pass --target.`);
   const skill = findSkill(from, target);
@@ -94,6 +97,19 @@ export function install({ target = process.cwd(), from, write = true, buildHooks
   if (!fs.existsSync(cfg)) {
     actions.push({ what: "add", file: "figma-tokens.config.json" });
     if (write) fs.copyFileSync(path.join(skill, "templates/figma-tokens.config.json"), cfg);
+  }
+  if (kit) {
+    const tpl = path.join(skill, "templates/review-kit"), dst = path.join(target, kitDir);
+    actions.push(...copyTree(tpl, dst, { skip: (f) => f === "review.config.js", write }));
+    const usageCore = path.join(skill, "scripts/usageCore.mjs"), usageDst = path.join(dst, "usageCore.js");
+    if (!same(usageCore, usageDst)) { actions.push({ what: fs.existsSync(usageDst) ? "update" : "add", file: path.relative(process.cwd(), usageDst) }); if (write) { fs.mkdirSync(dst, { recursive: true }); fs.copyFileSync(usageCore, usageDst); } }
+    for (const [name, from] of [["review.config.js", path.join(tpl, "review.config.js")], ["usage.json", null]]) {
+      const f = path.join(dst, name);
+      if (fs.existsSync(f)) continue;
+      actions.push({ what: "add", file: path.relative(process.cwd(), f) });
+      if (write) { fs.mkdirSync(dst, { recursive: true }); if (from) fs.copyFileSync(from, f); else fs.writeFileSync(f, `${JSON.stringify({ components: {}, warnings: [] }, null, 2)}\n`); } // usage.json: empty until `npm run usage`
+    }
+    notes.push(`the review page is in ${kitDir}: mount it (<Route path="/review" element={<ReviewPage />} /> with import { ReviewPage } from "${kitDir.replace(/^src\//, "")}"), set the service URL and project in ${kitDir}/review.config.js, and call installHighlight in the app entry (see ${kitDir}/index.js). The page needs react and lucide-react.`);
   }
   const pkgFile = path.join(target, "package.json");
   const pkg = mergeScripts(fs.readFileSync(pkgFile, "utf8"), { buildHooks });
@@ -113,7 +129,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const val = (k) => (a.includes(k) ? a[a.indexOf(k) + 1] : undefined);
   const check = a.includes("--check"), dry = a.includes("--dry-run");
   try {
-    const r = install({ target: val("--target"), from: val("--from"), write: !check && !dry, buildHooks: a.includes("--build-hooks") });
+    const r = install({ target: val("--target"), from: val("--from"), write: !check && !dry, buildHooks: a.includes("--build-hooks"), kit: !a.includes("--no-kit"), kitDir: val("--kit-dir") });
     const verb = check || dry ? "would" : "did";
     for (const x of r.actions) console.log(`${verb} ${x.what}: ${x.file}`);
     for (const c of r.conflicts) console.warn(`kept: ${c}`);

@@ -13,4 +13,6 @@ storybook-static/
 demo/marks.log
 demo/.step
 demo/marks-*.log
-src/app/review/usage.json
+src/review-kit/usage.json
+
+# design review (skill building-storybook-from-figma)
