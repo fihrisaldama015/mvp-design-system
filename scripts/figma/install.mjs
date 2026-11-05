@@ -3,7 +3,7 @@
 //   node <skill>/scripts/install.mjs [--target <project>] [--from <skill folder>] [--dry-run] [--check] [--build-hooks]
 //
 // It does four things in the target project (default: the current folder):
-//   1. copies the skill to .claude/skills/building-storybook-from-figma/ (the source the AI reads and `sync-skill` copies from);
+//   1. copies the skill (without its tests: a project's jest would run their fixtures) to .claude/skills/building-storybook-from-figma/ (the source the AI reads and `sync-skill` copies from);
 //   2. copies its scripts to scripts/figma/ (the runnable copy; tests are left out) and the plugin scripts with them;
 //   3. creates figma-tokens.config.json from the template when there is none (an existing one is never touched);
 //   4. adds the npm scripts below to package.json when the name is free, and the ignore lines to .gitignore.
@@ -29,6 +29,7 @@ const walk = (d, base = d) => (fs.existsSync(d) ? fs.readdirSync(d, { withFileTy
   if (e.name === "node_modules" || e.name === ".DS_Store") return [];
   return e.isDirectory() ? walk(path.join(d, e.name), base) : [path.relative(base, path.join(d, e.name))];
 }) : []);
+const noTests = (f) => f.split(path.sep).includes("__tests__");
 const same = (a, b) => fs.existsSync(b) && fs.readFileSync(a).equals(fs.readFileSync(b));
 
 /** The skill folder to install from: --from, else the folder this file belongs to, else the target's own copy. */
@@ -86,9 +87,9 @@ export function install({ target = process.cwd(), from, write = true, buildHooks
   const skill = findSkill(from, target);
   const actions = [], conflicts = [], notes = [];
   const skillDst = path.join(target, SKILL);
-  if (path.resolve(skill) !== path.resolve(skillDst)) actions.push(...copyTree(skill, skillDst, { write }));
+  if (path.resolve(skill) !== path.resolve(skillDst)) actions.push(...copyTree(skill, skillDst, { skip: noTests, write })); // fixtures in __tests__ look like tests to the project's own runner (jest)
   else notes.push("the skill is already in this project; only the runnable copy and the config are checked");
-  actions.push(...copyTree(path.join(skill, "scripts"), path.join(target, SCRIPTS_DST), { skip: (f) => f.split(path.sep).includes("__tests__"), write }));
+  actions.push(...copyTree(path.join(skill, "scripts"), path.join(target, SCRIPTS_DST), { skip: noTests, write }));
   const cfg = path.join(target, "figma-tokens.config.json");
   if (!fs.existsSync(cfg)) {
     actions.push({ what: "add", file: "figma-tokens.config.json" });

@@ -22,6 +22,7 @@ test("a fresh project gets the skill, the runnable scripts (no tests), the confi
   assert.ok(fs.existsSync(path.join(dir, "scripts/figma/reviewSync.mjs")));
   assert.ok(fs.existsSync(path.join(dir, "scripts/figma/plugin/selfTest.js")));
   assert.ok(!fs.existsSync(path.join(dir, "scripts/figma/__tests__")));
+  assert.ok(!fs.existsSync(path.join(dir, ".claude/skills/building-storybook-from-figma/scripts/__tests__"))); // a project's jest would run the fixtures
   assert.ok(fs.existsSync(path.join(dir, "figma-tokens.config.json")));
   const pkg = JSON.parse(read(dir, "package.json"));
   assert.equal(pkg.scripts.start, "x");

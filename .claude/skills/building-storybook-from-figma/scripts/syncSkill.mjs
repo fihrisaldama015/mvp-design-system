@@ -8,7 +8,8 @@ import { fileURLToPath } from "node:url";
 
 const SRC = ".claude/skills/building-storybook-from-figma/scripts";
 const DST = "scripts/figma";
-const walk = (d, base = d) => (fs.existsSync(d) ? fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name), base) : [path.relative(base, path.join(d, e.name))])) : []);
+// __tests__ stay in the skill (they run from there); a project's own test runner must not pick them up.
+const walk = (d, base = d) => (fs.existsSync(d) ? fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.name === "__tests__" ? [] : e.isDirectory() ? walk(path.join(d, e.name), base) : [path.relative(base, path.join(d, e.name))])) : []);
 
 // Files that differ (or are missing) in DST compared to SRC, relative to `root`.
 export function diffScripts(root = process.cwd()) {
