@@ -41,8 +41,12 @@ machine fails a check, fix it with them (ask before installing anything) and run
    Local mode needs no pairing code and can target several open files (`fileKey`).
 3. View-only file? Plugins only run where you can edit: the user saves a **copy** to drafts.
    A copy is a snapshot (and gets new style IDs).
-4. Copy `scripts/` of this skill to the project's `scripts/figma/`, and
-   `templates/figma-tokens.config.json` to the project root.
+4. Install the skill into the project: `node <skill folder>/scripts/install.mjs --target <project>` (add `--dry-run` first to see the
+   changes, `--build-hooks` so `predev`/`prebuild` refresh the usage data the review page reads). It copies the skill and its
+   `scripts/` to `scripts/figma/`, creates `figma-tokens.config.json` from the template when there is none, adds the npm scripts
+   (`doctor`, `usage`, `sync-skill`, `figma:receiver`) and the `.gitignore` lines, and never replaces a file or script of the project.
+   Run it again to update or with `--check` to see drift. On a project you have not scanned before, run
+   `node scripts/figma/usageScan.mjs --probe` next (reference/review-service.md, "Routing probe").
 5. Start the receiver in the background: `npm run figma:receiver` (or `node scripts/figma/receiver.mjs 9232 .figma-dump`; it picks python3, python or py).
    It exits with a message if the port is taken (`kill $(lsof -ti :9232)`, then start again).
    `curl localhost:9232/ping` shows where data lands. It receives data (`POST /save`) and serves
