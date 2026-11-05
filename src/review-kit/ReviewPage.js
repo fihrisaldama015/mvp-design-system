@@ -7,7 +7,7 @@ import LoginScreen from "./LoginScreen";
 import PasswordScreen from "./PasswordScreen";
 import UserChip from "./UserChip";
 import { call, configured, login, sessionStore } from "./serviceClient";
-import { NOTE_MAX, activityKind, actorLabel, changeSentence, changeText, decisionDetails, developerNote, defaultRoute, deadlineText, eventLabel, itemName, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, previewNotes, safeRouteUrl, trendText, usageTrend } from "./helpers";
+import { NOTE_MAX, activityKind, actorLabel, changeSentence, changeText, decisionDetails, developerNote, defaultRoute, deadlineText, eventLabel, itemName, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, previewNotes, trendText, usageTrend } from "./helpers";
 import "./kit.css";
 import { usageFor } from "./usageCore.js";
 import { config } from "./review.config.js";
@@ -102,7 +102,7 @@ function AffectedPages({ doc, item }) {
         <div key={`steps:${route.path}`} className="rk-review-enter rk-flex rk-flex-col rk-gap-2 rk-rounded-default rk-bg-surface-lv1 rk-p-4">
           <p className="rk-flex rk-items-center rk-gap-2 rk-typo-medium-text-sm"><ListOrdered size={16} />How to see it here</p>
           <p className="rk-text-caption rk-typo-regular-text-sm">The component only shows after these steps. Do the same in both frames to compare.</p>
-          <ol className="rk-flex rk-list-decimal rk-flex-col rk-gap-1 rk-pl-5 rk-typo-regular-text-sm">{route.steps.map((st, i) => <li key={i} className="rk-break-words">{st}</li>)}</ol>
+          <ol className="rk-flex rk-list-decimal rk-flex-col rk-gap-1 rk-pl-5 rk-typo-regular-text-sm">{route.steps.map((st) => <li key={st} className="rk-break-words">{st}</li>)}</ol>
         </div>
       )}
       <PagePreview key={route.path} route={route} previewUrl={doc.previewUrl} folder={folder} name={doc.jsxName ?? doc.component} highlight={highlight} onHighlight={setHighlight} />
@@ -147,7 +147,7 @@ function Decision({ doc, item, choice, saved, detail, onChoice, readOnly, date, 
         <p className="rk-text-caption rk-typo-regular-text-sm">The code still has it and the Figma design does not. Your decision tells the developers which one wins.</p>
         {devNote && (
           <details>
-            <summary className="rk-cursor-pointer rk-text-caption rk-typo-medium-text-sm">Developer's note (technical)</summary>
+            <summary className="rk-cursor-pointer rk-text-caption rk-typo-medium-text-sm">Developer&apos;s note (technical)</summary>
             <p className="rk-mt-2 rk-break-words rk-text-caption rk-typo-regular-text-sm">{devNote}</p>
           </details>
         )}
