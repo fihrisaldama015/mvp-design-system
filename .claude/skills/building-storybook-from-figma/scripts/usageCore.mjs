@@ -25,7 +25,11 @@ const stepsFor = (usage, jsxName, path) => {
   return byRoute && Object.hasOwn(byRoute, path) ? byRoute[path] : null;
 };
 
-// What a review item touches: { count, routes: [{ path, url, steps? }] (unique by path), uses }.
+// A page that needs a record (/stations/:id) opens its list page in the frames when the project gave no sample path (usageScan: derived).
+// The reviewer reaches the record by clicking a row, so no id has to exist in any config.
+export const DERIVED_STEP = "This page shows one record, so the frames open its list. Click any row to get here.";
+
+// What a review item touches: { count, routes: [{ path, url, derived?, steps? }] (unique by path), uses }.
 export function usageFor(usage, jsxName, item) {
   const all = usage?.components?.[jsxName] ?? [];
   const has = (u) => item.prop in u.attrs;
@@ -35,6 +39,6 @@ export function usageFor(usage, jsxName, item) {
   else if (item.kind === "removed-option") uses = all.filter((u) => u.attrs[item.prop] === item.option || u.attrs[item.prop] === "expr" || spread(u));
   else uses = all;
   const seen = new Map();
-  for (const u of uses) for (const r of u.routes) if (!seen.has(r.path)) { const steps = stepsFor(usage, jsxName, r.path); seen.set(r.path, { path: r.path, url: r.url, ...(steps ? { steps } : {}) }); }
+  for (const u of uses) for (const r of u.routes) if (!seen.has(r.path)) { const steps = stepsFor(usage, jsxName, r.path); seen.set(r.path, { path: r.path, url: r.url, ...(r.derived ? { derived: true } : {}), ...(steps ? { steps } : r.derived ? { steps: [DERIVED_STEP] } : {}) }); }
   return { count: uses.length, routes: [...seen.values()], uses };
 }

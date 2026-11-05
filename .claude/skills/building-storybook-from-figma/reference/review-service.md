@@ -110,6 +110,14 @@ is an error, not a guess). When the default is wrong for a component, say so in 
 `ui` names a prop the project wants compared although it is not an enum or switch; `behavior` names one that is never compared (it wins over `ui`).
 Flags for one run: `--component <Name>`, `--ui a,b`, `--behavior a,b`.
 
+## Order for a new project: probe, samples, usage, review, build
+
+1. `node scripts/figma/usageScan.mjs --probe`: are the routes read (below)? It also lists the routes with a parameter (`/bookings/:id`) that have no sample path.
+2. Fix what it says: `routeFiles`/`aliases`, and `review.routeSamples` (a real path per parameter route, with an id that exists where reviewers open the page) and `review.howToSee` for pages that need clicks first.
+3. `npm run usage` **generates** `src/review-kit/usage.json` from the code (it scans routes and pages; it does not copy anything). The review page is built with it, so run it before every build (`--build-hooks` does).
+4. `reviewSync.mjs` scans the same way at publish time and stores a snapshot with the review (the "At the last sync" count); the page shows the live count from `usage.json` next to it.
+5. Preview boxes: one entry per component in `src/review-kit/review.config.js` (`previews`); the right-hand frame ("With the Figma version") needs `--preview-url` of a deployment built from the Figma branch, otherwise the page says "No candidate preview published yet".
+
 ## Routing probe (a new project: do this before the first review)
 
 The usage scan answers "where is this prop used" from the project's routes. It reads routes with two adapters, **JSX** (`<Route path element={<Page />} />`,

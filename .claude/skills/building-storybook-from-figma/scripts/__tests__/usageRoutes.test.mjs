@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { probeText, routeTable, scanUsage } from "../usageScan.mjs";
+import { listPageOf, probeText, routeTable, scanUsage } from "../usageScan.mjs";
+import { DERIVED_STEP, usageFor } from "../usageCore.mjs";
 
 const tmp = (files) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "usageroutes-"));
@@ -105,4 +106,50 @@ test("blind: no route read is said loudly with what to do; partial names the fil
   const partial = probeText(routeTable(swtLike()).report);
   assert.match(partial, /PARTIAL: .*src\/routes\/user\.js/);
   assert.doesNotMatch(probeText({ files: [{ file: "a.js", jsxTags: 2, jsxRoutes: 2, pathKeys: 0, configRoutes: 0 }], routes: 2, blind: false }), /PARTIAL|BLIND/);
+});
+
+const withParams = () => tmp({
+  "src/routes/index.js": [
+    'import List from "pages/stations";',
+    'import One from "pages/station";',
+    'import Lane from "pages/lane";',
+    'import Orphan from "pages/orphan";',
+    "export default () => (<Routes>",
+    '  <Route path="/stations" element={<List />} />',
+    '  <Route path="/stations/:id" element={<One />} />',
+    '  <Route path="/stations/:id/lane/:laneId" element={<Lane />} />',
+    '  <Route path="/orphan/:id" element={<Orphan />} />',
+    "</Routes>);",
+  ].join("\n"),
+  "src/pages/stations/index.js": "export default () => null;\n",
+  "src/pages/station/index.js": 'import { Select } from "components/select";\nexport default () => <Select />;\n',
+  "src/pages/lane/index.js": 'import { Select } from "components/select";\nexport default () => <Select />;\n',
+  "src/pages/orphan/index.js": 'import { Select } from "components/select";\nexport default () => <Select />;\n',
+  "src/components/select/index.js": "export const Select = () => null;\n",
+});
+
+test("a page with a parameter opens its list page and says to click a row; a sample path of the project wins", () => {
+  const root = withParams();
+  const u = scanUsage(root);
+  const routes = Object.fromEntries(u.components.Select.flatMap((x) => x.routes).map((r) => [r.path, r]));
+  assert.equal(routes["/stations/:id"].url, "/stations");
+  assert.equal(routes["/stations/:id"].derived, true);
+  assert.equal(routes["/stations/:id/lane/:laneId"].url, "/stations"); // the longest shorter path without a parameter
+  assert.equal(routes["/orphan/:id"].url, null); // nothing above it: the project must give a sample
+  assert.deepEqual(u.routing.noSample, ["/orphan/:id"]);
+  const found = usageFor(u, "Select", { kind: "added-prop", prop: "x" });
+  assert.deepEqual(found.routes.find((r) => r.path === "/stations/:id").steps, [DERIVED_STEP]);
+  const own = scanUsage(root, { routeSamples: { "/stations/:id": "/stations/42" }, howToSee: { Select: { "/stations/:id": ["Click Edit."] } } });
+  const r = usageFor(own, "Select", { kind: "added-prop", prop: "x" }).routes.find((x) => x.path === "/stations/:id");
+  assert.equal(r.url, "/stations/42");
+  assert.equal(r.derived, undefined);
+  assert.deepEqual(r.steps, ["Click Edit."]);
+});
+
+test("listPageOf: the longest shorter route without a parameter, never the root", () => {
+  const known = new Set(["/", "/a", "/a/b", "/a/b/:id"]);
+  assert.equal(listPageOf("/a/b/:id", known), "/a/b");
+  assert.equal(listPageOf("/a/b/:id/c/:d", known), "/a/b");
+  assert.equal(listPageOf("/a/:id", known), "/a");
+  assert.equal(listPageOf("/:id", known), null);
 });

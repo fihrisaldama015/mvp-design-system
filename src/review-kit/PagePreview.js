@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { ExternalLink } from "lucide-react";
 import { Button, Toggle } from "./ui";
 import { frameUrls } from "./helpers";
+import { config } from "./review.config.js";
 
 const PROTECTION = "Blank or a Vercel login? Turn off Deployment Protection for preview deployments.";
 
@@ -40,6 +41,7 @@ export default function PagePreview({ route, previewUrl, folder, name, highlight
   const shared = { path: route.path, folder, name, highlight, onHighlight };
   return (
     <div className="rk-review-enter rk-flex rk-flex-col rk-gap-3">
+      {config.frameNote && <p className="rk-text-caption rk-typo-regular-text-sm">{config.frameNote}</p>}
       <div className="rk-flex rk-flex-col rk-gap-4 rk-md:flex-row">
         <Frame title="Now" url={now} embed={nowEmbed} {...shared} />
         {after && <Frame title="With the Figma version" url={after} embed={afterEmbed} {...shared} />}

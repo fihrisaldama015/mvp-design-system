@@ -259,21 +259,39 @@ export function routeTable(root, { app = "src/App.js", routeFiles, aliases = ALI
   return { routes, report: { files, routes: routes.length, blind: routes.length === 0 } };
 }
 
+// The list page of a route with a parameter: the longest shorter path that is itself a route without parameters
+// (/v2/site-management/station/:id -> /v2/site-management). null when there is none (the project then gives a sample).
+export function listPageOf(path, known) {
+  const segs = path.split("/").filter(Boolean);
+  for (let i = segs.length - 1; i >= 1; i -= 1) {
+    const prefix = `/${segs.slice(0, i).join("/")}`;
+    if (!/[:*]/.test(prefix) && known.has(prefix)) return prefix;
+  }
+  return null;
+}
+
 export function scanUsage(root, { app = "src/App.js", routeFiles, aliases = {}, excludeRoutes = ["/review"], routeSamples = {}, howToSee = {} } = {}) {
   const components = {}, warnings = [];
   const al = { ...ALIASES, ...aliases };
+  let known = new Set();
   const table = routeTable(root, { app, routeFiles, aliases: al });
   const routes = table.routes.filter((r) => !excludeRoutes.includes(r.path));
+  known = new Set(routes.map((r) => r.path));
+  table.report.noSample = [...new Set(routes.map((r) => r.path).filter((p) => (p.includes(":") || p.includes("*")) && !routeSamples[p] && !listPageOf(p, known)))];
   const fileRoutes = new Map(); // absolute file -> [{ path, url }]
   for (const r of routes) {
-    const url = r.path.includes(":") || r.path.includes("*") ? routeSamples[r.path] ?? null : r.path;
+    const param = r.path.includes(":") || r.path.includes("*");
+    const given = param ? routeSamples[r.path] : undefined;
+    const list = param && !given ? listPageOf(r.path, known) : null;
+    const url = param ? given ?? list : r.path;
+    const derived = Boolean(list);
     const files = new Set();
     for (const entry of r.files) {
       try { collectFiles(root, entry, al).forEach((f) => files.add(f)); } catch (e) { warnings.push(`${entry}: ${e.message}`); }
     }
     for (const f of files) {
       if (!fileRoutes.has(f)) fileRoutes.set(f, []);
-      fileRoutes.get(f).push({ path: r.path, url });
+      fileRoutes.get(f).push({ path: r.path, url, ...(derived ? { derived: true } : {}) });
     }
   }
   for (const [file, rts] of fileRoutes) {
@@ -298,6 +316,12 @@ export function probeText(report) {
     lines.push("", "BLIND: no route was read, so every \"used in N places\" number would be 0 and wrong. Do not show those numbers.");
   } else if (partial.length) {
     lines.push("", `PARTIAL: ${partial.map((f) => f.file).join(", ")} has routes whose page could not be found (an element that is not an imported component, a render function, a wrapper from another file).`);
+  }
+  if (report.noSample?.length) {
+    lines.push("", `SAMPLES: ${report.noSample.length} route(s) have a parameter, no sample path and no list page above them, so the review page cannot show them in a frame (it says "No preview"):`, ...report.noSample.slice(0, 8).map((p) => `  ${p}`), report.noSample.length > 8 ? `  ... and ${report.noSample.length - 8} more` : "",
+      "Give each one a path that opens a real page in the environment the reviewers use (the id must exist there), in figma-tokens.config.json:",
+      '  "review": { "routeSamples": { "/bookings/:id": "/bookings/1234" } }',
+      "Start with the routes that use the components under review; a page that only opens after some clicks also needs review.howToSee steps.");
   }
   if (report.blind || partial.length) {
     lines.push(

@@ -137,6 +137,7 @@ if (usage.routing?.blind && !process.argv.includes("--blind-usage")) {
   // "Used in 0 places" for a project whose routes were not read is a false answer that looks like a real one.
   fail(`${probeText(usage.routing)}\n\nNothing was published. Fix the scan above, or pass --blind-usage to publish without usage numbers (every "used in" will be 0).`);
 }
+if (usage.routing?.noSample?.length) console.warn(`usage: ${usage.routing.noSample.length} route(s) have a parameter, no sample path (review.routeSamples) and no list page above them, so the review page shows "No preview" for them. List: node scripts/figma/usageScan.mjs --probe`);
 const callers = (it) => { const u = usageFor(usage, COMP, it); return { callers: u.count, callerRoutes: u.routes.map((r) => r.path) }; };
 
 const items = [];
