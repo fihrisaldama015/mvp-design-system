@@ -21,11 +21,10 @@ Reference docs: `.claude/skills/building-storybook-from-figma/reference/review-s
 
 ## State right now (check with git; this can be out of date)
 
-- `mvp-design-system`, branch `feat/review-ui-only-detect`: last commit `da42e26`, **more work uncommitted** (kit changes: precise highlight, page cards, frames for
-  "Always on", `codeKind` for switches, handoff doc). Not pushed.
-- `swt-fe`, branch `chore/design-review-skill` (made from `dev`): last commit `da66c8003`, **more uncommitted** (kit update, previews, `howToSee`). Not pushed.
+- `mvp-design-system`, branch `feat/review-ui-only-detect`: everything committed (last feature commit `39d37b1`, then this doc). **Not pushed.**
+- `swt-fe`, branch `chore/design-review-skill` (made from `dev`): everything of ours committed (last `e73e494d1`). **Not pushed.**
   Two untracked files `Aturan-Design-Token-v1.0.pdf` and `Kontrak-Design-Token-v0.1.docx` are not ours: never add them.
-- `design-review`, `main` = `87b0d63`, pushed and merged. Vercel deploy was not confirmed from here (no `gh`); the dashboard Settings tab shows a "Danger zone" when it is live.
+- `design-review`, `main` = `db232bb`, pushed (approved by the developer): delete project + the Candidate preview URL field. Vercel deploy was not confirmed from here (no `gh`): the dashboard Settings tab shows "Danger zone" and "Candidate preview URL" when it is live.
 - mvp `feat/tech-sharing-video` (a Remotion talk, 26+ commits, 9.5 MB wavs) is local only. Unrelated to this flow.
 - Tests: `npm test` in mvp = **194 pass** (skill scripts, usage, kit, installer). Service: `npm test` in `design-review` = **95 pass**.
 - A demo project `swt-demo` exists on the service with 4 reviews (Button, Input, Alert, SelectV2) made from **mvp's Graphene dumps compared with SWT's code**. It is demo
@@ -56,7 +55,7 @@ Reference docs: `.claude/skills/building-storybook-from-figma/reference/review-s
 
 ## Known gaps / to do (in the developer's priority order)
 
-1. **Preview URL of the candidate build ("figma-draft") — BUILT, NOT DEPLOYED / NOT TESTED WITH A REAL FIGMA-DRAFT BUILD (2026-11-05).** Service branch `feat/candidate-preview-url` in `design-review` (field `candidatePreviewUrl` in Settings, returned with the review list and as the default `previewUrl` of a review; 96 tests); skill: `reviewSync` reads it, `previewNeeded` in `reviewGate.mjs` stops when Figma adds something and no URL exists (`--no-preview` to go on). Still to do: push/merge/deploy the service branch (needs the developer's OK), set the URL for `swt-demo`, and try a real `figma-draft` build (local is fine). Original brief: The right-hand frame ("With the Figma version") and any review where Figma ADDS something (added props/options: the current code does not have them, so the
+1. **Preview URL of the candidate build ("figma-draft") — BUILT AND PUSHED, NOT TESTED WITH A REAL FIGMA-DRAFT BUILD (2026-11-05).** Service `main` in `design-review` (field `candidatePreviewUrl` in Settings, returned with the review list and as the default `previewUrl` of a review; 96 tests); skill: `reviewSync` reads it, `previewNeeded` in `reviewGate.mjs` stops when Figma adds something and no URL exists (`--no-preview` to go on). Still to do: confirm the Vercel deploy, set the URL for `swt-demo`, and try a real `figma-draft` build (local is fine). Original brief: The right-hand frame ("With the Figma version") and any review where Figma ADDS something (added props/options: the current code does not have them, so the
    side-by-side cannot render them) need a deployment built from a branch where the Figma changes are applied (`figma-draft`; mvp has the pattern: `--preview-url` + Vercel branch alias). Today it is a manual flag
    (`reviewSync.mjs --preview-url https://<origin>`), stored in the review as `previewUrl`; **nothing tells the AI/dev it is needed, and there is no place to keep it**. Design agreed in principle by the developer (to build, local first is fine):
    - keep the URL in the **dashboard, per project** (Settings: "Candidate preview URL"; the project already has `hasPreviewBuilds`), served by the API, so the tool and the page read it instead of a flag;
