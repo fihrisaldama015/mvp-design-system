@@ -15,16 +15,16 @@ export function hostNodes(fiber) {
   return out;
 }
 
-// Every DOM element rendered by an instance of one of `types` (component functions, or forwardRef and memo objects, matched
+// Every DOM element rendered by an instance of one of `types` (only those whose props pass `match`, when given) (component functions, or forwardRef and memo objects, matched
 // by identity so it also works in a minified build where names are gone). Iterative: a deep tree cannot overflow the stack.
-export function findComponentNodes(rootFiber, types) {
+export function findComponentNodes(rootFiber, types, match) {
   const found = new Set();
   const stack = rootFiber ? [rootFiber] : [];
   while (stack.length) {
     const f = stack.pop();
     if (f.sibling) stack.push(f.sibling);
     if (f.child) stack.push(f.child);
-    if (types.has(f.type) || (f.elementType && types.has(f.elementType))) for (const n of hostNodes(f)) found.add(n);
+    if ((types.has(f.type) || (f.elementType && types.has(f.elementType))) && (!match || match(f.memoizedProps ?? {}))) for (const n of hostNodes(f)) found.add(n);
   }
   return found;
 }
@@ -34,4 +34,12 @@ export function componentTypes(mod) {
   const out = new Set();
   for (const v of Object.values(mod ?? {})) if (typeof v === "function" || (v && typeof v === "object" && "$$typeof" in v)) out.add(v);
   return out;
+}
+
+// Which instances a review item is about: for a removed property the ones that have it on (a value, or on by default and not false),
+// for a removed option the ones that use that option. null for anything else: every instance.
+export function propMatcher({ kind, prop, option, onByDefault } = {}) {
+  if (kind === "removed-option" && prop) return (props) => props[prop] === option;
+  if (kind === "removed-prop" && prop) return onByDefault ? (props) => props[prop] !== false : (props) => Boolean(props[prop]); // on by default: not passing it means on
+  return null;
 }

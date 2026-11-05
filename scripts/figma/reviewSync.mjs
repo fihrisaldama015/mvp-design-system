@@ -19,14 +19,15 @@
 //          [--behavior type,code,...]          code-only props that are behaviour although they look like an enum or a switch (never flagged as removed)
 //          [--also src/components/field/index.js]  a wrapper whose props count as this component's API (label, hint, required in Field)
 //          [--ignore "State,Label"]           Figma properties that are not props (CSS state, show/hide switches for text that already has a prop)
-//          [--preview-url https://<preview-origin>]  the candidate's preview deployment (the page shows the route there next to the current one)
+//          [--preview-url https://<preview-origin>]  the candidate's preview deployment (the page shows the route there next to the current one); default: the project's
+//                                       "Candidate preview URL" in the dashboard. A review where Figma ADDS something stops without one: --no-preview goes on anyway
 //          [--file <figmaFileKey>]   (the key makes the reviewers' "Open in Figma" link; default: figma-index.json)
 import fs from "node:fs";
 import crypto from "node:crypto";
 import { reviewApi, reviewPage } from "./reviewClient.mjs";
 import { probeText, scanUsage } from "./usageScan.mjs";
 import { usageFor } from "./usageCore.mjs";
-import { doneGate, planGate } from "./reviewGate.mjs";
+import { doneGate, planGate, previewNeeded } from "./reviewGate.mjs";
 import { buildPlan, planText } from "./reviewPlan.mjs";
 import { ALWAYS_BEHAVIOR, findBlocks, isUiProp, readBlock, resolveCode, signatureDefaults } from "./codeProps.mjs";
 
@@ -156,17 +157,22 @@ const notCompared = []; // code-only props that are data, content or behaviour: 
 for (const [p, c] of Object.entries(cProps)) {
   if (ALWAYS_BEHAVIOR.includes(p) || BEHAVIOR.includes(p)) continue; // the project says: not looks
   if (!covered.has(p) && !isUiProp(p, c.kind, { ui: UI })) { notCompared.push(p); continue; }
-  if (!covered.has(p)) add({ kind: "removed-prop", prop: p, deprecated: c.deprecated, description: c.description, default: c.default, onByDefault: cProps[p].default === "true", detail: `Code has "${p}" but Figma does not. ${c.description}` });
+  if (!covered.has(p)) add({ kind: "removed-prop", prop: p, deprecated: c.deprecated, description: c.description, default: c.default, codeKind: c.kind, onByDefault: cProps[p].default === "true", detail: `Code has "${p}" but Figma does not. ${c.description}` });
   else if (fProps[p]?.options && c.options)
     for (const o of c.options.filter((o) => !fProps[p].options.some((x) => x.toLowerCase() === o.toLowerCase()))) add({ kind: "removed-option", prop: p, option: o, detail: `Code has ${p}="${o}" but Figma does not.` });
 }
 
 for (const i of items) if (i.kind.startsWith("removed")) Object.assign(i, callers(i));
 const usageByItem = Object.fromEntries(items.filter((i) => i.kind.startsWith("removed")).map((i) => [i.id, { count: i.callers, routes: i.callerRoutes }]));
+// The candidate build: the flag, else the project's address in the dashboard (it travels with the list of reviews).
+const listed = await api.list().catch(() => null);
+const previewUrl = flag("--preview-url", null) ?? listed?.project?.candidatePreviewUrl ?? null;
+const stop = previewNeeded(items, previewUrl, { allowNone: rest.includes("--no-preview") });
+if (stop) fail(`Nothing was published.\n${stop}`);
 try {
   const idx = (() => { try { return JSON.parse(fs.readFileSync("figma-index.json", "utf8")).components?.[figma.name]; } catch { return null; } })();
   const cfg = readJson("figma-tokens.config.json");
-  await api.publish({ component: figma.name, jsxName: COMP, storybookUrl: cfg.storybookUrl || null, storyId: idx?.story ?? null, figmaFileKey: flag("--file", idx?.figmaFileKey ?? null), figmaNode: figma.nodeId, figmaPage: figma.page?.name ?? figma.page, code: codeFile, readAt: figma.readAt, sourceHash: hashOf(figma), items, usage: { at: usage.generatedAt, byItem: usageByItem }, ...(flag("--preview-url") ? { previewUrl: flag("--preview-url") } : {}) });
+  await api.publish({ component: figma.name, jsxName: COMP, storybookUrl: cfg.storybookUrl || null, storyId: idx?.story ?? null, figmaFileKey: flag("--file", idx?.figmaFileKey ?? null), figmaNode: figma.nodeId, figmaPage: figma.page?.name ?? figma.page, code: codeFile, readAt: figma.readAt, sourceHash: hashOf(figma), items, usage: { at: usage.generatedAt, byItem: usageByItem }, ...(flag("--preview-url") ? { previewUrl: previewUrl ?? null } : {}) });
 } catch (e) { fail(`Could not publish the review: ${e.message}`); }
 
 const count = (k) => items.filter((i) => i.kind === k).length;

@@ -318,3 +318,15 @@ test("serviceOrigin keeps the origin only: a trailing slash or /api/v1 is droppe
   assert.equal(serviceOrigin(undefined), "");
   assert.equal(serviceOrigin(""), "");
 });
+
+test("previewProps: a switch without a default (disabled) is rendered on and off; other kinds without an example are not", () => {
+  const spec = { Component: () => null };
+  assert.deepEqual(previewProps(spec, { kind: "removed-prop", prop: "disabled", codeKind: "bool" }), { with: { disabled: true }, without: { disabled: false } });
+  assert.equal(previewProps(spec, { kind: "removed-prop", prop: "menuVariant", codeKind: "enum" }), null);
+  assert.equal(previewProps(spec, { kind: "removed-prop", prop: "label" }), null);
+});
+
+test("previewProps: an example can carry the captions of its two panels", () => {
+  const spec = { examples: { menuVariant: { with: { menuVariant: "classic" }, without: { menuVariant: "figma" }, notes: { with: "Code: classic", without: "Figma: figma" } } } };
+  assert.deepEqual(previewProps(spec, { kind: "removed-prop", prop: "menuVariant" }).notes, { with: "Code: classic", without: "Figma: figma" });
+});

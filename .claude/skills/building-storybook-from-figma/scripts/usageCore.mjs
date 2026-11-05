@@ -29,7 +29,7 @@ const stepsFor = (usage, jsxName, path) => {
 // The reviewer reaches the record by clicking a row, so no id has to exist in any config.
 export const DERIVED_STEP = "This page shows one record, so the frames open its list. Click any row to get here.";
 
-// What a review item touches: { count, routes: [{ path, url, derived?, steps? }] (unique by path), uses }.
+// What a review item touches: { count, routes: [{ path, url, derived?, certain, files, curated?, steps? }] (unique by path), uses }.
 export function usageFor(usage, jsxName, item) {
   const all = usage?.components?.[jsxName] ?? [];
   const has = (u) => item.prop in u.attrs;
@@ -38,7 +38,23 @@ export function usageFor(usage, jsxName, item) {
   if (item.kind === "removed-prop") uses = all.filter((u) => (item.onByDefault ? u.attrs[item.prop] !== false : (has(u) && u.attrs[item.prop] !== false) || spread(u)));
   else if (item.kind === "removed-option") uses = all.filter((u) => u.attrs[item.prop] === item.option || u.attrs[item.prop] === "expr" || spread(u));
   else uses = all;
+  // `certain`: some use on this route passes the property as a plain value (disabled, kind="outlined"), or relies on its default being on.
+  // A use that passes an expression (disabled={loading}) or a spread may have it off when the page is opened: the page can only say "depends on data".
+  const certain = (u) => {
+    if (item.kind === "removed-prop") return item.onByDefault ? !("..." in u.attrs) && u.attrs[item.prop] !== false && u.attrs[item.prop] !== "expr" : has(u) && u.attrs[item.prop] !== false && u.attrs[item.prop] !== "expr";
+    if (item.kind === "removed-option") return u.attrs[item.prop] === item.option;
+    return true;
+  };
   const seen = new Map();
-  for (const u of uses) for (const r of u.routes) if (!seen.has(r.path)) { const steps = stepsFor(usage, jsxName, r.path); seen.set(r.path, { path: r.path, url: r.url, ...(r.derived ? { derived: true } : {}), ...(steps ? { steps } : r.derived ? { steps: [DERIVED_STEP] } : {}) }); }
+  for (const u of uses) {
+    const sure = certain(u);
+    for (const r of u.routes) {
+      const prev = seen.get(r.path);
+      if (prev) { if (sure) prev.certain = true; if (!prev.files.includes(u.file)) prev.files.push(u.file); continue; }
+      const steps = stepsFor(usage, jsxName, r.path);
+      // curated: the project wrote how to see it on this page (review.howToSee), so the review page offers the frames for it.
+      seen.set(r.path, { path: r.path, url: r.url, ...(r.derived ? { derived: true } : {}), certain: sure, files: [u.file], ...(steps ? { curated: true, steps } : r.derived ? { steps: [DERIVED_STEP] } : {}) });
+    }
+  }
   return { count: uses.length, routes: [...seen.values()], uses };
 }

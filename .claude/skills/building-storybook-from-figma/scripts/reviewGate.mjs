@@ -39,3 +39,20 @@ export function planGate(doc, usage) {
   if (removals.length && warnings.length) return { ok: false, reason: `Cannot count usage: the scan skipped ${warnings.length} file(s): ${warnings.join("; ")}. Fix them and run --plan again.` };
   return { ok: true };
 }
+
+/**
+ * The review needs the candidate build (the branch where Figma's changes are applied, "figma-draft") when Figma ADDS something: the current
+ * code does not have an added property or option, so only that build can show it. Returns the message to stop with, or null.
+ * url: the address from --preview-url or from the project in the dashboard; allowNone: --no-preview (the developer chose to go without).
+ */
+export function previewNeeded(items, url, { allowNone = false } = {}) {
+  const added = items.filter((i) => i.kind?.startsWith("added"));
+  if (!added.length || url || allowNone) return null;
+  return [
+    `${added.length} item(s) are things Figma ADDS (${[...new Set(added.map((i) => i.prop))].slice(0, 4).join(", ")}${added.length > 4 ? ", ..." : ""}): the current code does not have them, so reviewers can only see them in a build with the Figma changes.`,
+    "No candidate preview URL was found (not passed with --preview-url, and not set on the project in the review dashboard).",
+    "Ask the developer to: 1. apply the Figma changes on a branch (figma-draft) and deploy it (Vercel gives the branch its own address) or run it locally,",
+    "2. set its origin in the dashboard (the project's Settings, Candidate preview URL) or pass --preview-url https://<origin>, 3. run this again.",
+    "To publish without it, pass --no-preview: the review page then says that no candidate preview exists.",
+  ].join("\n");
+}

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { componentTypes, findComponentNodes, hostNodes } from "../../templates/review-kit/highlightCore.js";
+import { componentTypes, findComponentNodes, hostNodes, propMatcher } from "../../templates/review-kit/highlightCore.js";
 
 // Fake fibers: tag 5 is a DOM element, 0 a function component, 11 a forwardRef, 6 a text node, 7 a fragment.
 const fiber = (tag, type, { child = null, sibling = null, stateNode = null, elementType } = {}) => ({ tag, type, elementType: elementType ?? type, child, sibling, stateNode });
@@ -54,4 +54,22 @@ test("a very deep tree does not overflow the stack", () => {
   let node = fiber(0, Alert, { child: leaf });
   for (let i = 0; i < 20000; i++) node = fiber(0, () => null, { child: node });
   assert.equal(findComponentNodes(fiber(3, null, { child: node }), new Set([Alert])).size, 1);
+});
+
+test("findComponentNodes with a matcher outlines only the instances whose props say so (the per-page select is not a disabled one)", () => {
+  const Select = () => null;
+  const leaf = (name) => ({ tag: 5, stateNode: { name } });
+  const inst = (name, props) => ({ type: Select, memoizedProps: props, child: leaf(name) });
+  const first = inst("perPage", {});
+  const second = inst("locked", { disabled: true });
+  const third = inst("later", { disabled: false });
+  first.sibling = second; second.sibling = third;
+  const root = { child: first };
+  const names = (m) => [...findComponentNodes(root, new Set([Select]), m)].map((n) => n.name);
+  assert.deepEqual(names(), ["perPage", "locked", "later"]);
+  assert.deepEqual(names(propMatcher({ kind: "removed-prop", prop: "disabled" })), ["locked"]);
+  assert.deepEqual(names(propMatcher({ kind: "removed-prop", prop: "disabled", onByDefault: true })), ["perPage", "locked"]);
+  assert.equal(propMatcher({ kind: "added-prop", prop: "x" }), null);
+  assert.equal(propMatcher({ kind: "removed-option", prop: "size", option: "lg" })({ size: "lg" }), true);
+  assert.equal(propMatcher({ kind: "removed-option", prop: "size", option: "lg" })({ size: "sm" }), false);
 });

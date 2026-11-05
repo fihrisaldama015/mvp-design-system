@@ -134,17 +134,35 @@ test("usageFor puts the steps of a component on the route they belong to, and on
     ] },
   };
   const found = usageFor(usage, "Select", { kind: "removed-prop", prop: "searchable" });
-  assert.deepEqual(found.routes, [{ path: "/reservations", url: "/reservations" }, { path: "/reservations/new", url: "/reservations/new", steps: ["Fill in step 1."] }]);
+  assert.deepEqual(found.routes, [{ path: "/reservations", url: "/reservations", certain: true, files: ["a.js"] }, { path: "/reservations/new", url: "/reservations/new", certain: true, files: ["b.js"], curated: true, steps: ["Fill in step 1."] }]);
 });
 
 test("usageFor without steps keeps the route shape, and a component named like an object member is safe", () => {
   const usage = { howToSee: {}, components: { constructor: [{ file: "a.js", line: 1, attrs: { x: true }, routes: [{ path: "/p", url: "/p" }] }] } };
-  assert.deepEqual(usageFor(usage, "constructor", { kind: "removed-prop", prop: "x" }).routes, [{ path: "/p", url: "/p" }]);
-  assert.deepEqual(usageFor({ components: { A: [{ file: "a.js", line: 1, attrs: { x: true }, routes: [{ path: "/p", url: "/p" }] }] } }, "A", { kind: "removed-prop", prop: "x" }).routes, [{ path: "/p", url: "/p" }]);
+  assert.deepEqual(usageFor(usage, "constructor", { kind: "removed-prop", prop: "x" }).routes, [{ path: "/p", url: "/p", certain: true, files: ["a.js"] }]);
+  assert.deepEqual(usageFor({ components: { A: [{ file: "a.js", line: 1, attrs: { x: true }, routes: [{ path: "/p", url: "/p" }] }] } }, "A", { kind: "removed-prop", prop: "x" }).routes, [{ path: "/p", url: "/p", certain: true, files: ["a.js"] }]);
 });
 
 test("scanUsage carries the cleaned steps into the usage and leaves the key out when there are none", () => {
   const withSteps = scanUsage(root, { howToSee: { Select: { "/reservations": ["Open the list."] } } });
   assert.deepEqual(withSteps.howToSee, { Select: { "/reservations": ["Open the list."] } });
   assert.equal("howToSee" in scanUsage(root), false);
+});
+
+test("usageFor: a route is certain only when a use passes the property as a plain value; a condition or a spread is 'depends on data'", () => {
+  const use = (attrs, path) => ({ file: `${path}.js`, line: 1, attrs, routes: [{ path, url: path }] });
+  const usage = { components: { Select: [use({ disabled: "expr" }, "/cond"), use({ disabled: true }, "/plain"), use({ "...": "expr" }, "/spread"), use({ disabled: false }, "/off"), use({ disabled: "expr" }, "/both"), use({ disabled: true }, "/both")] } };
+  const by = Object.fromEntries(usageFor(usage, "Select", { kind: "removed-prop", prop: "disabled" }).routes.map((r) => [r.path, r.certain]));
+  assert.deepEqual(by, { "/cond": false, "/plain": true, "/spread": false, "/both": true });
+  const opt = { components: { Select: [use({ size: "lg" }, "/lg"), use({ size: "expr" }, "/dyn")] } };
+  assert.deepEqual(usageFor(opt, "Select", { kind: "removed-option", prop: "size", option: "lg" }).routes.map((r) => [r.path, r.certain]), [["/lg", true], ["/dyn", false]]);
+  const onByDefault = { components: { Select: [use({}, "/default"), use({ searchable: "expr" }, "/expr")] } };
+  assert.deepEqual(usageFor(onByDefault, "Select", { kind: "removed-prop", prop: "searchable", onByDefault: true }).routes.map((r) => [r.path, r.certain]), [["/default", true], ["/expr", false]]);
+});
+
+test("usageFor lists the files that use it on each route, once", () => {
+  const use = (file, path) => ({ file, line: 1, attrs: { required: true }, routes: [{ path, url: path }] });
+  const usage = { components: { Select: [use("p/Form.js", "/a"), use("p/Drawer.js", "/a"), use("p/Form.js", "/a"), use("p/Other.js", "/b")] } };
+  const by = Object.fromEntries(usageFor(usage, "Select", { kind: "removed-prop", prop: "required" }).routes.map((r) => [r.path, r.files]));
+  assert.deepEqual(by, { "/a": ["p/Form.js", "p/Drawer.js"], "/b": ["p/Other.js"] });
 });

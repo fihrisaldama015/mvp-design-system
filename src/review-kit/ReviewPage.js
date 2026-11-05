@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BadgeCheck, BookOpen, CalendarClock, CheckCircle2, ChevronDown, Eraser, ExternalLink, Gauge, Gavel, History, Hourglass, Info, Layers, ListChecks, ListOrdered, LogOut, Monitor, PenLine, RefreshCw, RotateCw, Save, TriangleAlert, Unlink, Upload } from "lucide-react";
-import { Alert, Badge, Button, Card, ChoiceCards, Collapse, ConfirmDialog, EmptyState, Field, Input, PageHeader, ProgressRing, StatCard, Stepper, Tabs, Textarea } from "./ui";
+import { Alert, Badge, Button, Card, ChoiceCards, Collapse, ConfirmDialog, EmptyState, Field, Input, PageHeader, ProgressRing, StatCard, Stepper, Textarea } from "./ui";
 import { previewFor } from "./previews";
 import PagePreview from "./PagePreview";
 import LoginScreen from "./LoginScreen";
 import PasswordScreen from "./PasswordScreen";
 import UserChip from "./UserChip";
 import { call, configured, login, sessionStore } from "./serviceClient";
-import { NOTE_MAX, activityKind, actorLabel, changeSentence, changeText, decisionDetails, developerNote, defaultRoute, deadlineText, eventLabel, itemName, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, previewNotes, trendText, usageTrend } from "./helpers";
+import { NOTE_MAX, activityKind, actorLabel, changeSentence, changeText, decisionDetails, developerNote, deadlineText, eventLabel, itemName, timelineSteps, daysLeft, missingDates, mustChangePassword, publishedNote, previewNotes, trendText, usageTrend } from "./helpers";
 import "./kit.css";
 import { usageFor } from "./usageCore.js";
 import { config } from "./review.config.js";
@@ -44,7 +44,7 @@ function Live({ spec, props }) {
 }
 
 function Preview({ preview, prop, option }) {
-  const notes = previewNotes(prop, option);
+  const notes = { ...previewNotes(prop, option), ...(preview.notes ?? {}) };
   const panel = (title, note, props) => (
     <div className="rk-flex rk-min-h-48 rk-flex-1 rk-flex-col rk-gap-3 rk-rounded-default rk-border rk-border-default rk-bg-surface rk-p-4">
       <div>
@@ -57,11 +57,11 @@ function Preview({ preview, prop, option }) {
   return (
     <div className="rk-flex rk-flex-col rk-gap-2">
       <p className="rk-typo-medium-text-sm">See the difference</p>
+      {(preview.hint ?? preview.spec.hint) && <p className="rk-text-caption rk-typo-regular-text-sm">{preview.hint ?? preview.spec.hint}</p>}
       <div className="rk-flex rk-flex-col rk-gap-3 rk-md:flex-row">
         {panel("With it", notes.with, preview.with)}
         {panel("Without it", notes.without, preview.without)}
       </div>
-      {(preview.hint ?? preview.spec.hint) && <p className="rk-text-caption rk-typo-regular-text-sm">{preview.hint ?? preview.spec.hint}</p>}
     </div>
   );
 }
@@ -79,33 +79,86 @@ function Section({ icon, title, hint, children }) {
   );
 }
 
-// The pages of the app that use the property: one tab per page (they scroll sideways when there are many), the current
-// one underlined, and under them the page as it is now next to the Figma version.
+// Where the property is used: the pages of the app, read from the code, with the file that uses it (PlaceDeviceDrawer says it is a
+// drawer). The frames (the page now next to the page with the Figma version) are offered for an "Always on" page and for a page the project
+// wrote steps for (review.howToSee), with the steps to reach the component; a page that only depends on data may show nothing, so it has none.
+// "Always on" means a use passes the property as a plain value; "Depends on data" means it passes a condition (disabled={loading}).
+const PAGES_SHOWN = 6;
+const HIGHLIGHT_KEY = "review-highlight";
+const readHighlight = () => { try { return window.sessionStorage.getItem(HIGHLIGHT_KEY) !== "off"; } catch { return true; } };
+const writeHighlight = (on) => { try { window.sessionStorage.setItem(HIGHLIGHT_KEY, on ? "on" : "off"); } catch { /* private window: the choice lasts until the page is closed */ } };
+const fileName = (f) => f.split("/").pop().replace(/\.\w+$/, "");
+const OVERLAY = /(Drawer|Modal|Dialog|Popup|Popover|Sheet)/;
+const spaced = (name) => name.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase(); // PlaceDeviceDrawer -> place device drawer
+// What the reviewer does to see it: the steps the project wrote, the "click a row" of a list page, or, when the use sits in a drawer or a
+// dialog (the file name says so), a note that a click opens it. That note cannot say WHICH click: it asks for steps to be written.
+function stepsOf(r) {
+  if (r.steps?.length) return r.steps;
+  const overlay = r.files.map(fileName).find((n) => OVERLAY.test(n));
+  return overlay ? [`It is inside a panel that a click opens (the ${spaced(overlay)}). Which click is not written down yet: ask a developer, or add the steps to review.howToSee.`] : [];
+}
+const whereText = (files) => { const names = [...new Set(files.map(fileName))]; return `In ${names.slice(0, 3).join(", ")}${names.length > 3 ? ` and ${names.length - 3} more` : ""}`; };
+
 function AffectedPages({ doc, item }) {
   const found = useMemo(() => usageFor(usage, doc.jsxName, item), [doc.jsxName, item]);
   const [path, setPath] = useState(null);
-  const [highlight, setHighlight] = useState(false); // outlines the component in both frames; kept when another page is picked
+  const [all, setAll] = useState(false);
+  const [highlight, setHighlightState] = useState(readHighlight); // outlines the instances in both frames: on by default, and the choice is kept for the session
+  const setHighlight = (on) => { setHighlightState(on); writeHighlight(on); };
   const folder = doc.code?.match(/components\/([^/]+)\//)?.[1];
+  const target = useMemo(() => ({ kind: item.kind, prop: item.prop, option: item.option, onByDefault: Boolean(item.onByDefault) }), [item.kind, item.prop, item.option, item.onByDefault]);
   const note = publishedNote(found.routes.length, doc.usage?.byItem?.[item.id]);
-  const route = found.routes.find((r) => r.path === path) ?? defaultRoute(found.routes);
-  if (!route) return <p className="rk-text-caption rk-typo-regular-text-sm">No page in the app uses it today.</p>;
-  const at = found.routes.indexOf(route) + 1;
+  if (!found.routes.length) return <p className="rk-text-caption rk-typo-regular-text-sm">No page in the app uses it today.</p>;
+  // Frames are offered for a page the project wrote steps for and for an "Always on" page: a page that only depends on data may show nothing.
+  const routes = found.routes.map((r) => ({ ...r, frames: Boolean(r.curated || r.certain), stepList: stepsOf(r) }));
+  const shown = all ? routes : routes.slice(0, PAGES_SHOWN);
+  const content = (r, open) => (
+    <>
+      <span className="rk-flex rk-min-w-0 rk-flex-col rk-gap-0.5">
+        <span className="rk-typo-medium-text-sm rk-break-words"><code>{r.path}</code></span>
+        <span className="rk-text-caption rk-typo-regular-text-sm rk-break-words">{whereText(r.files)}</span>
+      </span>
+      <span className="rk-flex rk-shrink-0 rk-items-center rk-gap-2">
+        <Badge tone={r.certain ? "warning" : "neutral"} dot={false}>{r.certain ? "Always on" : "Depends on data"}</Badge>
+        {r.frames && <><span className="rk-text-caption rk-typo-regular-text-sm">Show in frames</span><ChevronDown size={16} className={`rk-transition-transform rk-duration-300 ${open ? "rk-rotate-180" : ""}`} /></>}
+      </span>
+    </>
+  );
   return (
     <div className="rk-flex rk-flex-col rk-gap-3">
-      {found.routes.length > 1 ? (
-        <div className="rk-flex rk-flex-col rk-gap-2">
-          <p className="rk-text-caption rk-typo-regular-text-sm">Page {at} of {found.routes.length}</p>
-          <div className="rk-overflow-x-auto"><Tabs className="rk-min-w-max" tabs={found.routes.map((r) => ({ value: r.path, label: r.path }))} value={route.path} onChange={setPath} /></div>
-        </div>
-      ) : <p className="rk-typo-medium-text-sm"><code>{route.path}</code></p>}
-      {route.steps?.length > 0 && (
-        <div key={`steps:${route.path}`} className="rk-review-enter rk-flex rk-flex-col rk-gap-2 rk-rounded-default rk-bg-surface-lv1 rk-p-4">
-          <p className="rk-flex rk-items-center rk-gap-2 rk-typo-medium-text-sm"><ListOrdered size={16} />How to see it here</p>
-          <p className="rk-text-caption rk-typo-regular-text-sm">The component only shows after these steps. Do the same in both frames to compare.</p>
-          <ol className="rk-flex rk-list-decimal rk-flex-col rk-gap-1 rk-pl-5 rk-typo-regular-text-sm">{route.steps.map((st) => <li key={st} className="rk-break-words">{st}</li>)}</ol>
-        </div>
-      )}
-      <PagePreview key={route.path} route={route} previewUrl={doc.previewUrl} folder={folder} name={doc.jsxName ?? doc.component} highlight={highlight} onHighlight={setHighlight} />
+      <p className="rk-text-caption rk-typo-regular-text-sm">
+        {plural(found.routes.length, "page", "pages")} use it, read from the code. A page can show it only after a click (a drawer, a dialog) or only for some data,
+        so it may not be visible when you open the page. Ask the developer to show you one when it matters.
+      </p>
+      <ul className="rk-flex rk-flex-col rk-gap-2">
+        {shown.map((r) => {
+          const open = r.frames && r.path === path;
+          return (
+            <li key={r.path} className="rk-rowcard">
+              {r.frames ? (
+                <button type="button" className="rk-row" aria-expanded={open} onClick={() => setPath(open ? null : r.path)}>{content(r, open)}</button>
+              ) : (
+                <div className="rk-row rk-row-static">{content(r, false)}</div>
+              )}
+              {r.frames && (
+                <Collapse open={open}>
+                  <div className="rk-flex rk-flex-col rk-gap-3 rk-p-4">
+                    {r.stepList.length > 0 && (
+                      <div className="rk-flex rk-flex-col rk-gap-2 rk-rounded-default rk-bg-surface-lv1 rk-p-4">
+                        <p className="rk-flex rk-items-center rk-gap-2 rk-typo-medium-text-sm"><ListOrdered size={16} />How to see it here</p>
+                        <p className="rk-text-caption rk-typo-regular-text-sm">The component only shows after these steps. Do the same in both frames to compare.</p>
+                        <ol className="rk-flex rk-list-decimal rk-flex-col rk-gap-1 rk-pl-5 rk-typo-regular-text-sm">{r.stepList.map((st) => <li key={st} className="rk-break-words">{st}</li>)}</ol>
+                      </div>
+                    )}
+                    <PagePreview route={r} previewUrl={doc.previewUrl} folder={folder} name={doc.jsxName ?? doc.component} item={target} highlight={highlight} onHighlight={setHighlight} />
+                  </div>
+                </Collapse>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {found.routes.length > PAGES_SHOWN && <Button kind="text" size="sm" className="rk-self-start" onClick={() => setAll((v) => !v)}>{all ? "Show fewer pages" : `Show all ${found.routes.length} pages`}</Button>}
       {note && <p className="rk-text-caption rk-typo-regular-text-sm">{note}.</p>}
     </div>
   );
@@ -158,11 +211,11 @@ function Decision({ doc, item, choice, saved, detail, onChoice, readOnly, date, 
       {preview && <Preview preview={preview} prop={item.prop} option={item.option} />}
       {!preview && (
         <p className="rk-text-caption rk-typo-regular-text-sm">
-          There is no side-by-side box for this component. Compare the pages below
+          There is no side-by-side box for this component. See where it is used below
           {story ? <>, or <a href={story} target="_blank" rel="noreferrer" className="rk-text-primary rk-underline">try it in Storybook</a></> : ""}.
         </p>
       )}
-      <Section icon={<Monitor size={18} />} title="See it on a page" hint="On the left the page as it is now, on the right the page with the Figma version.">
+      <Section icon={<Monitor size={18} />} title="Where it is used" hint="The pages of the app that use it.">
         <AffectedPages doc={doc} item={item} />
       </Section>
       <section className="rk-flex rk-flex-col rk-gap-4 rk-rounded-default rk-border-2 rk-border-primary rk-p-5">
@@ -193,7 +246,7 @@ function Decision({ doc, item, choice, saved, detail, onChoice, readOnly, date, 
 const changeLine = (i) => {
   if (i.kind === "added-prop") return <>New property <code>{i.prop}</code>{i.options?.length ? ` (${i.options.join(", ")})` : ""}{i.figmaName ? ` from "${i.figmaName}" in Figma` : ""}</>;
   if (i.kind === "added-option") return <>New choice for <code>{i.prop}</code>: <code>{i.option}</code></>;
-  if (i.kind === "default-changed") return <><code>{i.prop}</code> now starts as "{i.to}" instead of "{i.from}"</>;
+  if (i.kind === "default-changed") return <><code>{i.prop}</code> now starts as &ldquo;{i.to}&rdquo; instead of &ldquo;{i.from}&rdquo;</>;
   return i.detail;
 };
 
@@ -353,8 +406,9 @@ function ReviewCard({ doc, index, total, open, onToggle, onUnsaved, session, onC
                   const kind = activityKind(a.action);
                   const { Icon, tone } = ACTIVITY[kind];
                   const strong = kind === "decided" || kind === "applied";
+                  const rowKey = [a.at, a.action, a.by, n].join("-"); // the same event can repeat, so the position is part of the key
                   return (
-                    <li key={`${a.at}-${a.action}-${a.by}-${n}`} className="rk-flex rk-gap-3">
+                    <li key={rowKey} className="rk-flex rk-gap-3">
                       <div className="rk-flex rk-flex-col rk-items-center">
                         <Icon size={18} className={`rk-shrink-0 ${tone}`} />
                         {n < all.length - 1 && <div className="rk-mt-1 rk-w-0 rk-flex-1 rk-border-l rk-border-default" />}

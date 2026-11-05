@@ -135,16 +135,17 @@ function safe(format, when) {
   try { return when ? String(format(when) ?? "") : ""; } catch { return ""; }
 }
 
-// The two prop sets the preview renders for a review item, { with, without, hint? }, or null when there is nothing to show.
-// A removed prop uses spec.examples[prop], else is rendered on and off when its default is a boolean.
+// The two prop sets the preview renders for a review item, { with, without, hint?, notes? } (notes: the captions { with, without } of the two panels), or null when there is nothing to show.
+// A removed prop uses spec.examples[prop], else is rendered on and off when it is a switch.
 // A removed option needs spec.examples["prop=option"]. Any other kind, or malformed input, gives null.
 export function previewProps(spec, item) {
   if (!spec || typeof spec !== "object" || !item || typeof item !== "object") return null;
-  const from = (example) => (example && typeof example === "object" ? { with: example.with, without: example.without, ...(example.hint ? { hint: example.hint } : {}) } : null);
+  const from = (example) => (example && typeof example === "object" ? { with: example.with, without: example.without, ...(example.hint ? { hint: example.hint } : {}), ...(example.notes ? { notes: example.notes } : {}) } : null);
   if (item.kind === "removed-prop") {
     const example = from(spec.examples?.[item.prop]);
     if (example) return example;
-    if (item.default === "true" || item.default === "false") return { with: { [item.prop]: true }, without: { [item.prop]: false } };
+    // A switch needs no example: with a default of true or false, or a code kind of bool (disabled has no default: it is simply off).
+    if (item.default === "true" || item.default === "false" || item.codeKind === "bool") return { with: { [item.prop]: true }, without: { [item.prop]: false } };
     return null;
   }
   if (item.kind === "removed-option") return from(spec.examples?.[`${item.prop}=${item.option}`]);

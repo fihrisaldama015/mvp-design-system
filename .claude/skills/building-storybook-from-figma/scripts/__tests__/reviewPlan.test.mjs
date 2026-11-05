@@ -130,3 +130,14 @@ test("planGate refuses when the scan skipped files and there are removals; passe
   assert.equal(planGate(doc([{ id: "added-prop:s", kind: "added-prop", prop: "s" }]), { warnings: ["w"] }).ok, true);
   assert.equal(planGate({ ...d, jsxName: null }, { warnings: [] }).ok, false);
 });
+
+test("previewNeeded: Figma adding something needs the candidate build, unless a URL exists or the developer says no-preview", async () => {
+  const { previewNeeded } = await import("../reviewGate.mjs");
+  const added = [{ kind: "added-prop", prop: "kind" }, { kind: "removed-prop", prop: "x" }];
+  assert.match(previewNeeded(added, null), /Figma ADDS .*kind/s);
+  assert.match(previewNeeded(added, null), /Candidate preview URL/);
+  assert.equal(previewNeeded(added, "https://app-git-figma-draft.vercel.app"), null);
+  assert.equal(previewNeeded(added, null, { allowNone: true }), null);
+  assert.equal(previewNeeded([{ kind: "removed-prop", prop: "x" }], null), null);
+  assert.equal(previewNeeded([], null), null);
+});

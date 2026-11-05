@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { Button, Toggle } from "./ui";
 import { frameUrls } from "./helpers";
@@ -8,22 +8,32 @@ const PROTECTION = "Blank or a Vercel login? Turn off Deployment Protection for 
 
 // One preview frame. When `folder` is set, the toggle asks the app inside the frame (app/review/embedHighlight) to outline every
 // instance of that component. The state is sent again when the frame loads, because a new page in the frame starts without it.
-function Frame({ title, url, embed, path, folder, name, highlight, onHighlight }) {
+function Frame({ title, url, embed, path, folder, name, item, highlight, onHighlight }) {
   const ref = useRef(null);
   const origin = useMemo(() => { try { return new URL(embed, window.location.origin).origin; } catch { return null; } }, [embed]);
   const send = useCallback(() => {
-    if (origin && folder && ref.current?.contentWindow) ref.current.contentWindow.postMessage({ type: "review-highlight", on: Boolean(highlight), folder }, origin);
-  }, [origin, folder, highlight]);
+    if (origin && folder && ref.current?.contentWindow) ref.current.contentWindow.postMessage({ type: "review-highlight", on: Boolean(highlight), folder, item }, origin);
+  }, [origin, folder, highlight, item]);
   useEffect(send, [send]);
+  const [count, setCount] = useState(null); // how many instances the frame outlined, as the app inside the frame tells us
+  useEffect(() => {
+    const onMessage = (e) => { if (e.source === ref.current?.contentWindow && e.data?.type === "review-highlight-result") setCount(e.data.count); };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+  useEffect(() => { if (!highlight) setCount(null); }, [highlight]);
   return (
     <div className="rk-flex rk-min-w-0 rk-flex-1 rk-flex-col rk-gap-2">
-      <div className="rk-flex rk-flex-wrap rk-items-center rk-justify-between rk-gap-2">
+      <div className="rk-flex rk-flex-col rk-gap-2">
         <p className="rk-typo-semi-bold-text-sm">{title}</p>
-        <div className="rk-flex rk-items-center rk-gap-3">
-          {folder && <Toggle checked={Boolean(highlight)} onChange={onHighlight} label={`Highlight ${name}`} />}
+        <div className="rk-flex rk-flex-wrap rk-items-center rk-gap-3">
+          {folder && <Toggle checked={Boolean(highlight)} onChange={onHighlight} label={item?.prop ? `Highlight where ${item.prop}${item.option ? `="${item.option}"` : ""} is on` : `Highlight ${name}`} />}
           <Button as="a" href={url} target="_blank" rel="noreferrer" kind="outlined" size="sm" suffixIcon={<ExternalLink />}>Open in a new tab</Button>
         </div>
       </div>
+      {highlight && count !== null && (
+        <p className="rk-text-caption rk-typo-regular-text-sm">{count > 0 ? `${count} highlighted on this page.` : "None on screen right now. It may only appear after an action (see the steps) or when the data is a certain way."}</p>
+      )}
       <iframe ref={ref} onLoad={send} title={`${title}: ${path}`} src={embed} referrerPolicy="no-referrer" style={{ height: "75vh" }} className="rk-w-full rk-rounded-default rk-border rk-border-default rk-bg-surface" />
       <p className="rk-text-caption rk-typo-regular-text-sm">{PROTECTION}</p>
     </div>
@@ -33,12 +43,12 @@ function Frame({ title, url, embed, path, folder, name, highlight, onHighlight }
 // The page as it is now next to the same page on the candidate preview (the Figma version), so the reviewers
 // see the effect of a removal on a real screen. route: { path, url } from usageFor; previewUrl: the candidate's origin.
 // folder and name: the component under review (its folder in src/components, and its name), for the highlight toggle.
-export default function PagePreview({ route, previewUrl, folder, name, highlight, onHighlight }) {
+export default function PagePreview({ route, previewUrl, folder, name, item, highlight, onHighlight }) {
   const { now, after, nowEmbed, afterEmbed, sample } = frameUrls(route, previewUrl, window.location.origin);
   if (!sample) {
     return <p className="rk-text-caption rk-typo-regular-text-sm">No preview: add a sample path for {route.path} in figma-tokens.config.json (review.routeSamples).</p>;
   }
-  const shared = { path: route.path, folder, name, highlight, onHighlight };
+  const shared = { path: route.path, folder, name, item, highlight, onHighlight };
   return (
     <div className="rk-review-enter rk-flex rk-flex-col rk-gap-3">
       {config.frameNote && <p className="rk-text-caption rk-typo-regular-text-sm">{config.frameNote}</p>}

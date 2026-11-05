@@ -1,4 +1,4 @@
-import { componentTypes, findComponentNodes } from "./highlightCore";
+import { componentTypes, findComponentNodes, propMatcher } from "./highlightCore";
 
 // Inside a preview frame of the review page: when the page asks, outline every instance of one design-system component
 // (for example every Alert), so the reviewers see what a decision touches without guessing. It listens for a message from the
@@ -11,6 +11,9 @@ const STYLE_ID = "review-highlight-style";
 const CSS = `[${ATTR}] { outline: 3px solid rgb(var(--brand-danger-600, 220 38 38)); outline-offset: 6px; border-radius: 4px; }`;
 
 let types = null;
+let matcher = null;
+let parent = null; // { window, origin }: who asked, to tell them how many instances are outlined
+let last = -1;
 let observer = null;
 let queued = false;
 
@@ -25,7 +28,9 @@ function mark() {
   queued = false;
   document.querySelectorAll(`[${ATTR}]`).forEach((n) => n.removeAttribute(ATTR));
   if (!types) return;
-  for (const n of findComponentNodes(rootFiber(), types)) n.setAttribute(ATTR, "");
+  const nodes = findComponentNodes(rootFiber(), types, matcher);
+  for (const n of nodes) n.setAttribute(ATTR, "");
+  report(nodes.size);
 }
 
 function schedule() {
@@ -34,8 +39,16 @@ function schedule() {
   requestAnimationFrame(mark);
 }
 
-async function turnOn(folder, load) {
+function report(count) {
+  if (!parent || count === last) return;
+  last = count;
+  parent.window.postMessage({ type: "review-highlight-result", count }, parent.origin);
+}
+
+async function turnOn(folder, load, item) {
   if (!/^[a-z0-9-]+$/.test(folder)) return;
+  matcher = propMatcher(item ?? {});
+  last = -1;
   try {
     types = componentTypes(await load(folder));
   } catch {
@@ -54,8 +67,10 @@ async function turnOn(folder, load) {
 
 function turnOff() {
   types = null;
+  matcher = null;
   observer?.disconnect();
   mark();
+  last = -1;
 }
 
 // load(folder) returns the module of the component folder: the project passes `(folder) => import(`components/${folder}/index.js`)`
@@ -66,6 +81,7 @@ export function installHighlight(load) {
     if (e.source !== window.parent) return;
     const d = e.data;
     if (!d || d.type !== "review-highlight") return;
-    if (d.on && typeof d.folder === "string") turnOn(d.folder, load); else turnOff();
+    parent = { window: e.source, origin: e.origin };
+    if (d.on && typeof d.folder === "string") turnOn(d.folder, load, d.item); else turnOff();
   });
 }
