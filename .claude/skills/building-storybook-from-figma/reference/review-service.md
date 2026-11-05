@@ -95,6 +95,37 @@ In Claude Code the slash command `/apply-review` runs the whole flow (`.claude/c
 After a review is applied, the next sync of the same component starts a new cycle (`published (new cycle)`) and asks the reviewers again, including for
 properties they already answered `keep-deprecated`. Carrying a keep-deprecated answer (and its migrate-by date) forward across syncs is planned, not built.
 
+## What a review compares, and per-component config
+
+A review compares only what a designer can see: the options of a variant (`kind="outlined"`) and on/off switches (`searchable`). Data (`columns`, `rows`,
+`options`), content (`label`, `children`), handlers (`onX`) and `id`, `name`, `ref`, `className`, `style`, `value` are listed as "not compared" and never
+become a removal. The code file is picked by component name (a re-export such as `export { Input } from "./Input"` is followed; several blocks and no match
+is an error, not a guess). When the default is wrong for a component, say so in `figma-tokens.config.json`:
+
+```json
+"review": { "components": { "Input": { "code": "src/components/input/Input.js", "component": "Input",
+  "ui": ["inputMode"], "behavior": ["type"], "ignore": [] } } }
+```
+
+`ui` names a prop the project wants compared although it is not an enum or switch; `behavior` names one that is never compared (it wins over `ui`).
+Flags for one run: `--component <Name>`, `--ui a,b`, `--behavior a,b`.
+
+## Routing probe (a new project: do this before the first review)
+
+The usage scan answers "where is this prop used" from the project's routes. It reads routes with two adapters, **JSX** (`<Route path element={<Page />} />`,
+also `element={<Suspense><Page /></Suspense>}`, named/default/`lazy()` imports) and **config arrays** (`{ path: "/x", component: Page }` or
+`element: <Page />`), in `src/App.js` and everything under `src/routes/`, `src/router/`, `src/routing/` (or `src/routes.js`). Bare imports
+(`pages/home`) are looked up under `src/`. A page imported lazily by another page is followed.
+
+That is a default, not a promise. **On a project you have not scanned before, run `node scripts/figma/usageScan.mjs --probe` first** and read the router yourself:
+
+1. The probe lists, per file, how many `<Route>` / `path:` entries it saw and how many it could tie to a page. Compare with what the router declares.
+2. `BLIND` (nothing read): a review stops and publishes nothing (`--blind-usage` overrides) because every "used in" would be 0 and wrong.
+3. `PARTIAL` is normal when a route element is not a page (`<Navigate />`, `path={path}` inside a `.map`); check that the missing ones are only those.
+4. If routes live elsewhere, set them in `figma-tokens.config.json`: `"review": { "usage": { "routeFiles": ["src/app/router.js"], "aliases": { "@": "src" } } }`.
+5. If the router is built another way (`createBrowserRouter` objects with `children`, file-based routes, a generated table), **add an adapter** in
+   `usageScan.mjs` next to `jsxRoutes` / `configRoutes` (each returns `[{ path, files }]`) and a test in `__tests__/usage.test.mjs`; then run `--probe` again.
+
 ## Usage scan and its limits
 
 `callers`, `callerRoutes` and `usage` come from `usageScan.mjs` (routed pages that import design-system components), not from grep. It does not follow

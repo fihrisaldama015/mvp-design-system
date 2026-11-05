@@ -24,7 +24,7 @@
 import fs from "node:fs";
 import crypto from "node:crypto";
 import { reviewApi, reviewPage } from "./reviewClient.mjs";
-import { scanUsage } from "./usageScan.mjs";
+import { probeText, scanUsage } from "./usageScan.mjs";
 import { usageFor } from "./usageCore.mjs";
 import { doneGate, planGate } from "./reviewGate.mjs";
 import { buildPlan, planText } from "./reviewPlan.mjs";
@@ -39,7 +39,11 @@ const hashOf = (d) => { const { readAt, ...rest } = d; return crypto.createHash(
 const fail = (m, code = 2) => { console.error(m); process.exit(code); };
 const makeApi = () => { try { return reviewApi(); } catch (e) { return fail(e.message); } }; // a config error is a message, not a stack trace
 const readJson = (f) => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return {}; } };
-const scan = () => scanUsage(process.cwd(), { routeSamples: readJson("figma-tokens.config.json").review?.routeSamples ?? {} });
+const scan = () => {
+  const review = readJson("figma-tokens.config.json").review ?? {};
+  const u = review.usage ?? {};
+  return scanUsage(process.cwd(), { routeSamples: review.routeSamples ?? {}, routeFiles: u.routeFiles, aliases: u.aliases ?? {}, ...(u.app ? { app: u.app } : {}) });
+};
 
 if (["--verify", "--answers", "--plan", "--done"].includes(process.argv[2])) {
   const api = makeApi();
@@ -129,6 +133,10 @@ for (const [k, v] of Object.entries(signatureDefaults(code, COMP))) if (cProps[k
 let usage;
 try { usage = scan(); } catch (e) { fail(`The usage scan failed (${e.message}); publishing without it would hide who is affected.`); }
 for (const w of usage.warnings) console.warn(`usage: skipped ${w}`);
+if (usage.routing?.blind && !process.argv.includes("--blind-usage")) {
+  // "Used in 0 places" for a project whose routes were not read is a false answer that looks like a real one.
+  fail(`${probeText(usage.routing)}\n\nNothing was published. Fix the scan above, or pass --blind-usage to publish without usage numbers (every "used in" will be 0).`);
+}
 const callers = (it) => { const u = usageFor(usage, COMP, it); return { callers: u.count, callerRoutes: u.routes.map((r) => r.path) }; };
 
 const items = [];
