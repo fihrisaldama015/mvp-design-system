@@ -103,8 +103,8 @@ function AffectedPages({ doc, item }) {
   const found = useMemo(() => usageFor(usage, doc.jsxName, item), [doc.jsxName, item]);
   const [path, setPath] = useState(null);
   const [all, setAll] = useState(false);
-  const [highlight, setHighlightState] = useState(readHighlight); // outlines the instances in both frames: on by default, and the choice is kept for the session
-  const setHighlight = (on) => { setHighlightState(on); writeHighlight(on); };
+  const [highlight, setHighlight] = useState(readHighlight); // outlines the instances in both frames: on by default, and the choice is kept for the session
+  const changeHighlight = (on) => { setHighlight(on); writeHighlight(on); };
   const folder = doc.code?.match(/components\/([^/]+)\//)?.[1];
   const target = useMemo(() => ({ kind: item.kind, prop: item.prop, option: item.option, onByDefault: Boolean(item.onByDefault) }), [item.kind, item.prop, item.option, item.onByDefault]);
   const note = publishedNote(found.routes.length, doc.usage?.byItem?.[item.id]);
@@ -150,7 +150,7 @@ function AffectedPages({ doc, item }) {
                         <ol className="rk-flex rk-list-decimal rk-flex-col rk-gap-1 rk-pl-5 rk-typo-regular-text-sm">{r.stepList.map((st) => <li key={st} className="rk-break-words">{st}</li>)}</ol>
                       </div>
                     )}
-                    <PagePreview route={r} previewUrl={doc.previewUrl} folder={folder} name={doc.jsxName ?? doc.component} item={target} highlight={highlight} onHighlight={setHighlight} />
+                    <PagePreview route={r} previewUrl={doc.previewUrl} folder={folder} name={doc.jsxName ?? doc.component} item={target} highlight={highlight} onHighlight={changeHighlight} />
                   </div>
                 </Collapse>
               )}

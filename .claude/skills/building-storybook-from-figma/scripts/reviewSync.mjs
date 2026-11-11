@@ -143,6 +143,11 @@ const callers = (it) => { const u = usageFor(usage, COMP, it); return { callers:
 
 const items = [];
 const add = (i) => items.push({ id: `${i.kind}:${i.prop}${i.option ? `=${i.option}` : ""}`, decision: null, ...i });
+// A Figma property that differs from a code prop only by case (readonly / readOnly) is the same property.
+for (const k of Object.keys(fProps)) {
+  const same = Object.keys(cProps).find((x) => x !== k && x.toLowerCase() === k.toLowerCase());
+  if (same && !fProps[same]) { fProps[same] = fProps[k]; delete fProps[k]; }
+}
 for (const [p, f] of Object.entries(fProps)) {
   const c = cProps[p] ?? cProps[Object.keys(LEGACY).find((k) => LEGACY[k] === p)];
   if (!c) { add({ kind: "added-prop", prop: p, figmaName: f.figma, options: f.options ?? undefined, detail: `Figma "${f.figma}" (${f.type}${f.options ? `: ${f.options.join(" | ")}` : ""}) has no prop in code.` }); continue; }
@@ -162,6 +167,21 @@ for (const [p, c] of Object.entries(cProps)) {
     for (const o of c.options.filter((o) => !fProps[p].options.some((x) => x.toLowerCase() === o.toLowerCase()))) add({ kind: "removed-option", prop: p, option: o, detail: `Code has ${p}="${o}" but Figma does not.` });
 }
 
+// A Figma-only property and a code-only property whose names start the same (Figma "Clearable Icon", code "clearable") are probably one property:
+// say so on both items instead of letting the reviewers decide on a naming difference. The developer confirms with review.components[...].map.
+const norm = (x) => String(x).toLowerCase().replace(/[^a-z0-9]/g, "");
+const maybePairs = [];
+for (const a of items.filter((x) => x.kind === "added-prop")) {
+  for (const r of items.filter((x) => x.kind === "removed-prop")) {
+    const [u, v] = [norm(a.prop), norm(r.prop)];
+    if (Math.min(u.length, v.length) >= 4 && (u.startsWith(v) || v.startsWith(u))) {
+      a.maybeSameAs = r.prop; r.maybeSameAs = a.prop;
+      a.detail += ` Maybe the same property as the code's "${r.prop}" under another name.`;
+      r.detail += ` Maybe it is Figma's "${a.figmaName ?? a.prop}", named differently.`;
+      maybePairs.push([a, r]);
+    }
+  }
+}
 for (const i of items) if (i.kind.startsWith("removed")) Object.assign(i, callers(i));
 const usageByItem = Object.fromEntries(items.filter((i) => i.kind.startsWith("removed")).map((i) => [i.id, { count: i.callers, routes: i.callerRoutes }]));
 // The candidate build: the flag, else the project's address in the dashboard (it travels with the list of reviews).
@@ -177,6 +197,7 @@ try {
   await api.publish({ component: figma.name, jsxName: COMP, storybookUrl: cfg.storybookUrl || null, storyId: idx?.story ?? null, figmaFileKey: flag("--file", idx?.figmaFileKey ?? null), figmaNode: figma.nodeId, figmaPage: figma.page?.name ?? figma.page, code: codeFile, readAt: figma.readAt, sourceHash: hashOf(figma), items, usage: { at: usage.generatedAt, byItem: usageByItem }, ...(flag("--preview-url") ? { previewUrl: flag("--preview-url", null) } : {}) });
 } catch (e) { fail(`Could not publish the review: ${e.message}`); }
 
+for (const [a, r] of maybePairs) console.warn(`check: Figma "${a.figmaName ?? a.prop}" and the code's "${r.prop}" may be one property named differently. If so, map it (review.components["${figma.name}"].map = { "${a.figmaName ?? a.prop}": "${r.prop}" }) and run again.`);
 const count = (k) => items.filter((i) => i.kind === k).length;
 console.log(`${figma.name}: ${count("added-prop") + count("added-option")} additions (safe), ${count("default-changed")} default changes, ${count("removed-prop") + count("removed-option")} removals (need a decision)`);
 for (const i of items) console.log(`  ${i.kind.padEnd(15)} ${i.prop}${i.option ? `="${i.option}"` : ""}${i.callers !== undefined ? `  (${i.callers} use(s) on ${i.callerRoutes.length} page(s)${i.onByDefault ? ", ON by default: all of them get it" : ""})` : ""}${i.deprecated ? "  [already deprecated]" : ""}`);
