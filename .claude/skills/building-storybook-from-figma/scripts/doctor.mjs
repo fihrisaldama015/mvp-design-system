@@ -12,6 +12,7 @@ import { diffScripts } from "./syncSkill.mjs";
 import { reviewState } from "./reviewState.mjs";
 import { reviewPage } from "./reviewClient.mjs";
 import { foundationAge, ASK } from "./foundationAge.mjs";
+import { bundlerText, envKeys, diagnose } from "./reviewEnv.mjs";
 
 const args = process.argv.slice(2);
 const PORT = args.includes("--port") ? args[args.indexOf("--port") + 1] : "9232";
@@ -104,6 +105,16 @@ step("Figma pointers");
   if (ti && (!/"id":/.test(ti) || !fs.existsSync("src/tokens/figma-ids.json"))) add("figma-ids", "WARN", "Tokens were built without Figma IDs (no ids in tokens.index.json or no figma-ids.json)", "Re-run the Foundation steps (reference/foundation.md, steps 2 to 4); the token values stay the same, IDs are added.");
   const hasComponents = fs.existsSync("src/components") && fs.readdirSync("src/components").length > 0;
   if (ti && hasComponents && !fs.existsSync("figma-index.json")) add("figma-index", "WARN", "No component is indexed (figma-index.json is missing)", "After syncing a component: node scripts/figma/indexComponent.mjs <Name> --file <figmaFileKey> --story <id> --code <dir>, and commit figma-index.json.");
+}
+step("review page settings");
+{
+  // The review page is "not set up" when its two settings do not reach the bundle: names only are checked, never values.
+  const kitConfig = path.join("src", "review-kit", "review.config.js");
+  if (fs.existsSync(kitConfig)) {
+    const problems = diagnose({ configText: readText(kitConfig), keys: envKeys(process.cwd()), bundler: bundlerText(process.cwd()) });
+    if (!problems.length) add("review-settings", "OK", "The review page's service URL and project are set and reach the app");
+    for (const p of problems) add("review-settings", "WARN", p.found, p.fix);
+  }
 }
 const drift = diffScripts();
 if (drift?.length) add("scripts-copy", "WARN", `scripts/figma differs from the skill in ${drift.length} file(s): ${drift.slice(0, 4).join(", ")}${drift.length > 4 ? ", ..." : ""}`, "npm run sync-skill   (the skill's scripts are the source; edit there, not in scripts/figma)");

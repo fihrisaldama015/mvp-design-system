@@ -44,6 +44,12 @@ written in a `.env.local` (git-ignored; recommended) or `.env` file in the proje
 shell, then `.env.local`, then `.env`; if none of the three is set anywhere the file is read. Never put the token in a file that is committed (`.env.development`, `.env.example`).
 Note the difference: the tool's `REVIEW_API_URL` (and the file's `url`) **ends in `/api/v1`**; the app's `PUBLIC_REVIEW_SERVICE_URL` is the **origin only**, the page adds `/api/v1` itself.
 
+**The names the page reads are the project's choice.** The dashboard always hands out `PUBLIC_REVIEW_SERVICE_URL` and `PUBLIC_REVIEW_PROJECT`; a project that defines its variables one by one
+(`"process.env.REACT_APP_API_URL"` in `rsbuild.config.js`, as swt-fe does) reads them as `REACT_APP_REVIEW_*`. The installer detects that and writes `review.config.js` the project's way; it
+never edits the bundler config, it prints the two `define` lines that also accept the dashboard's names (`process.env.REACT_APP_REVIEW_X || process.env.PUBLIC_REVIEW_X`). So the dashboard's
+lines can be pasted as they are. `doctor` checks it (names only, never values): "The review page reads X, but the project's env has Y", or "X is set but not defined in the bundler config". It does not
+decide by itself: when it warns, the fix is in its message.
+
 ```json
 { "url": "https://<service>/api/v1", "project": "mvp", "token": "drp_...", "reviewPage": "https://<app>/review" }
 ```

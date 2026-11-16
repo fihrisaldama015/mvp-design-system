@@ -106,3 +106,24 @@ test("the kit is replaced on every run, but review.config.js belongs to the proj
   install({ target: other, from: SKILL, kitDir: "src/features/review" });
   assert.ok(fs.existsSync(path.join(other, "src/features/review/ReviewPage.js")));
 });
+
+test("a project that defines process.env.REACT_APP_* in its bundler gets a review.config.js that reads them that way, and a note for the define", () => {
+  const dir = project({ name: "swt" }, { "rsbuild.config.js": 'export default { source: { define: { "process.env.REACT_APP_API_URL": JSON.stringify(process.env.REACT_APP_API_URL || "") } } };' });
+  const r = install({ target: dir, from: SKILL });
+  const cfg = read(dir, "src/review-kit/review.config.js");
+  assert.match(cfg, /serviceUrl: process\.env\.REACT_APP_REVIEW_SERVICE_URL,/);
+  assert.match(cfg, /project: process\.env\.REACT_APP_REVIEW_PROJECT,/);
+  assert.doesNotMatch(cfg, /import\.meta\.env\.PUBLIC_/);
+  const note = r.notes.find((n) => /REACT_APP_/.test(n));
+  assert.ok(note, "a note says to add the define");
+  assert.match(note, /process\.env\.REACT_APP_REVIEW_PROJECT \|\| process\.env\.PUBLIC_REVIEW_PROJECT/);
+});
+
+test("no note about the define when the bundler already has it, and a plain project keeps the PUBLIC_ reads", () => {
+  const defined = ["SERVICE_URL", "PROJECT"].map((k) => `"process.env.REACT_APP_REVIEW_${k}": 1`).join(", ");
+  const dir = project({ name: "swt" }, { "rsbuild.config.js": `export default { source: { define: { "process.env.REACT_APP_API_URL": 1, ${defined} } } };` });
+  assert.ok(!install({ target: dir, from: SKILL }).notes.some((n) => /REACT_APP_/.test(n)));
+  const plain = project({ name: "other" });
+  install({ target: plain, from: SKILL });
+  assert.match(read(plain, "src/review-kit/review.config.js"), /import\.meta\.env\.PUBLIC_REVIEW_SERVICE_URL/);
+});

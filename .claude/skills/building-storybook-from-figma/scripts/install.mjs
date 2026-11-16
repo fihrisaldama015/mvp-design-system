@@ -15,6 +15,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { SETTINGS, bundlerText, envConvention, forConvention } from "./reviewEnv.mjs";
 
 export const SKILL = ".claude/skills/building-storybook-from-figma";
 export const SCRIPTS_DST = "scripts/figma";
@@ -99,7 +100,7 @@ export function install({ target = process.cwd(), from, write = true, buildHooks
     if (write) fs.copyFileSync(path.join(skill, "templates/figma-tokens.config.json"), cfg);
   }
   if (kit) {
-    const tpl = path.join(skill, "templates/review-kit"), dst = path.join(target, kitDir);
+    const tpl = path.join(skill, "templates/review-kit"), dst = path.join(target, kitDir), convention = envConvention(target);
     actions.push(...copyTree(tpl, dst, { skip: (f) => f === "review.config.js", write }));
     const usageCore = path.join(skill, "scripts/usageCore.mjs"), usageDst = path.join(dst, "usageCore.js");
     if (!same(usageCore, usageDst)) { actions.push({ what: fs.existsSync(usageDst) ? "update" : "add", file: path.relative(process.cwd(), usageDst) }); if (write) { fs.mkdirSync(dst, { recursive: true }); fs.copyFileSync(usageCore, usageDst); } }
@@ -107,7 +108,13 @@ export function install({ target = process.cwd(), from, write = true, buildHooks
       const f = path.join(dst, name);
       if (fs.existsSync(f)) continue;
       actions.push({ what: "add", file: path.relative(process.cwd(), f) });
-      if (write) { fs.mkdirSync(dst, { recursive: true }); if (from) fs.copyFileSync(from, f); else fs.writeFileSync(f, `${JSON.stringify({ components: {}, warnings: [] }, null, 2)}\n`); } // usage.json: empty until `npm run usage`
+      // review.config.js reads the two settings the way the project reads its own (see reviewEnv.mjs); usage.json: empty until `npm run usage`
+      if (write) { fs.mkdirSync(dst, { recursive: true }); if (from) fs.writeFileSync(f, forConvention(fs.readFileSync(from, "utf8"), convention)); else fs.writeFileSync(f, `${JSON.stringify({ components: {}, warnings: [] }, null, 2)}\n`); }
+    }
+    if (convention === "react-app-define") {
+      const bundler = bundlerText(target);
+      const missing = SETTINGS.filter((s) => !new RegExp(`["']process\\.env\\.${s.legacy}["']`).test(bundler));
+      if (missing.length) notes.push(`this project reads its settings as process.env.REACT_APP_* (defined one by one in the bundler config), so ${kitDir}/review.config.js reads them that way. Add to the bundler's define, so the dashboard's PUBLIC_REVIEW_* lines also work when pasted as they are: ${missing.map((s) => `"process.env.${s.legacy}": JSON.stringify(process.env.${s.legacy} || process.env.${s.pub} || "")`).join(", ")}`);
     }
     notes.push(`the review page is in ${kitDir}: mount it (<Route path="/review" element={<ReviewPage />} /> with import { ReviewPage } from "${kitDir.replace(/^src\//, "")}"), set the service URL and project in ${kitDir}/review.config.js, and call installHighlight in the app entry (see ${kitDir}/index.js). The page needs react and lucide-react.`);
   }
