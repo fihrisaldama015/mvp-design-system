@@ -39,6 +39,38 @@ Needs Phase 1 done: classes come from `src/tokens/tokens.index.json`.
    - `node scripts/figma/indexComponent.mjs <Name> --file <figmaFileKey> --story <story id> --code <dir>` records where the set lives (`figma-index.json`).
    - Write `docs/<ds>/<component>.md`: what drives what, colour table, API, checks, notes for the designer.
 
+## The project has its own tokens (case D, e.g. swt-fe)
+
+The data is the same (the project's tokens come from the same Figma foundation); the **classes** are not: the project's Tailwind
+maps only what it chose to (SWT: colours such as `bg-primary-default`, `text-default`, `bg-surface`, `border-primary`, and `fontSize`; **no**
+`h-component-*`, **no** `typo-*`). Then:
+
+1. **Do not run the whole Phase 1** here (`buildTokens.mjs`, `buildTokenDocs.mjs`): it would replace the project's `tokens.css` and Tailwind mapping. What the skill may do is
+   **export only**: read the foundation through the Desktop Bridge (`reference/foundation.md`) and write the project's `design_token.json` (Brücke shape, `toBruecke.mjs`; it reproduced
+   SWT's Brücke export exactly on 2026-10-12), replacing the project's `--fetch` from GitHub. The project's own build (`tokens:build`: `buildCss` + `tokenMap.js` + docs) then makes
+   `tokens.css`. Keep its rollback guard (`exportedAt`). Run `diffTokens.mjs <new> <project's file> --ignore-style-id` first and show the developer what changed; `+Theme/content (...)` strings are mock text, not design.
+   The foundation file (Graphene) is a different Figma file from the components (Shield): open the right one before each read.
+2. **Class source = the project, not `tokens.index.json`.** Read its `tailwind.config.js` and the custom properties in its `tokens.css`. For each
+   value `variantClasses.mjs` prints, in this order: (a) a class the project already has (`checkUtilities.mjs` equivalent: grep the config), (b) a standard
+   Tailwind class with the same value (`h-9` for a 36px height, `text-sm`), written with the project's custom property when one exists
+   (`h-[var(--sizing-component-md)]` only if the variable is in `tokens.css`), (c) otherwise stop and ask. **Never a hex, never an invented class.**
+   Adding classes to the project's Tailwind config changes a shared build: only with the developer's OK, after a pilot of two or three components shows the pattern.
+3. **Check the token switch.** If the project's tokens are behind a switch (SWT: `data-tokens="on"`, off by default today), the Storybook preview must turn it
+   on, or the stories show the built-in fallback colours and not the Figma ones (SWT's `.storybook/preview.js` does since 2026-11-16). The switch is transitional: the team's
+   direction is tokens always on, a separate app-wide change (it alters every page: check the `diffTokens` list first). Not part of a component change.
+4. **Names follow the project.** The component exists with another API (Shield `Kind` + `Status` vs SWT `type`): the project's API wins; add the Figma
+   difference as an additive prop or put it through the review (`existing-component.md`, `review.components[...].map`).
+5. **Stories use the project's conventions**: copy the shape of its best existing story, not the matrix-first shape above. For SWT: `title: "Components/<Name>"`,
+   `component`, default `args`, `argTypes` with `control` (and `if: { arg, eq }` for dependent props), one story per meaningful state with a `/** */` line saying when
+   it is used, a `decorators` width, alias imports (`components/<name>`), `useArgs` from `storybook/preview-api` only for interactive ones, and the Figma link:
+
+   ```js
+   parameters: { design: { type: "figma", url: "https://www.figma.com/design/<fileKey>/?node-id=<id with dashes>" } },
+   ```
+
+   The `fileKey` and node id come from `figma-index.json` (`indexComponent.mjs`), so the link is never typed by hand. Use the key of the **Shield** file for components.
+6. Docs per component (`docs/<ds>/<name>.md`) only where the project has such a folder.
+
 ## Translation rules (Figma → code)
 
 | Figma | Code |

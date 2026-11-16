@@ -23,6 +23,7 @@ Look at the project first (`ls`, `package.json`). Do not assume a stack.
 | A. Project, no Storybook (most common) | a React app or boilerplate | Setup, then `node <skill>/scripts/initStorybook.mjs` (reports the stack, `--write` adds `.storybook/`), then Phase 1 |
 | B. Storybook exists | `.storybook/` | Phase 1 to update tokens, Phase 2 for a component |
 | C. Empty folder | nothing | copy `templates/starter/` (our stack: React 18, rsbuild, Tailwind 3), `npm install`, then case A |
+| D. Storybook exists **and the project has its own tokens and Tailwind classes** (SWT: `tokens:sync`, `src/styles/tokens.css`, `tailwind.config.js`) | a token pipeline that is not ours | **Skip Phase 1** (never overwrite the project's tokens), Phase 2 in "own tokens" mode: `reference/components.md`, section "The project has its own tokens" |
 
 **Supported today: React 18 + Tailwind 3** (bundler rsbuild, vite or webpack). Not supported yet:
 Tailwind 4, no Tailwind, Next.js. `initStorybook.mjs` stops on them and says why; tell the user it
