@@ -39,11 +39,12 @@ Needs Phase 1 done: classes come from `src/tokens/tokens.index.json`.
    - `node scripts/figma/indexComponent.mjs <Name> --file <figmaFileKey> --story <story id> --code <dir>` records where the set lives (`figma-index.json`).
    - Write `docs/<ds>/<component>.md`: what drives what, colour table, API, checks, notes for the designer.
 
-## The project has its own tokens (case D, e.g. swt-fe)
+## The project already has its token build (case D, e.g. swt-fe)
 
-The data is the same (the project's tokens come from the same Figma foundation); the **classes** are not: the project's Tailwind
-maps only what it chose to (SWT: colours such as `bg-primary-default`, `text-default`, `bg-surface`, `border-primary`, and `fontSize`; **no**
-`h-component-*`, **no** `typo-*`). Then:
+The tokens are the same (the same Figma foundation); what differs is the **build**: the project turns `design_token.json` into CSS and Tailwind classes with its own
+script, and may cover only some collections. SWT's `buildCss` (`src/utils/designTokenCore.js`) keeps `Color`, `.Brand`, `+Theme` colours and the `Typography` primitives;
+`Sizing` (and `+Theme` `sizing`: `component md`, `modal …`, `drawer …`), `Spacing`, `Border`, `Opacity` and `Breakpoints` are not in `tokens.css`, so there is no `h-component-*`
+and no `typo-*` class. They were adopted in phases (colours, then typography). Extending the project's build to the missing collections is the project's own next phase, not a skill step. Then:
 
 1. **Do not run the whole Phase 1** here (`buildTokens.mjs`, `buildTokenDocs.mjs`): it would replace the project's `tokens.css` and Tailwind mapping. What the skill may do is
    **export only**: read the foundation through the Desktop Bridge (`reference/foundation.md`) and write the project's `design_token.json` (Brücke shape, `toBruecke.mjs`; it reproduced
